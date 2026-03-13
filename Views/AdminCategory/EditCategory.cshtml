@@ -1,0 +1,21 @@
+﻿@model WebLinhKienPc.Models.Category
+
+<h2>Sửa danh mục</h2>
+
+<form asp-action="EditCategory" method="post">
+
+	<input type="hidden" asp-for="CategoryId" />
+
+	<div>
+		<label>Tên</label>
+		<input asp-for="Name" class="form-control" />
+	</div>
+
+	<div>
+		<label>Mô tả</label>
+		<textarea asp-for="Description" class="form-control"></textarea>
+	</div>
+
+	<button type="submit">Lưu</button>
+
+</form>

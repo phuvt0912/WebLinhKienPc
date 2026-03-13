@@ -1,0 +1,39 @@
+﻿@using WebLinhKienPc.Models
+
+@model Product
+
+<h2>Xóa sản phẩm</h2>
+
+<div class="alert alert-danger">
+	Bạn có chắc muốn xóa sản phẩm này?
+</div>
+
+<div class="card" style="width:400px">
+
+	<img src="@Model.ImageUrl" class="card-img-top" />
+
+	<div class="card-body">
+
+		<h5>@Model.Name</h5>
+
+		<p>Giá: @Model.Price.ToString("N0") VNĐ</p>
+
+		<p>Stock: @Model.Stock</p>
+
+	</div>
+
+</div>
+
+<form asp-action="DeleteProduct" method="post">
+
+	<input type="hidden" asp-for="ProductId" />
+
+	<button class="btn btn-danger mt-3">
+		Xóa
+	</button>
+
+	<a asp-action="Products" class="btn btn-secondary mt-3">
+		Hủy
+	</a>
+
+</form>
