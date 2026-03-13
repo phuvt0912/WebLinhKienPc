@@ -1,0 +1,105 @@
+﻿@using WebLinhKienPc.ViewModels;
+
+@model ProductAdminViewModel
+
+<h2>Quản lý sản phẩm</h2>
+
+<div class="mb-3">
+    <a asp-action="CreateProduct" class="btn btn-success">
+        Thêm sản phẩm
+    </a>
+</div>
+
+<form method="get">
+
+    <div class="row mb-3">
+
+        <div class="col-md-4">
+            <input name="keyword"
+                   value="@Model.Keyword"
+                   class="form-control"
+                   placeholder="Tìm sản phẩm..." />
+        </div>
+
+        <div class="col-md-3">
+
+            <select name="categoryId"
+                    asp-items="Model.Categories"
+                    class="form-control">
+
+                <option value="">Tất cả loại</option>
+
+            </select>
+
+        </div>
+
+        <div class="col-md-2">
+            <button class="btn btn-primary">
+                Lọc
+            </button>
+        </div>
+
+    </div>
+
+</form>
+
+<table class="table table-bordered table-hover">
+
+    <thead class="table-dark">
+
+        <tr>
+            <th>ID</th>
+            <th>Ảnh</th>
+            <th>Tên</th>
+            <th>Category</th>
+            <th>Giá</th>
+            <th>Stock</th>
+            <th></th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @foreach (var p in Model.Products)
+        {
+
+            <tr>
+
+                <td>@p.ProductId</td>
+
+                <td>
+                    <img src="@p.ImageUrl" width="60" />
+                </td>
+
+                <td>@p.Name</td>
+
+                <td>@p.Category?.Name</td>
+
+                <td>@p.Price.ToString("N0") VNĐ</td>
+
+                <td>@p.Stock</td>
+
+                <td>
+
+                    <a asp-action="EditProduct"
+                       asp-route-id="@p.ProductId"
+                       class="btn btn-warning btn-sm">
+                        Sửa
+                    </a>
+
+                    <a asp-action="DeleteProduct"
+                       asp-route-id="@p.ProductId"
+                       class="btn btn-danger btn-sm">
+                        Xóa
+                    </a>
+
+                </td>
+
+            </tr>
+
+        }
+
+    </tbody>
+
+</table>

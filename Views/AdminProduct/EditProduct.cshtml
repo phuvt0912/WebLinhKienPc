@@ -1,0 +1,50 @@
+﻿@model WebLinhKienPc.Models.Product
+
+<h2>Sửa sản phẩm</h2>
+
+<form asp-action="EditProduct" method="post">
+
+    <input type="hidden" asp-for="ProductId" />
+
+    <div class="mb-3">
+        <label>Tên sản phẩm</label>
+        <input asp-for="Name" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Giá</label>
+        <input asp-for="Price" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Số lượng</label>
+        <input asp-for="Stock" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Mô tả</label>
+<textarea asp-for="Description" class="form-control"></textarea>
+    </div>
+
+    <div class="mb-3">
+        <label>Ảnh</label>
+        <input asp-for="ImageUrl" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Category</label>
+        <select asp-for="CategoryId"
+                asp-items="ViewBag.Categories"
+                class="form-control">
+        </select>
+    </div>
+
+    <button class="btn btn-primary">
+        Lưu thay đổi
+    </button>
+
+    <a asp-action="Products" class="btn btn-secondary">
+        Quay lại
+    </a>
+
+</form>

@@ -1,3 +1,7 @@
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using WebLinhKienPc.AppDbContext;
+
 namespace WebLinhKienPc
 {
 	public class Program
@@ -8,7 +12,13 @@ namespace WebLinhKienPc
 
 			// Add services to the container.
 			builder.Services.AddControllersWithViews();
+			builder.Services.AddDbContext<ApplicationDbContext>(options =>
+				options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+			builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+				.AddEntityFrameworkStores<ApplicationDbContext>()
+				.AddDefaultTokenProviders();
 
+			builder.Services.AddControllersWithViews();
 			var app = builder.Build();
 
 			// Configure the HTTP request pipeline.
@@ -27,7 +37,7 @@ namespace WebLinhKienPc
 			app.MapStaticAssets();
 			app.MapControllerRoute(
 				name: "default",
-				pattern: "{controller=Home}/{action=Index}/{id?}")
+				pattern: "{controller=Admin}/{action=Index}/{id?}")
 				.WithStaticAssets();
 
 			app.Run();
