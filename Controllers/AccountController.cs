@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using WebLinhKienPc;
 using WebLinhKienPc.Models;
 
 namespace WebLinhKienPc.Controllers
@@ -18,70 +17,89 @@ namespace WebLinhKienPc.Controllers
         }
 
         [HttpGet]
-        public IActionResult Register()
-        {
-            return View("Auth");
-        }
+        public IActionResult Register() => View("Auth");
+
+        [HttpGet]
+        public IActionResult Login() => View("Auth");
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            if (ModelState.IsValid)
+            // Kiểm tra là AJAX request không
+            bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+
+            if (!ModelState.IsValid)
             {
-                // Tạo một đối tượng user kiểu IdentityUser, sao chép dữ liệu từ RegisterViewModel cho user.
-                // Giá trị Username cũng là giá trị Email nhập trên form.
-                var user = new IdentityUser
-                {
-                    UserName = model.Email,
-                    Email = model.Email
-                };
-
-                // Lưu dữ liệu vào bảng AspNetUsers
-                var result = await userManager.CreateAsync(user, model.Password);
-
-                // Nếu lưu thành công thì chuyển đến trang chủ hiển thị danh sách sản phẩm
-                if (result.Succeeded)
-                {
-                    await signInManager.SignInAsync(user, isPersistent: false);
-                    return RedirectToAction("index", "product");
-                }
-
-                // Nếu có lỗi từ Identity (vd: mật khẩu yếu), thêm lỗi vào ModelState
-                foreach (var error in result.Errors)
-                {
-                    ModelState.AddModelError("", error.Description);
-                }
+                if (isAjax)
+                    return BadRequest(new { message = "Thông tin không hợp lệ." });
+                return View("Auth", model);
             }
-            return View(model);
-        }
 
-        [HttpGet]
-        public IActionResult Login()
-        {
-            return View("Auth");
+            var user = new IdentityUser
+            {
+                UserName = model.Email,
+                Email = model.Email
+            };
+
+            var result = await userManager.CreateAsync(user, model.Password);
+
+            if (result.Succeeded)
+            {
+                await signInManager.SignInAsync(user, isPersistent: false);
+                if (isAjax)
+                    return Ok(new { redirectUrl = "/Product/Index" });
+                return RedirectToAction("Index", "Product");
+            }
+
+            // Lấy lỗi đầu tiên từ Identity (vd: mật khẩu yếu, email đã tồn tại)
+            var errorMessage = result.Errors.FirstOrDefault()?.Description
+                               ?? "Đăng ký thất bại. Vui lòng thử lại.";
+
+            if (isAjax)
+                return BadRequest(new { message = errorMessage });
+
+            foreach (var error in result.Errors)
+                ModelState.AddModelError("", error.Description);
+
+            return View("Auth", model);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model)
         {
-            if (ModelState.IsValid)
+            bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
+
+            if (!ModelState.IsValid)
             {
-                // Kiểm tra thông tin đăng nhập
-                var result = await signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: false, lockoutOnFailure: false);
-                if (result.Succeeded)
-                {
-                    return RedirectToAction("index", "product");
-                }
-                else
-                {
-                    ModelState.AddModelError("", "Thông tin đăng nhập không chính xác.");
-                }
+                if (isAjax)
+                    return BadRequest(new { message = "Vui lòng nhập đầy đủ thông tin." });
+                return View("Auth", model);
             }
-            return View(model);
+
+            var result = await signInManager.PasswordSignInAsync(
+                model.Email, model.Password,
+                isPersistent: false,
+                lockoutOnFailure: false
+            );
+
+            if (result.Succeeded)
+            {
+                if (isAjax)
+                    return Ok(new { redirectUrl = "/Product/Index" });
+                return RedirectToAction("Index", "Product");
+            }
+
+            if (isAjax)
+                return BadRequest(new { message = "Email hoặc mật khẩu không đúng." });
+
+            ModelState.AddModelError("", "Email hoặc mật khẩu không đúng.");
+            return View("Auth", model);
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
             await signInManager.SignOutAsync();

@@ -238,7 +238,7 @@
 
         <!-- CARD LOGIN -->
         <div class="auth-card login-card">
-            <form asp-controller="Account" asp-action="Login" method="post">
+            <form asp-controller="Account" asp-action="Login" method="post" id="login-form">
                 @Html.AntiForgeryToken()
                 <h1>Đăng nhập</h1>
 
@@ -271,7 +271,7 @@
 
         <!-- CARD REGISTER -->
         <div class="auth-card register-card">
-            <form asp-controller="Account" asp-action="Register" method="post">
+            <form asp-controller="Account" asp-action="Register" method="post" id="register-form">
                 @Html.AntiForgeryToken()
                 <h1>Đăng ký</h1>
 
@@ -344,4 +344,109 @@
         input.type = isHidden ? 'text' : 'password';
         btn.innerHTML = isHidden ? eyeHide : eyeShow;
     }
+
+    function showError(formId, message) {
+        let errEl = document.getElementById(formId + '-error');
+        if (!errEl) {
+            errEl = document.createElement('div');
+            errEl.id = formId + '-error';
+            errEl.style.cssText = `
+                margin-top: 14px;
+                padding: 10px 14px;
+                background: rgba(255, 79, 123, 0.1);
+                border: 1px solid rgba(255, 79, 123, 0.35);
+                border-radius: 6px;
+                color: #ff4f7b;
+                font-size: 13px;
+                font-family: 'Inter', sans-serif;
+                text-align: center;
+            `;
+            document.getElementById(formId).appendChild(errEl);
+        }
+        errEl.textContent = message;
+    }
+
+    function clearError(formId) {
+        const errEl = document.getElementById(formId + '-error');
+        if (errEl) errEl.textContent = '';
+    }
+
+    // AJAX Login
+    document.getElementById('login-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        clearError('login-form');
+
+        const btn = this.querySelector('.btn');
+        const originalText = btn.textContent;
+        btn.textContent = 'Đang xử lý...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: new FormData(this),
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (response.redirected) {
+                window.location.href = response.url;
+                return;
+            }
+
+            const data = await response.json().catch(() => null);
+            if (response.ok) {
+                window.location.href = data?.redirectUrl || '/';
+            } else {
+                showError('login-form', data?.message || 'Email hoặc mật khẩu không đúng.');
+            }
+        } catch {
+            showError('login-form', 'Lỗi kết nối. Vui lòng thử lại.');
+        }
+
+        btn.textContent = originalText;
+        btn.disabled = false;
+    });
+
+    // AJAX Register
+    document.getElementById('register-form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        clearError('register-form');
+
+        const pw = document.getElementById('regPw').value;
+        const confirm = document.getElementById('regConfirm').value;
+        if (pw !== confirm) {
+            showError('register-form', 'Mật khẩu nhập lại không khớp.');
+            return;
+        }
+
+        const btn = this.querySelector('.btn');
+        const originalText = btn.textContent;
+        btn.textContent = 'Đang xử lý...';
+        btn.disabled = true;
+
+        try {
+            const response = await fetch(this.action, {
+                method: 'POST',
+                body: new FormData(this),
+                headers: { 'X-Requested-With': 'XMLHttpRequest' }
+            });
+
+            if (response.redirected) {
+                window.location.href = response.url;
+                return;
+            }
+
+            const data = await response.json().catch(() => null);
+            if (response.ok) {
+                window.location.href = data?.redirectUrl || '/';
+            } else {
+                showError('register-form', data?.message || 'Đăng ký thất bại. Vui lòng thử lại.');
+            }
+        } catch {
+            showError('register-form', 'Lỗi kết nối. Vui lòng thử lại.');
+        }
+
+        btn.textContent = originalText;
+        btn.disabled = false;
+    });
 </script>
