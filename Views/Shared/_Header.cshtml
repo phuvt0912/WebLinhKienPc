@@ -229,6 +229,14 @@
             <a asp-controller="Home" asp-action="About">Giới thiệu</a>
 
             <a asp-controller="Home" asp-action="Contact">Liên hệ</a>
+            <!--Menu quản trị dành cho admin -->
+            @if(User.IsInRole("Admin"))
+            {
+                <a asp-controller="Admin" asp-action="Index">Quản trị admin</a>
+                <a asp-controller="AdminProduct" asp-action="Index">Quản lý Sản phẩm</a>
+                <a asp-controller="AdminCategory" asp-action="Index">Quản lý danh mục</a>
+            }
+
 
         </nav>
 
