@@ -106,14 +106,14 @@
     }
 
     .input-box input:focus ~ label,
-    .input-box input:valid ~ label {
+    .input-box input:valid ~ label,
+    .input-box input:not(:placeholder-shown) ~ label {
         transform: translateY(-20px);
         font-size: 11px;
         color: #a259ff;
         font-family: 'Rajdhani', sans-serif;
         font-weight: 600;
         letter-spacing: 0.8px;
-        text-transform: uppercase;
     }
 
     .input-box .line {
@@ -200,21 +200,21 @@
         <h1>Đăng ký</h1>
 
         <div class="input-box">
-            <input asp-for="Email" required />
+            <input asp-for="Email" required placeholder=" " />
             <label>Email</label>
             <div class="line"></div>
         </div>
         <span asp-validation-for="Email" class="text-danger"></span>
 
         <div class="input-box">
-            <input asp-for="Password" type="password" required />
+            <input asp-for="Password" type="password" required placeholder=" " />
             <label>Mật khẩu</label>
             <div class="line"></div>
         </div>
         <span asp-validation-for="Password" class="text-danger"></span>
 
         <div class="input-box">
-            <input asp-for="ConfirmPassword" type="password" required />
+            <input asp-for="ConfirmPassword" type="password" required placeholder=" " />
             <label>Nhập lại mật khẩu</label>
             <div class="line"></div>
         </div>
