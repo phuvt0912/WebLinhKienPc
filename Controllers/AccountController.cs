@@ -20,8 +20,9 @@ namespace WebLinhKienPc.Controllers
         [HttpGet]
         public IActionResult Register()
         {
-            return View();
+            return View("Auth");
         }
+
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
@@ -58,26 +59,27 @@ namespace WebLinhKienPc.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            return View();
+            return View("Auth");
         }
-        //[HttpPost]
-        //public async Task<IActionResult> Login(LoginViewModel model)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        // Kiểm tra thông tin đăng nhập
-        //        var result = await signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: false, lockoutOnFailure: false);
-        //        if (result.Succeeded)
-        //        {
-        //            return RedirectToAction("index", "product");
-        //        }
-        //        else
-        //        {
-        //            ModelState.AddModelError("", "Thông tin đăng nhập không chính xác.");
-        //        }
-        //    }
-        //    return View(model);
-        //}
+
+        [HttpPost]
+        public async Task<IActionResult> Login(LoginViewModel model)
+        {
+            if (ModelState.IsValid)
+            {
+                // Kiểm tra thông tin đăng nhập
+                var result = await signInManager.PasswordSignInAsync(model.Email, model.Password, isPersistent: false, lockoutOnFailure: false);
+                if (result.Succeeded)
+                {
+                    return RedirectToAction("index", "product");
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Thông tin đăng nhập không chính xác.");
+                }
+            }
+            return View(model);
+        }
 
         [HttpPost]
         public async Task<IActionResult> Logout()

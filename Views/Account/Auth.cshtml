@@ -1,0 +1,298 @@
+﻿@{
+    Layout = null;
+}
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: #0d0d1a;
+        perspective: 1400px;
+    }
+
+    .auth-scene {
+        width: 460px;
+    }
+
+    .auth-scene-inner {
+        position: relative;
+    }
+
+    .auth-card {
+        width: 100%;
+        border-radius: 12px;
+        padding: 3px;
+        overflow: hidden;
+        backface-visibility: hidden;
+        transform-style: preserve-3d;
+        transition: transform 0.65s cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Login hiện mặc định */
+    .auth-card.login-card {
+        position: relative;
+        transform: rotateY(0deg);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .auth-card.register-card {
+        position: absolute;
+        top: 0; left: 0;
+        transform: rotateY(90deg);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    /* Khi show-register */
+    .auth-scene.show-register .login-card {
+        position: absolute;
+        top: 0; left: 0;
+        transform: rotateY(-90deg);
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .auth-scene.show-register .register-card {
+        position: relative;
+        transform: rotateY(0deg);
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    /* Border xoay */
+    .auth-card::before,
+    .auth-card::after {
+        content: "";
+        position: absolute;
+        width: 200%; height: 200%;
+        top: -50%; left: -50%;
+        background: conic-gradient(
+            from 0deg,
+            transparent 0deg, transparent 260deg,
+            #a259ff 290deg, #6c2bd9 320deg,
+            #00cfff 345deg, transparent 360deg
+        );
+        animation: rotateBorder 3s linear infinite;
+        z-index: 0;
+    }
+    .auth-card::after { animation-delay: -1.5s; opacity: 0.7; }
+
+    @@keyframes rotateBorder {
+        to { transform: rotate(360deg); }
+    }
+
+    .auth-card form {
+        position: relative;
+        background: #12122a;
+        padding: 44px 40px 40px;
+        border-radius: 10px;
+        display: flex;
+        flex-direction: column;
+        z-index: 2;
+    }
+
+    h1 {
+        text-align: center;
+        color: #a259ff;
+        font-size: 24px;
+        font-weight: 700;
+        font-family: 'Rajdhani', sans-serif;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        margin-bottom: 4px;
+    }
+
+    .input-box {
+        position: relative;
+        width: 100%;
+        margin-top: 32px;
+    }
+
+    .input-box input {
+        width: 100%;
+        height: 50px;
+        padding: 18px 0 8px;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: #e8e8ff;
+        font-size: 15px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .input-box label {
+        position: absolute;
+        left: 0; top: 0;
+        padding: 14px 0;
+        color: #6a6a9a;
+        font-size: 15px;
+        font-family: 'Inter', sans-serif;
+        transition: 0.35s;
+        pointer-events: none;
+    }
+
+    .input-box input:focus ~ label,
+    .input-box input:not(:placeholder-shown) ~ label {
+        transform: translateY(-20px);
+        font-size: 11px;
+        color: #a259ff;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        letter-spacing: 0.8px;
+    }
+
+    .input-box .line {
+        position: absolute;
+        left: 0; bottom: 0;
+        width: 100%; height: 1.5px;
+        background: #2a2a4a;
+    }
+
+    .input-box .line::after {
+        content: "";
+        position: absolute;
+        left: 0; bottom: 0;
+        width: 0; height: 2px;
+        background: linear-gradient(90deg, #a259ff, #00cfff);
+        transition: 0.35s;
+    }
+
+    .input-box input:focus ~ .line::after,
+    .input-box input:not(:placeholder-shown) ~ .line::after {
+        width: 100%;
+    }
+
+    .btn {
+        border: none;
+        padding: 13px;
+        background: linear-gradient(135deg, #6c2bd9, #a259ff, #00cfff);
+        margin-top: 36px;
+        width: 100%;
+        border-radius: 6px;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        cursor: pointer;
+        color: #fff;
+        transition: opacity 0.2s;
+    }
+
+    .btn:hover { opacity: 0.85; }
+    .btn:active { opacity: 0.7; }
+
+    .text-danger {
+        font-size: 12px;
+        margin-top: 4px;
+        color: #ff4f7b;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .form-footer {
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .form-footer span {
+        color: #6a6a9a;
+        font-size: 14px;
+    }
+
+    .form-footer a {
+        color: #a259ff;
+        text-decoration: none;
+        font-weight: 600;
+        margin-left: 5px;
+        transition: color 0.2s;
+        cursor: pointer;
+    }
+
+    .form-footer a:hover { color: #00cfff; }
+</style>
+
+<div class="auth-scene" id="authScene">
+    <div class="auth-scene-inner">
+
+        <!-- CARD LOGIN -->
+        <div class="auth-card login-card">
+            <form asp-controller="Account" asp-action="Login" method="post">
+                @Html.AntiForgeryToken()
+                <h1>Đăng nhập</h1>
+
+                <div class="input-box">
+                    <input name="Email" type="email" required placeholder=" " />
+                    <label>Email</label>
+                    <div class="line"></div>
+                </div>
+
+                <div class="input-box">
+                    <input name="Password" type="password" required placeholder=" " />
+                    <label>Mật khẩu</label>
+                    <div class="line"></div>
+                </div>
+
+                <button type="submit" class="btn">Đăng nhập</button>
+
+                <div class="form-footer">
+                    <span>Chưa có tài khoản?</span>
+                    <a onclick="showRegister()">Đăng ký</a>
+                </div>
+            </form>
+        </div>
+
+        <!-- CARD REGISTER -->
+        <div class="auth-card register-card">
+            <form asp-controller="Account" asp-action="Register" method="post">
+                @Html.AntiForgeryToken()
+                <h1>Đăng ký</h1>
+
+                <div class="input-box">
+                    <input name="Email" type="email" required placeholder=" " />
+                    <label>Email</label>
+                    <div class="line"></div>
+                </div>
+
+                <div class="input-box">
+                    <input name="Password" type="password" required placeholder=" " />
+                    <label>Mật khẩu</label>
+                    <div class="line"></div>
+                </div>
+
+                <div class="input-box">
+                    <input name="ConfirmPassword" type="password" required placeholder=" " />
+                    <label>Nhập lại mật khẩu</label>
+                    <div class="line"></div>
+                </div>
+
+                <button type="submit" class="btn">Đăng ký</button>
+
+                <div class="form-footer">
+                    <span>Đã có tài khoản?</span>
+                    <a onclick="showLogin()">Đăng nhập</a>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    function showRegister() {
+        document.getElementById('authScene').classList.add('show-register');
+    }
+
+    function showLogin() {
+        document.getElementById('authScene').classList.remove('show-register');
+    }
+
+    const path = window.location.pathname.toLowerCase();
+    if (path.includes('register')) showRegister();
+</script>

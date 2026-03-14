@@ -17,6 +17,7 @@
         align-items: center;
         min-height: 100vh;
         background: #0d0d1a;
+        perspective: 1200px;
     }
 
     .wrapper {
@@ -25,6 +26,9 @@
         border-radius: 12px;
         padding: 3px;
         overflow: hidden;
+        transform-style: preserve-3d;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 0.6s ease;
     }
 
     .wrapper::before,
@@ -55,6 +59,26 @@
 
     @@keyframes animate {
         to { transform: rotate(360deg); }
+    }
+
+    @@keyframes flipInRight {
+        from {
+            transform: rotateY(-90deg) scale(0.85);
+            opacity: 0;
+        }
+        to {
+            transform: rotateY(0deg) scale(1);
+            opacity: 1;
+        }
+    }
+
+    .wrapper.flip-in {
+        animation: flipInRight 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+
+    .wrapper.flip-out {
+        transform: rotateY(90deg) scale(0.85);
+        opacity: 0;
     }
 
     .wrapper form {
@@ -194,7 +218,7 @@
     }
 
     .login-footer a:hover {
-    color: #00cfff;
+        color: #00cfff;
     }
 </style>
 
@@ -227,6 +251,31 @@
     </form>
 </div>
 
-@section Scripts {
-    <partial name="_ValidationScriptsPartial" />
-}
+<script>
+    // Flip vào khi trang load
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelector('.wrapper').classList.add('flip-in');
+    });
+
+    const link = document.querySelector('.login-footer a');
+
+    // Preload trang Register khi hover
+    link.addEventListener('mouseenter', function () {
+        const prefetch = document.createElement('link');
+        prefetch.rel = 'prefetch';
+        prefetch.href = this.href;
+        document.head.appendChild(prefetch);
+    });
+
+    // Flip out rồi chuyển trang
+    link.addEventListener('click', function (e) {
+        e.preventDefault();
+        const href = this.href;
+        const wrapper = document.querySelector('.wrapper');
+        wrapper.classList.remove('flip-in');
+        wrapper.classList.add('flip-out');
+        setTimeout(function () {
+            window.location.href = href;
+        }, 500);
+    });
+</script>
