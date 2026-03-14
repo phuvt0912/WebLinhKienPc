@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebLinhKienPc.ViewModels;
-
+using Microsoft.AspNetCore.Authorization;
 namespace WebLinhKienPc.Controllers
 {
+	[Authorize(Roles="Admin")]
 	public class AdminAccountController: Controller
 	{
 		private readonly UserManager<IdentityUser> _userManager;

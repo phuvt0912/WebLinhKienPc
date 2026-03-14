@@ -1,52 +1,52 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using WebLinhKienPc.AppDbContext;
-using WebLinhKienPc.Models;
-using WebLinhKienPc.ViewModels;
-
-public class AdminController : Controller
+namespace WebLinhKienPc.Controllers
 {
-	private readonly ApplicationDbContext _context;
-	private readonly UserManager<IdentityUser> _userManager;
-
-	public AdminController(
-		ApplicationDbContext context,
-		UserManager<IdentityUser> userManager)
+	[Authorize(Roles = "Admin")]
+	public class AdminController : Controller
 	{
-		_context = context;
-		_userManager = userManager;
-	}
+		private readonly ApplicationDbContext _context;
+		private readonly UserManager<IdentityUser> _userManager;
 
-	public IActionResult Index(string status)
-	{
-		// Query đơn hàng
-		var orders = _context.Orders.AsQueryable();
-
-		// Lọc theo trạng thái
-		if (!string.IsNullOrEmpty(status))
+		public AdminController(
+			ApplicationDbContext context,
+			UserManager<IdentityUser> userManager)
 		{
-			orders = orders.Where(o => o.Status == status);
+			_context = context;
+			_userManager = userManager;
 		}
 
-		// Thống kê dashboard
-		ViewBag.TotalRevenue = _context.Orders
-			.Where(o => o.Status == "Completed")
-			.Sum(o => (decimal?)o.TotalPrice) ?? 0;
+		public IActionResult Index(string status)
+		{
+			// Query đơn hàng
+			var orders = _context.Orders.AsQueryable();
 
-		ViewBag.ProductCount = _context.Products.Count();
+			// Lọc theo trạng thái
+			if (!string.IsNullOrEmpty(status))
+			{
+				orders = orders.Where(o => o.Status == status);
+			}
 
-		ViewBag.OrderCount = _context.Orders.Count();
+			// Thống kê dashboard
+			ViewBag.TotalRevenue = _context.Orders
+				.Where(o => o.Status == "Completed")
+				.Sum(o => (decimal?)o.TotalPrice) ?? 0;
 
-		ViewBag.UserCount = _userManager.Users.Count();
+			ViewBag.ProductCount = _context.Products.Count();
 
-		// Lấy danh sách đơn hàng mới nhất
-		var orderList = orders
-			.OrderByDescending(o => o.OrderDate)
-			.Take(10)
-			.ToList();
+			ViewBag.OrderCount = _context.Orders.Count();
 
-		return View(orderList);
+			ViewBag.UserCount = _userManager.Users.Count();
+
+			// Lấy danh sách đơn hàng mới nhất
+			var orderList = orders
+				.OrderByDescending(o => o.OrderDate)
+				.Take(10)
+				.ToList();
+
+			return View(orderList);
+		}
 	}
 }

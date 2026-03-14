@@ -2,9 +2,10 @@
 using Microsoft.EntityFrameworkCore;
 using WebLinhKienPc.AppDbContext;
 using WebLinhKienPc.Models;
-
+using Microsoft.AspNetCore.Authorization;
 namespace WebLinhKienPc.Controllers
 {
+	[Authorize(Roles = "Admin")]
 	public class AdminCategoryController : Controller
 	{
 		private readonly ApplicationDbContext _context;

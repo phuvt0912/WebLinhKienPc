@@ -1,12 +1,15 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using WebLinhKienPc.AppDbContext;
 using WebLinhKienPc.Models;
 using WebLinhKienPc.ViewModels;
+
 namespace WebLinhKienPc.Controllers
 {
+	[Authorize(Roles = "Admin")]
 	public class AdminProductController: Controller
 	{
 		private readonly ApplicationDbContext _context;
