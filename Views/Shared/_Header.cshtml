@@ -229,6 +229,67 @@
             <a asp-controller="Home" asp-action="About">Giới thiệu</a>
 
             <a asp-controller="Home" asp-action="Contact">Liên hệ</a>
+            <!--Menu quản trị dành cho admin -->
+            @if (User.IsInRole("Admin"))
+            {
+                <li class="nav-item dropdown">
+
+                    <a class="nav-link dropdown-toggle"
+                       href="#"
+                       role="button"
+                       data-bs-toggle="dropdown">
+
+                        Quản trị
+
+                    </a>
+
+                    <ul class="dropdown-menu">
+
+                        <li>
+                            <a class="dropdown-item"
+                               asp-controller="Admin"
+                               asp-action="Index">
+
+                                Dashboard
+
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               asp-controller="AdminProduct"
+                               asp-action="Index">
+
+                                Quản lý sản phẩm
+
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               asp-controller="AdminCategory"
+                               asp-action="Index">
+
+                                Quản lý danh mục
+
+                            </a>
+                        </li>
+
+                        <li>
+                            <a class="dropdown-item"
+                               asp-controller="AdminAccount"
+                               asp-action="Index">
+
+                                Quản lý tài khoản
+
+                            </a>
+                        </li>
+
+                    </ul>
+
+                </li>
+            }
+
 
         </nav>
 

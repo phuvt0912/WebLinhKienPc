@@ -1,0 +1,63 @@
+﻿@model WebLinhKienPc.ViewModels.CreateUserViewModel
+
+<h2>Tạo tài khoản</h2>
+
+<form asp-action="CreateUser" method="post">
+
+    <div asp-validation-summary="All" class="text-danger"></div>
+
+    <div class="mb-3">
+
+        <label asp-for="Email"></label>
+
+        <input asp-for="Email"
+               class="form-control" />
+
+    </div>
+
+    <div class="mb-3">
+
+        <label asp-for="Password"></label>
+
+        <input asp-for="Password"
+               class="form-control" />
+
+    </div>
+
+    <div class="mb-3">
+
+        <label asp-for="ConfirmPassword"></label>
+
+        <input asp-for="ConfirmPassword"
+               class="form-control" />
+
+    </div>
+
+    <div class="mb-3">
+
+        <label>Role</label>
+
+        <select asp-for="Role"
+                class="form-control">
+
+            @foreach (var r in ViewBag.Roles)
+            {
+                <option value="@r">@r</option>
+            }
+
+        </select>
+
+    </div>
+
+    <button class="btn btn-success">
+        Tạo tài khoản
+    </button>
+
+    <a asp-action="Users"
+       class="btn btn-secondary">
+
+        Quay lại
+
+    </a>
+
+</form>

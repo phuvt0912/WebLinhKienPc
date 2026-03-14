@@ -1,0 +1,59 @@
+﻿@using Microsoft.AspNetCore.Identity
+@model IEnumerable<IdentityUser>
+
+<h2>Quản lý tài khoản</h2>
+
+<div class="mb-3">
+    <a asp-action="CreateAccount" class="btn btn-success">
+        Tạo tài khoản
+    </a>
+    <a asp-controller="AdminAccount" asp-action="Roles" class="btn btn-success">
+        Xem quyền hạn
+    </a>
+</div>
+
+<table class="table table-bordered table-hover">
+
+    <thead class="table-dark">
+
+        <tr>
+            <th>ID</th>
+            <th>Email</th>
+            <th>UserName</th>
+            <th></th>
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @foreach (var user in Model)
+        {
+
+            <tr>
+
+                <td>@user.Id</td>
+
+                <td>@user.Email</td>
+
+                <td>@user.UserName</td>
+
+                <td>
+
+                    <a asp-action="DeleteUser"
+                       asp-route-id="@user.Id"
+                       class="btn btn-danger btn-sm">
+
+                        Xóa
+
+                    </a>
+
+                </td>
+
+            </tr>
+
+        }
+
+    </tbody>
+
+</table>
