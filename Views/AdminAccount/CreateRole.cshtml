@@ -1,0 +1,25 @@
+﻿<h2>Tạo Role</h2>
+
+<form asp-action="CreateRole" method="post">
+
+    <div class="mb-3">
+
+        <label>Tên Role</label>
+
+        <input name="roleName"
+               class="form-control" />
+
+    </div>
+
+    <button class="btn btn-success">
+        Tạo Role
+    </button>
+
+    <a asp-action="Roles"
+       class="btn btn-secondary">
+
+        Quay lại
+
+    </a>
+
+</form>

@@ -1,0 +1,55 @@
+﻿@using Microsoft.AspNetCore.Identity
+@model IEnumerable<IdentityRole>
+
+<h2>Quản lý Role</h2>
+
+<div class="mb-3">
+    <a asp-action="CreateRole" class="btn btn-success">
+        Tạo Role
+    </a>
+</div>
+
+<table class="table table-bordered table-hover">
+
+    <thead class="table-dark">
+
+        <tr>
+
+            <th>ID</th>
+            <th>Role Name</th>
+            <th></th>
+
+        </tr>
+
+    </thead>
+
+    <tbody>
+
+        @foreach (var role in Model)
+        {
+
+            <tr>
+
+                <td>@role.Id</td>
+
+                <td>@role.Name</td>
+
+                <td>
+
+                    <a asp-action="DeleteRole"
+                       asp-route-id="@role.Id"
+                       class="btn btn-danger btn-sm">
+
+                        Xóa
+
+                    </a>
+
+                </td>
+
+            </tr>
+
+        }
+
+    </tbody>
+
+</table>

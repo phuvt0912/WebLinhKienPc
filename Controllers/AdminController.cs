@@ -49,17 +49,4 @@ public class AdminController : Controller
 
 		return View(orderList);
 	}
-
-
-	public IActionResult OrderDetail(int id)
-	{
-		var order = _context.Orders
-			.Include(o => o.OrderDetails)
-			.FirstOrDefault(o => o.OrderId == id);
-
-		if (order == null)
-			return NotFound();
-
-		return View(order);
-	}
 }
