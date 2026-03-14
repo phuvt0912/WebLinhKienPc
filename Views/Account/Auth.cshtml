@@ -34,7 +34,6 @@
                     opacity 0.65s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
-    /* Login hiện mặc định */
     .auth-card.login-card {
         position: relative;
         transform: rotateY(0deg);
@@ -50,7 +49,6 @@
         pointer-events: none;
     }
 
-    /* Khi show-register */
     .auth-scene.show-register .login-card {
         position: absolute;
         top: 0; left: 0;
@@ -66,7 +64,6 @@
         pointer-events: auto;
     }
 
-    /* Border xoay */
     .auth-card::before,
     .auth-card::after {
         content: "";
@@ -118,7 +115,7 @@
     .input-box input {
         width: 100%;
         height: 50px;
-        padding: 18px 0 8px;
+        padding: 18px 24px 8px 0;
         background: transparent;
         border: none;
         outline: none;
@@ -168,6 +165,24 @@
     .input-box input:not(:placeholder-shown) ~ .line::after {
         width: 100%;
     }
+
+    /* Toggle password */
+    .toggle-pw {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 4px;
+        color: #6a6a9a;
+        transition: color 0.2s;
+        z-index: 3;
+    }
+
+    .toggle-pw:hover { color: #a259ff; }
+    .toggle-pw svg { width: 18px; height: 18px; display: block; }
 
     .btn {
         border: none;
@@ -234,9 +249,15 @@
                 </div>
 
                 <div class="input-box">
-                    <input name="Password" type="password" required placeholder=" " />
+                    <input name="Password" type="password" id="loginPw" required placeholder=" " />
                     <label>Mật khẩu</label>
                     <div class="line"></div>
+                    <button type="button" class="toggle-pw" onclick="togglePw('loginPw', this)">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </button>
                 </div>
 
                 <button type="submit" class="btn">Đăng nhập</button>
@@ -261,15 +282,27 @@
                 </div>
 
                 <div class="input-box">
-                    <input name="Password" type="password" required placeholder=" " />
+                    <input name="Password" type="password" id="regPw" required placeholder=" " />
                     <label>Mật khẩu</label>
                     <div class="line"></div>
+                    <button type="button" class="toggle-pw" onclick="togglePw('regPw', this)">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </button>
                 </div>
 
                 <div class="input-box">
-                    <input name="ConfirmPassword" type="password" required placeholder=" " />
+                    <input name="ConfirmPassword" type="password" id="regConfirm" required placeholder=" " />
                     <label>Nhập lại mật khẩu</label>
                     <div class="line"></div>
+                    <button type="button" class="toggle-pw" onclick="togglePw('regConfirm', this)">
+                        <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </button>
                 </div>
 
                 <button type="submit" class="btn">Đăng ký</button>
@@ -295,4 +328,20 @@
 
     const path = window.location.pathname.toLowerCase();
     if (path.includes('register')) showRegister();
+
+    const eyeShow = `<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+        <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+    </svg>`;
+
+    const eyeHide = `<svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M17.94 17.94A10.07 10.07 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.97 9.97 0 012.512-4.092m3.17-2.462A9.956 9.956 0 0112 5c4.477 0 8.268 2.943 9.542 7a9.966 9.966 0 01-4.293 5.411M3 3l18 18"/>
+    </svg>`;
+
+    function togglePw(inputId, btn) {
+        const input = document.getElementById(inputId);
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        btn.innerHTML = isHidden ? eyeHide : eyeShow;
+    }
 </script>
