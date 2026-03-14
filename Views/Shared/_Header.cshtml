@@ -1,24 +1,297 @@
-﻿<header>
-    <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-        <div class="container-fluid">
-            <a class="navbar-brand" asp-area="" asp-controller="Admin" asp-action="Index">WebLinhKienPc</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                    aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                <ul class="navbar-nav flex-grow-1">
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Admin" asp-action="Index">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="AdminProduct" asp-action="Index">Products</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="AdminCategory" asp-action="Index">Category</a>
-                    </li>
-                </ul>
-            </div>
+﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Http
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+@{
+    var email = User.Identity?.Name ?? "";
+    var avatar = !string.IsNullOrEmpty(email) ? email[0].ToString().ToUpper() : "?";
+
+    int cartCount = Context.Session.GetInt32("CartCount") ?? 0;
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+
+    .pc-header {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background: #0d0d1a;
+        border-bottom: 1px solid rgba(162,89,255,0.2);
+    }
+
+    .header-inner {
+        max-width: 1200px;
+        margin: auto;
+        padding: 0 24px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        gap: 32px;
+    }
+
+    a {
+        text-decoration: none !important;
+    }
+
+    /* Logo */
+
+    .pc-logo {
+        font-family: 'Rajdhani',sans-serif;
+        font-weight: 700;
+        font-size: 22px;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        background: linear-gradient(135deg,#a259ff,#00cfff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    /* Nav */
+
+    .pc-nav {
+        display: flex;
+        gap: 8px;
+        flex: 1;
+    }
+
+        .pc-nav a {
+            font-family: 'Rajdhani';
+            font-weight: 600;
+            font-size: 17px;
+            color: #8888aa;
+            padding: 8px 20px;
+            border-radius: 6px;
+        }
+
+            .pc-nav a:hover {
+                color: #fff;
+                background: rgba(162,89,255,0.12);
+            }
+
+    /* Actions */
+
+    .pc-actions {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    /* Cart */
+
+    .pc-cart {
+        position: relative;
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #aaa;
+    }
+
+        .pc-cart:hover {
+            color: #a259ff;
+            background: rgba(162,89,255,0.1);
+        }
+
+    .pc-cart-badge {
+        position: absolute;
+        top: 4px;
+        right: 4px;
+        width: 16px;
+        height: 16px;
+        background: linear-gradient(135deg,#a259ff,#00cfff);
+        border-radius: 50%;
+        font-size: 10px;
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Login button */
+
+    .pc-btn-login {
+        font-family: 'Rajdhani';
+        font-weight: 700;
+        font-size: 16px;
+        padding: 8px 18px;
+        border-radius: 6px;
+        border: 1.5px solid rgba(162,89,255,0.5);
+        color: #a259ff;
+    }
+
+        .pc-btn-login:hover {
+            background: rgba(162,89,255,0.12);
+        }
+
+    /* Avatar */
+
+    .pc-avatar-wrap {
+        position: relative;
+    }
+
+    .pc-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        background: linear-gradient(135deg,#6c2bd9,#00cfff);
+        border: none;
+        color: white;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    /* Dropdown */
+
+    .pc-dropdown {
+        opacity: 0;
+        transform: translateY(10px);
+        pointer-events: none;
+        position: absolute;
+        right: 0;
+        top: 45px;
+        background: #12122a;
+        border: 1px solid rgba(162,89,255,0.25);
+        border-radius: 10px;
+        min-width: 160px;
+        transition: .2s;
+    }
+
+    .pc-avatar-wrap:hover .pc-dropdown {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+    .pc-dropdown a {
+        display: block;
+        padding: 12px 18px;
+        color: #ccc;
+        font-size: 15px;
+    }
+
+        .pc-dropdown a:hover {
+            background: rgba(162,89,255,0.1);
+            color: white;
+        }
+
+    .divider {
+        height: 1px;
+        background: rgba(162,89,255,0.15);
+    }
+
+    .logout {
+        color: #ff4f7b;
+    }
+
+        .logout:hover {
+            background: rgba(255,79,123,0.1);
+        }
+
+</style>
+
+<header class="pc-header">
+
+    <div class="header-inner">
+
+        <!-- Logo -->
+
+        <a class="pc-logo" asp-controller="Home" asp-action="Index">
+            ⚡ LinhKienPC
+        </a>
+
+        <!-- Menu -->
+
+        <nav class="pc-nav">
+
+            <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+
+            <a asp-controller="Product" asp-action="Index">Sản phẩm</a>
+
+            <a asp-controller="Home" asp-action="About">Giới thiệu</a>
+
+            <a asp-controller="Home" asp-action="Contact">Liên hệ</a>
+
+        </nav>
+
+
+        <div class="pc-actions">
+
+            <!-- Cart -->
+            <a class="pc-cart" asp-controller="Cart" asp-action="Index" title="Giỏ hàng">
+                <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 00-16.536-1.84M7.5 14.25L5.106 5.272M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" />
+                </svg>
+                <span class="pc-cart-badge">0</span>
+            </a>
+
+
+            @if (SignInManager.IsSignedIn(User))
+            {
+
+                <div class="pc-avatar-wrap">
+
+                    <button class="pc-avatar">
+                        @avatar
+                    </button>
+
+                    <div class="pc-dropdown">
+
+                        <a asp-controller="Account" asp-action="Profile">
+                            Tài khoản
+                        </a>
+
+                        <a asp-controller="Order" asp-action="Index">
+                            Đơn hàng
+                        </a>
+
+                        @if (User.IsInRole("Admin"))
+                        {
+                            <div class="divider"></div>
+
+                            <a asp-controller="Admin" asp-action="Dashboard">
+                                Admin
+                            </a>
+                        }
+
+                        <div class="divider"></div>
+
+                        <form asp-controller="Account" asp-action="Logout" method="post">
+
+                            <button class="logout"
+                                    style="border:none;background:none;width:100%;text-align:left;padding:10px 16px">
+
+                                Đăng xuất
+
+                            </button>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            }
+            else
+            {
+
+                <a class="pc-btn-login"
+                       asp-controller="Account"
+                       asp-action="Login">
+
+                    Đăng nhập
+
+                </a>
+
+            }
+
         </div>
-    </nav>
+
+    </div>
+
 </header>
