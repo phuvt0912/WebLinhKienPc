@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using WebLinhKienPc.Models;
 
 namespace WebLinhKienPc.Controllers
@@ -26,7 +27,6 @@ namespace WebLinhKienPc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            // Kiểm tra là AJAX request không
             bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
 
             if (!ModelState.IsValid)
@@ -46,13 +46,13 @@ namespace WebLinhKienPc.Controllers
 
             if (result.Succeeded)
             {
+                await userManager.AddToRoleAsync(user, "KhachHang");
                 await signInManager.SignInAsync(user, isPersistent: false);
                 if (isAjax)
-                    return Ok(new { redirectUrl = "/Product/Index" });
+                    return Ok(new { redirectUrl = "/Home/Index" });
                 return RedirectToAction("Index", "Home");
             }
 
-            // Lấy lỗi đầu tiên từ Identity (vd: mật khẩu yếu, email đã tồn tại)
             var errorMessage = result.Errors.FirstOrDefault()?.Description
                                ?? "Đăng ký thất bại. Vui lòng thử lại.";
 
@@ -104,6 +104,48 @@ namespace WebLinhKienPc.Controllers
         {
             await signInManager.SignOutAsync();
             return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        public IActionResult LoginWithGoogle()
+        {
+            var redirectUrl = Url.Action("GoogleCallback", "Account");
+            var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
+            properties.Parameters["prompt"] = "select_account";
+            return Challenge(properties, "Google");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GoogleCallback()
+        {
+            var info = await signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+                return RedirectToAction("Login");
+
+            var result = await signInManager.ExternalLoginSignInAsync(
+                info.LoginProvider, info.ProviderKey,
+                isPersistent: false, bypassTwoFactor: true
+            );
+
+            if (result.Succeeded)
+                return RedirectToAction("Index", "Home");
+
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            if (email != null)
+            {
+                var user = await userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    user = new IdentityUser { UserName = email, Email = email };
+                    await userManager.CreateAsync(user);
+                    await userManager.AddToRoleAsync(user, "KhachHang");
+                }
+                await userManager.AddLoginAsync(user, info);
+                await signInManager.SignInAsync(user, isPersistent: false);
+                return RedirectToAction("Index", "Home");
+            }
+
+            return RedirectToAction("Login");
         }
     }
 }
