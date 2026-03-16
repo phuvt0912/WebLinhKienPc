@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebLinhKienPc.Models;
+using System.Security.Claims;
 
 namespace WebLinhKienPc.Controllers
 {
@@ -26,7 +27,6 @@ namespace WebLinhKienPc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            // Kiểm tra là AJAX request không
             bool isAjax = Request.Headers["X-Requested-With"] == "XMLHttpRequest";
 
             if (!ModelState.IsValid)
@@ -48,11 +48,10 @@ namespace WebLinhKienPc.Controllers
             {
                 await signInManager.SignInAsync(user, isPersistent: false);
                 if (isAjax)
-                    return Ok(new { redirectUrl = "/Product/Index" });
+                    return Ok(new { redirectUrl = "/Home/Index" });
                 return RedirectToAction("Index", "Home");
             }
 
-            // Lấy lỗi đầu tiên từ Identity (vd: mật khẩu yếu, email đã tồn tại)
             var errorMessage = result.Errors.FirstOrDefault()?.Description
                                ?? "Đăng ký thất bại. Vui lòng thử lại.";
 
@@ -97,6 +96,56 @@ namespace WebLinhKienPc.Controllers
             ModelState.AddModelError("", "Email hoặc mật khẩu không đúng.");
             return View("Auth", model);
         }
+
+        // ====== GOOGLE LOGIN ======
+        [HttpGet]
+        public IActionResult LoginWithGoogle()
+        {
+            var redirectUrl = Url.Action("GoogleCallback", "Account");
+            var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
+            return Challenge(properties, "Google");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GoogleCallback()
+        {
+            var info = await signInManager.GetExternalLoginInfoAsync();
+            if (info == null)
+                return RedirectToAction("Login");
+
+            // Thử đăng nhập bằng tài khoản Google đã liên kết trước đó
+            var result = await signInManager.ExternalLoginSignInAsync(
+                info.LoginProvider,
+                info.ProviderKey,
+                isPersistent: false,
+                bypassTwoFactor: true
+            );
+
+            if (result.Succeeded)
+                return RedirectToAction("Index", "Home");
+
+            // Chưa có tài khoản → tự động tạo mới
+            var email = info.Principal.FindFirstValue(ClaimTypes.Email);
+            if (email != null)
+            {
+                var user = await userManager.FindByEmailAsync(email);
+                if (user == null)
+                {
+                    user = new IdentityUser
+                    {
+                        UserName = email,
+                        Email = email
+                    };
+                    await userManager.CreateAsync(user);
+                }
+                await userManager.AddLoginAsync(user, info);
+                await signInManager.SignInAsync(user, isPersistent: false);
+                return RedirectToAction("Index", "Home");
+            }
+
+            return RedirectToAction("Login");
+        }
+        // ==========================
 
         [HttpPost]
         [ValidateAntiForgeryToken]
