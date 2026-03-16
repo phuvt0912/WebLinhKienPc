@@ -87,13 +87,14 @@
                        class="btn btn-warning btn-sm">
                         Sửa
                     </a>
-
-                    <a asp-action="DeleteProduct"
-                       asp-route-id="@p.ProductId"
-                       class="btn btn-danger btn-sm">
-                        Xóa
-                    </a>
-
+                    @if(User.IsInRole("Admin"))
+                    {
+                        <a asp-action="DeleteProduct"
+                           asp-route-id="@p.ProductId"
+                           class="btn btn-danger btn-sm">
+                            Xóa
+                        </a>
+                    }
                 </td>
 
             </tr>

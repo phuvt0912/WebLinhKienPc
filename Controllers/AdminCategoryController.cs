@@ -5,7 +5,7 @@ using WebLinhKienPc.Models;
 using Microsoft.AspNetCore.Authorization;
 namespace WebLinhKienPc.Controllers
 {
-	[Authorize(Roles = "Admin")]
+	[Authorize(Roles = "Admin, NhanVien")]
 	public class AdminCategoryController : Controller
 	{
 		private readonly ApplicationDbContext _context;

@@ -267,7 +267,7 @@
             <a asp-controller="Home" asp-action="About">Giới thiệu</a>
             <a asp-controller="Home" asp-action="Contact">Liên hệ</a>
 
-            @if (User.IsInRole("Admin"))
+            @if (User.IsInRole("Admin") || User.IsInRole("NhanVien"))
             {
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
