@@ -46,6 +46,7 @@ namespace WebLinhKienPc.Controllers
 
             if (result.Succeeded)
             {
+                await userManager.AddToRoleAsync(user, "KhachHang");
                 await signInManager.SignInAsync(user, isPersistent: false);
                 if (isAjax)
                     return Ok(new { redirectUrl = "/Home/Index" });
@@ -106,15 +107,11 @@ namespace WebLinhKienPc.Controllers
         }
 
         [HttpGet]
-        [HttpGet]
         public IActionResult LoginWithGoogle()
         {
             var redirectUrl = Url.Action("GoogleCallback", "Account");
             var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
-
-            // Luôn hiện màn hình chọn tài khoản
             properties.Parameters["prompt"] = "select_account";
-
             return Challenge(properties, "Google");
         }
 
@@ -141,6 +138,7 @@ namespace WebLinhKienPc.Controllers
                 {
                     user = new IdentityUser { UserName = email, Email = email };
                     await userManager.CreateAsync(user);
+                    await userManager.AddToRoleAsync(user, "KhachHang");
                 }
                 await userManager.AddLoginAsync(user, info);
                 await signInManager.SignInAsync(user, isPersistent: false);
