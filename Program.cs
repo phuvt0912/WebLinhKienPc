@@ -29,7 +29,37 @@ namespace WebLinhKienPc
 
             var app = builder.Build();
 
+            // Seed roles + tài khoản admin
+            using (var scope = app.Services.CreateScope())
+            {
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<IdentityUser>>();
 
+                // Tạo roles
+                string[] roles = { "Admin", "NhanVien", "KhachHang" };
+                foreach (var role in roles)
+                {
+                    if (!await roleManager.RoleExistsAsync(role))
+                        await roleManager.CreateAsync(new IdentityRole(role));
+                }
+
+                // Tạo tài khoản Admin mặc định
+                string adminEmail = "admin@admin.com";
+                string adminPassword = "Admin@123";
+
+                var adminUser = await userManager.FindByEmailAsync(adminEmail);
+                if (adminUser == null)
+                {
+                    adminUser = new IdentityUser
+                    {
+                        UserName = adminEmail,
+                        Email = adminEmail,
+                        EmailConfirmed = true
+                    };
+                    await userManager.CreateAsync(adminUser, adminPassword);
+                    await userManager.AddToRoleAsync(adminUser, "Admin");
+                }
+            }
             app.UseSession();
 
             if (!app.Environment.IsDevelopment())
