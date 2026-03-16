@@ -6,14 +6,12 @@
 @{
     var email = User.Identity?.Name ?? "";
     var avatar = !string.IsNullOrEmpty(email) ? email[0].ToString().ToUpper() : "?";
-
     int cartCount = Context.Session.GetInt32("CartCount") ?? 0;
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
-
     .pc-header {
         position: sticky;
         top: 0;
@@ -36,20 +34,16 @@
         text-decoration: none !important;
     }
 
-    /* Logo */
-
     .pc-logo {
-        font-family: 'Rajdhani',sans-serif;
+        font-family: 'Rajdhani', sans-serif;
         font-weight: 700;
         font-size: 22px;
         letter-spacing: 2px;
         text-transform: uppercase;
-        background: linear-gradient(135deg,#a259ff,#00cfff);
+        background: linear-gradient(135deg, #a259ff, #00cfff);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
-
-    /* Nav */
 
     .pc-nav {
         display: flex;
@@ -71,15 +65,12 @@
                 background: rgba(162,89,255,0.12);
             }
 
-    /* Actions */
-
     .pc-actions {
         display: flex;
         align-items: center;
         gap: 10px;
     }
 
-    /* Cart */
     .pc-cart-icon {
         font-size: 24px;
         background: linear-gradient(135deg, #a259ff, #00cfff);
@@ -98,7 +89,6 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        color: #aaa; /* Có thể bỏ dòng này vì đã dùng gradient */
     }
 
         .pc-cart:hover {
@@ -106,7 +96,7 @@
         }
 
             .pc-cart:hover .pc-cart-icon {
-                background: linear-gradient(135deg, #00cfff, #a259ff); /* Đảo gradient khi hover */
+                background: linear-gradient(135deg, #00cfff, #a259ff);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
             }
@@ -117,7 +107,7 @@
         right: 4px;
         width: 16px;
         height: 16px;
-        background: linear-gradient(135deg,#a259ff,#00cfff);
+        background: linear-gradient(135deg, #a259ff, #00cfff);
         border-radius: 50%;
         font-size: 10px;
         color: #fff;
@@ -125,8 +115,6 @@
         align-items: center;
         justify-content: center;
     }
-
-    /* Login button */
 
     .pc-btn-login {
         font-family: 'Rajdhani';
@@ -143,36 +131,54 @@
         }
 
     /* Avatar */
-
     .pc-avatar-wrap {
         position: relative;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
     }
+
+        .pc-avatar-wrap::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            height: 12px;
+        }
 
     .pc-avatar {
         width: 36px;
         height: 36px;
         border-radius: 8px;
-        background: linear-gradient(135deg,#6c2bd9,#00cfff);
+        background: linear-gradient(135deg, #6c2bd9, #00cfff);
         border: none;
         color: white;
+        font-family: 'Rajdhani', sans-serif;
         font-weight: 700;
+        font-size: 15px;
         cursor: pointer;
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     /* Dropdown */
-
     .pc-dropdown {
         opacity: 0;
         transform: translateY(10px);
         pointer-events: none;
         position: absolute;
         right: 0;
-        top: 45px;
+        top: calc(100% + 12px);
         background: #12122a;
         border: 1px solid rgba(162,89,255,0.25);
         border-radius: 10px;
-        min-width: 160px;
-        transition: .2s;
+        min-width: 200px;
+        transition: opacity 0.2s, transform 0.2s;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        z-index: 999;
     }
 
     .pc-avatar-wrap:hover .pc-dropdown {
@@ -181,11 +187,39 @@
         pointer-events: auto;
     }
 
+    /* Phần tên tài khoản đầu dropdown */
+    .pc-dropdown-header {
+        padding: 14px 18px 10px;
+        border-bottom: 1px solid rgba(162,89,255,0.15);
+    }
+
+    .pc-dropdown-name {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        color: #e8e8ff;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 164px;
+        display: block;
+    }
+
+    .pc-dropdown-role {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        color: #6a6a9a;
+        margin-top: 2px;
+        display: block;
+    }
+
     .pc-dropdown a {
         display: block;
         padding: 12px 18px;
         color: #ccc;
-        font-size: 15px;
+        font-size: 14px;
+        font-family: 'Inter', sans-serif;
+        transition: background 0.15s, color 0.15s;
     }
 
         .pc-dropdown a:hover {
@@ -193,177 +227,122 @@
             color: white;
         }
 
-    .divider {
+    .pc-divider {
         height: 1px;
         background: rgba(162,89,255,0.15);
+        margin: 4px 0;
     }
 
-    .logout {
+    .pc-logout-btn {
+        border: none;
+        background: none;
+        width: 100%;
+        text-align: left;
+        padding: 12px 18px;
         color: #ff4f7b;
+        font-size: 14px;
+        font-family: 'Inter', sans-serif;
+        cursor: pointer;
+        transition: background 0.15s, color 0.15s;
     }
 
-        .logout:hover {
+        .pc-logout-btn:hover {
             background: rgba(255,79,123,0.1);
+            color: #ff6b8a;
         }
-
 </style>
 
 <header class="pc-header">
-
     <div class="header-inner">
 
         <!-- Logo -->
-
         <a class="pc-logo" asp-controller="Home" asp-action="Index">
             ⚡ LinhKienPC
         </a>
 
         <!-- Menu -->
-
         <nav class="pc-nav">
-
             <a asp-controller="Home" asp-action="Index">Trang chủ</a>
-
             <a asp-controller="Product" asp-action="Index">Sản phẩm</a>
-
             <a asp-controller="Home" asp-action="About">Giới thiệu</a>
-
             <a asp-controller="Home" asp-action="Contact">Liên hệ</a>
-            <!--Menu quản trị dành cho admin -->
+
             @if (User.IsInRole("Admin"))
             {
                 <li class="nav-item dropdown">
-
-                    <a class="nav-link dropdown-toggle"
-                       href="#"
-                       role="button"
-                       data-bs-toggle="dropdown">
-
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
                         Quản trị
-
                     </a>
-
                     <ul class="dropdown-menu">
-
-                        <li>
-                            <a class="dropdown-item"
-                               asp-controller="Admin"
-                               asp-action="Index">
-
-                                Dashboard
-
-                            </a>
-                        </li>
-
-                        <li>
-                            <a class="dropdown-item"
-                               asp-controller="AdminProduct"
-                               asp-action="Index">
-
-                                Quản lý sản phẩm
-
-                            </a>
-                        </li>
-
-                        <li>
-                            <a class="dropdown-item"
-                               asp-controller="AdminCategory"
-                               asp-action="Index">
-
-                                Quản lý danh mục
-
-                            </a>
-                        </li>
-
-                        <li>
-                            <a class="dropdown-item"
-                               asp-controller="AdminAccount"
-                               asp-action="Index">
-
-                                Quản lý tài khoản
-
-                            </a>
-                        </li>
-
+                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index">Dashboard</a></li>
+                        <li><a class="dropdown-item" asp-controller="AdminProduct" asp-action="Index">Quản lý sản phẩm</a></li>
+                        <li><a class="dropdown-item" asp-controller="AdminCategory" asp-action="Index">Quản lý danh mục</a></li>
+                        <li><a class="dropdown-item" asp-controller="AdminAccount" asp-action="Index">Quản lý tài khoản</a></li>
                     </ul>
-
                 </li>
             }
-
-
         </nav>
 
-
+        <!-- Actions -->
         <div class="pc-actions">
 
             <!-- Cart -->
             <a class="pc-cart" asp-controller="Cart" asp-action="Index" title="Giỏ hàng">
                 <span class="pc-cart-icon">🛒</span>
-                <span class="pc-cart-badge">0</span>
+                <span class="pc-cart-badge">@cartCount</span>
             </a>
-
 
             @if (SignInManager.IsSignedIn(User))
             {
-
                 <div class="pc-avatar-wrap">
 
-                    <button class="pc-avatar">
-                        @avatar
-                    </button>
+                    <button class="pc-avatar">@avatar</button>
 
                     <div class="pc-dropdown">
 
-                        <a asp-controller="Account" asp-action="Profile">
-                            Tài khoản
-                        </a>
+                        <!-- Tên tài khoản đầu dropdown -->
+                        <div class="pc-dropdown-header">
+                            <span class="pc-dropdown-name">@email</span>
+                            <span class="pc-dropdown-role">
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <span style="color: #a259ff;">⚡ Quản trị viên</span>
+                                }
+                                else if (User.IsInRole("NhanVien"))
+                                {
+                                    <span style="color: #00cfff;">🔧 Nhân viên</span>
+                                }
+                                else
+                                {
+                                    <span style="color: #6a6a9a;">👤 Khách hàng</span>
+                                }
+                            </span>
+                        </div>
 
-                        <a asp-controller="Order" asp-action="Index">
-                            Đơn hàng
-                        </a>
+                        <a asp-controller="Account" asp-action="Profile">Tài khoản</a>
+                        <a asp-controller="Order" asp-action="Index">Đơn hàng</a>
 
                         @if (User.IsInRole("Admin"))
                         {
-                            <div class="divider"></div>
-
-                            <a asp-controller="Admin" asp-action="Dashboard">
-                                Admin
-                            </a>
+                            <div class="pc-divider"></div>
+                            <a asp-controller="Admin" asp-action="Index">Admin</a>
                         }
 
-                        <div class="divider"></div>
+                        <div class="pc-divider"></div>
 
                         <form asp-controller="Account" asp-action="Logout" method="post">
-
-                            <button class="logout"
-                                    style="border:none;background:none;width:100%;text-align:left;padding:10px 16px">
-
-                                Đăng xuất
-
-                            </button>
-
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="pc-logout-btn">Đăng xuất</button>
                         </form>
 
                     </div>
-
                 </div>
-
             }
             else
             {
-
-                <a class="pc-btn-login"
-                       asp-controller="Account"
-                       asp-action="Login">
-
-                    Đăng nhập
-
-                </a>
-
+                <a class="pc-btn-login" asp-controller="Account" asp-action="Login">Đăng nhập</a>
             }
 
         </div>
-
     </div>
-
 </header>

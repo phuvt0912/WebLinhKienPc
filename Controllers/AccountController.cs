@@ -106,10 +106,15 @@ namespace WebLinhKienPc.Controllers
         }
 
         [HttpGet]
+        [HttpGet]
         public IActionResult LoginWithGoogle()
         {
             var redirectUrl = Url.Action("GoogleCallback", "Account");
             var properties = signInManager.ConfigureExternalAuthenticationProperties("Google", redirectUrl);
+
+            // Luôn hiện màn hình chọn tài khoản
+            properties.Parameters["prompt"] = "select_account";
+
             return Challenge(properties, "Google");
         }
 
