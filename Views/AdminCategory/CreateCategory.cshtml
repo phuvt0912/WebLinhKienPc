@@ -4,16 +4,26 @@
 
 <form asp-action="CreateCategory" method="post">
 
-	<div>
-		<label>Tên</label>
-		<input asp-for="Name" class="form-control" />
-	</div>
+    ```
+    <div class="mb-3">
+        <label>Tên danh mục</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
 
-	<div>
-		<label>Mô tả</label>
-		<textarea asp-for="Description" class="form-control"></textarea>
-	</div>
+    <div class="mb-3">
+        <label>Mô tả</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
 
-	<button type="submit">Thêm</button>
+    <button class="btn btn-success">
+        Thêm danh mục
+    </button>
+
+    <a asp-action="Index" class="btn btn-secondary">
+        Quay lại
+    </a>
+    ```
 
 </form>

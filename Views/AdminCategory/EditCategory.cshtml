@@ -4,18 +4,26 @@
 
 <form asp-action="EditCategory" method="post">
 
-	<input type="hidden" asp-for="CategoryId" />
+    ```
+    <div class="mb-3">
+        <label>Tên danh mục</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
 
-	<div>
-		<label>Tên</label>
-		<input asp-for="Name" class="form-control" />
-	</div>
+    <div class="mb-3">
+        <label>Mô tả</label>
+        <textarea asp-for="Description" class="form-control"></textarea>
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
 
-	<div>
-		<label>Mô tả</label>
-		<textarea asp-for="Description" class="form-control"></textarea>
-	</div>
+    <button class="btn btn-success">
+        Thêm danh mục
+    </button>
 
-	<button type="submit">Lưu</button>
+    <a asp-action="Index" class="btn btn-secondary">
+        Quay lại
+    </a>
+    ```
 
 </form>

@@ -49,7 +49,7 @@ namespace WebLinhKienPc.Controllers
                 await signInManager.SignInAsync(user, isPersistent: false);
                 if (isAjax)
                     return Ok(new { redirectUrl = "/Product/Index" });
-                return RedirectToAction("Index", "Product");
+                return RedirectToAction("Index", "Home");
             }
 
             // Lấy lỗi đầu tiên từ Identity (vd: mật khẩu yếu, email đã tồn tại)
@@ -87,8 +87,8 @@ namespace WebLinhKienPc.Controllers
             if (result.Succeeded)
             {
                 if (isAjax)
-                    return Ok(new { redirectUrl = "/Product/Index" });
-                return RedirectToAction("Index", "Product");
+                    return Ok(new { redirectUrl = "/Home/Index" });
+                return RedirectToAction("Index", "Home");
             }
 
             if (isAjax)
@@ -103,7 +103,7 @@ namespace WebLinhKienPc.Controllers
         public async Task<IActionResult> Logout()
         {
             await signInManager.SignOutAsync();
-            return RedirectToAction("Index", "Product");
+            return RedirectToAction("Index", "Home");
         }
     }
 }

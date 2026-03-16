@@ -2,29 +2,52 @@
 
 <h2>Danh mục sản phẩm</h2>
 
-<a asp-controller="AdminCategory" asp-action="CreateCategory" class="btn btn-primary">Thêm danh mục</a>
+<a asp-controller="AdminCategory"
+   asp-action="CreateCategory"
+   class="btn btn-primary mb-3">
+    Thêm danh mục
+</a>
 
-<table class="table">
-	<thead>
-		<tr>
-			<th>ID</th>
-			<th>Tên</th>
-			<th>Mô tả</th>
-			<th>Thao tác</th>
-		</tr>
-	</thead>
+<table class="table table-bordered table-striped">
 
-	<tbody>
-		@foreach (var item in Model)
-		{
-			<tr>
-				<td>@item.CategoryId</td>
-				<td>@item.Name</td>
-				<td>@item.Description</td>
-				<td>
-					<a asp-controller="AdminCategory" asp-action="EditCategory" asp-route-id="@item.CategoryId">Sửa</a> |
-				</td>
-			</tr>
-		}
-	</tbody>
+    ```
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Tên danh mục</th>
+            <th>Mô tả</th>
+            <th width="180">Thao tác</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.CategoryId</td>
+
+                <td>@item.Name</td>
+
+                <td>@item.Description</td>
+
+                <td>
+                    <a asp-controller="AdminCategory"
+                       asp-action="EditCategory"
+                       asp-route-id="@item.CategoryId"
+                       class="btn btn-warning btn-sm">
+                        Sửa
+                    </a>
+
+                    <a asp-controller="AdminCategory"
+                       asp-action="DeleteCategory"
+                       asp-route-id="@item.CategoryId"
+                       class="btn btn-danger btn-sm">
+                        Xóa
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+    ```
+
 </table>
