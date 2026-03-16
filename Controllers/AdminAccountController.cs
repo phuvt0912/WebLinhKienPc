@@ -17,9 +17,20 @@ namespace WebLinhKienPc.Controllers
 			_roleManager = roleManager;
 		}
 
-		public IActionResult Index()
+		public async Task<IActionResult> Index()
 		{
 			var users = _userManager.Users.ToList();
+
+			var userRoles = new Dictionary<string, string>();
+
+			foreach (var user in users)
+			{
+				var roles = await _userManager.GetRolesAsync(user);
+				userRoles[user.Id] = string.Join(", ", roles);
+			}
+
+			ViewBag.UserRoles = userRoles;
+
 			return View(users);
 		}
 

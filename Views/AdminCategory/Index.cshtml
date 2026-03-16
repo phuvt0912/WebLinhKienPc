@@ -37,13 +37,16 @@
                        class="btn btn-warning btn-sm">
                         Sửa
                     </a>
+                    @if(User.IsInRole("Admin"))
+                    {
+                        <a asp-controller="AdminCategory"
+                           asp-action="DeleteCategory"
+                           asp-route-id="@item.CategoryId"
+                           class="btn btn-danger btn-sm">
+                            Xóa
+                        </a>
+                    }
 
-                    <a asp-controller="AdminCategory"
-                       asp-action="DeleteCategory"
-                       asp-route-id="@item.CategoryId"
-                       class="btn btn-danger btn-sm">
-                        Xóa
-                    </a>
                 </td>
             </tr>
         }

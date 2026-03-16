@@ -1,6 +1,10 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @model IEnumerable<IdentityUser>
 
+@{
+    var roles = ViewBag.UserRoles as Dictionary<string, string>;
+}
+
 <h2>Quản lý tài khoản</h2>
 
 <div class="mb-3">
@@ -18,6 +22,7 @@
 
         <tr>
             <th>ID</th>
+            <th>Role</th>
             <th>Email</th>
             <th>UserName</th>
             <th></th>
@@ -33,6 +38,8 @@
             <tr>
 
                 <td>@user.Id</td>
+
+                <td>@roles[user.Id]</td>
 
                 <td>@user.Email</td>
 

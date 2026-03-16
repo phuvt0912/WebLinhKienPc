@@ -9,7 +9,7 @@ using WebLinhKienPc.ViewModels;
 
 namespace WebLinhKienPc.Controllers
 {
-	[Authorize(Roles = "Admin")]
+	[Authorize(Roles = "Admin, NhanVien")]
 	public class AdminProductController: Controller
 	{
 		private readonly ApplicationDbContext _context;

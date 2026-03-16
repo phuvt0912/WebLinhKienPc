@@ -5,6 +5,7 @@ using WebLinhKienPc.Models;
 
 namespace WebLinhKienPc.Controllers
 {
+
     public class AccountController : Controller
     {
         private readonly UserManager<IdentityUser> userManager;
