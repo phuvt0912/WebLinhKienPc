@@ -101,6 +101,27 @@ namespace WebLinhKienPc.Controllers
             ViewBag.Roles = _roleManager.Roles.Select(r => r.Name).ToList();
             return View(model);
         }
+        [HttpGet]
+        public async Task<IActionResult> EditAccount(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+            return View(user);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditAccount(string id, string email, string username)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            user.Email = email;
+            user.UserName = username;
+            await _userManager.UpdateAsync(user);
+
+            return RedirectToAction("Index");
+        }
 
         // ====== ROLES ======
         [HttpGet]
@@ -142,6 +163,26 @@ namespace WebLinhKienPc.Controllers
             var users = await _userManager.GetUsersInRoleAsync(role);
             ViewBag.Role = role;
             return View(users);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> EditRole(string id)
+        {
+            var role = await _roleManager.FindByIdAsync(id);
+            if (role == null) return NotFound();
+            return View(role);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> EditRole(string id, string roleName)
+        {
+            var role = await _roleManager.FindByIdAsync(id);
+            if (role == null) return NotFound();
+
+            role.Name = roleName;
+            await _roleManager.UpdateAsync(role);
+            return RedirectToAction("Roles");
         }
     }
 }

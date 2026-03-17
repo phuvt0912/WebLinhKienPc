@@ -208,6 +208,26 @@
         align-items: center;
         flex-wrap: wrap;
     }
+    .btn-edit {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 207, 255, 0.3);
+    background: rgba(0, 207, 255, 0.08);
+    color: #00cfff;
+    text-decoration: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+    }
+
+    .btn-edit:hover {
+        background: rgba(0, 207, 255, 0.15);
+        border-color: #00cfff;
+        color: #00cfff;
+    }
 
     .btn-delete {
         font-family: 'Rajdhani', sans-serif;
@@ -349,7 +369,7 @@
         <h2 class="page-title">Quản Lý Tài Khoản</h2>
         <div class="header-actions">
             <a class="btn-add" asp-action="CreateAccount">+ Tạo tài khoản</a>
-            <a class="btn-roles" asp-action="Roles">🔐 Xem quyền hạn</a>
+            <a class="btn-roles" asp-action="Roles">🔐 Xem Chức Danh</a>
         </div>
     </div>
 
@@ -365,7 +385,7 @@
                 <th>Username</th>
                 <th>Role hiện tại</th>
                 <th>Đổi Role</th>
-                <th>Thao tác</th>
+                <th style="text-align: center;">Thao tác</th>
             </tr>
         </thead>
         <tbody>
@@ -435,8 +455,13 @@
                                 <button type="submit" class="btn-save-role">Lưu</button>
                             </form>
                         </td>
-                        <td>
-                            <div class="action-wrap">
+                        <td style="text-align: center;">
+                            <div class="action-wrap" style="justify-content: center;">
+                                <a class="btn-edit"
+                                   asp-action="EditAccount"
+                                   asp-route-id="@user.Id">
+                                    ✏️ Sửa
+                                </a>
                                 <form id="del-@user.Id" asp-action="Delete" method="post">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="userId" value="@user.Id" />

@@ -1,58 +1,441 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @model IEnumerable<IdentityRole>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
 
-<h2>Quản lý Role</h2>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
-<div class="mb-3">
-    <a asp-action="Index" class="btn btn-success">
-        Quay lại
-    </a>
-    <a asp-action="CreateRole" class="btn btn-success">
-        Tạo Role
-    </a>
+<style>
+    .page-wrap { padding: 36px 40px; }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 28px;
+    }
+
+    .page-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        color: #a259ff;
+        letter-spacing: 1px;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-add {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        background: linear-gradient(135deg, #6c2bd9, #a259ff);
+        color: #fff;
+        text-decoration: none;
+        transition: opacity 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-add:hover { opacity: 0.85; color: #fff; }
+
+    .btn-back {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #6a6a9a;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-back:hover {
+        border-color: rgba(162,89,255,0.3);
+        color: #c0c0e0;
+    }
+
+    .total-count {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #6a6a9a;
+        margin-bottom: 20px;
+    }
+
+    .total-count span { color: #a259ff; font-weight: 500; }
+
+    .role-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+    }
+
+    .role-table th {
+        text-align: left;
+        padding: 14px 18px;
+        background: rgba(162, 89, 255, 0.12);
+        color: #c490ff;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        letter-spacing: 1px;
+        font-size: 14px;
+        border-bottom: 2px solid rgba(162, 89, 255, 0.3);
+        white-space: nowrap;
+    }
+
+    .role-table td {
+        padding: 14px 18px;
+        color: #c0c0e0;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        vertical-align: middle;
+    }
+
+    .role-table tr:hover td {
+        background: rgba(162, 89, 255, 0.04);
+    }
+
+    .role-id {
+        color: #3a3a5a;
+        font-size: 11px;
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 14px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 500;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .role-badge.Admin {
+        background: rgba(162, 89, 255, 0.12);
+        border: 1px solid rgba(162, 89, 255, 0.3);
+        color: #a259ff;
+    }
+
+    .role-badge.NhanVien {
+        background: rgba(0, 207, 255, 0.1);
+        border: 1px solid rgba(0, 207, 255, 0.25);
+        color: #00cfff;
+    }
+
+    .role-badge.KhachHang {
+        background: rgba(138, 138, 170, 0.1);
+        border: 1px solid rgba(138, 138, 170, 0.2);
+        color: #aaaacc;
+    }
+
+    .role-badge.other {
+        background: rgba(255, 170, 0, 0.1);
+        border: 1px solid rgba(255, 170, 0, 0.2);
+        color: #ffaa00;
+    }
+
+    .btn-edit {
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid rgba(0, 207, 255, 0.3);
+    background: rgba(0, 207, 255, 0.08);
+    color: #00cfff;
+    text-decoration: none;
+    transition: all 0.2s;
+    white-space: nowrap;
+    }
+
+    .btn-edit:hover {
+    background: rgba(0, 207, 255, 0.15);
+    border-color: #00cfff;
+    color: #00cfff;
+    }
+
+    .btn-delete {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 13px;
+        padding: 6px 14px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 79, 123, 0.3);
+        background: rgba(255, 79, 123, 0.08);
+        color: #ff4f7b;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .btn-delete:hover {
+        background: rgba(255, 79, 123, 0.15);
+        border-color: #ff4f7b;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 48px 0;
+        color: #6a6a9a;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+    }
+
+    .empty-icon { font-size: 36px; margin-bottom: 10px; display: block; }
+
+    /* Modal */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal-box {
+        background: #12122a;
+        border: 1px solid rgba(255, 79, 123, 0.25);
+        border-radius: 14px;
+        padding: 36px 40px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+        animation: popIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @@keyframes popIn {
+        from { transform: scale(0.9); opacity: 0; }
+        to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .modal-icon { font-size: 40px; margin-bottom: 16px; }
+
+    .modal-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: #ff4f7b;
+        letter-spacing: 1px;
+        margin-bottom: 12px;
+    }
+
+    .modal-msg {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #8888aa;
+        line-height: 1.7;
+        margin-bottom: 8px;
+    }
+
+    .modal-name { color: #e8e8ff; font-weight: 500; }
+
+    .modal-note {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #ff4f7b;
+        opacity: 0.7;
+        margin-bottom: 28px;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .modal-btn-cancel {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        padding: 10px 24px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: none;
+        color: #6a6a9a;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .modal-btn-cancel:hover {
+        border-color: rgba(162,89,255,0.3);
+        color: #c0c0e0;
+    }
+
+    .modal-btn-confirm {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        text-transform: uppercase;
+        padding: 10px 24px;
+        border-radius: 8px;
+        border: none;
+        background: linear-gradient(135deg, #c0294f, #ff4f7b);
+        color: #fff;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+    .modal-btn-confirm:hover { opacity: 0.85; }
+</style>
+
+<div class="page-wrap">
+
+    <div class="page-header">
+        <h2 class="page-title">Quản Lý Chức Danh</h2>
+        <div class="header-actions">
+            <a class="btn-back" asp-action="Index">← Quay lại</a>
+            <a class="btn-add" asp-action="CreateRole">+ Tạo Chức Danh</a>
+        </div>
+    </div>
+
+    <div class="total-count">
+        Tổng cộng <span>@Model.Count()</span> role
+    </div>
+
+    <table class="role-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên Role</th>
+                <th style="text-align: center;">Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="3">
+                        <div class="empty-state">
+                            <span class="empty-icon">🔐</span>
+                            Chưa có role nào
+                        </div>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var role in Model)
+                {
+                    var badgeClass = role.Name switch
+                    {
+                        "Admin" => "Admin",
+                        "NhanVien" => "NhanVien",
+                        "KhachHang" => "KhachHang",
+                        _ => "other"
+                    };
+
+                    var roleIcon = role.Name switch
+                    {
+                        "Admin" => "⚡",
+                        "NhanVien" => "🔧",
+                        "KhachHang" => "👤",
+                        _ => "🔐"
+                    };
+
+                    <tr>
+                        <td>
+                            <span class="role-id" title="@role.Id">
+                                @role.Id[..8]...
+                            </span>
+                        </td>
+                        <td>
+                            <span class="role-badge @badgeClass">
+                                @roleIcon @role.Name
+                            </span>
+                        </td>
+                        <td style="text-align: center;">
+                            <div style="display:inline-flex;gap:8px;align-items:center;justify-content:center">
+                                <a class="btn-edit"
+                                   asp-action="EditRole"
+                                   asp-route-id="@role.Id">
+                                    ✏️ Sửa
+                                </a>
+                                <form id="del-role-@role.Id"
+                                      asp-action="DeleteRole"
+                                      method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@role.Id" />
+                                    <button type="button" class="btn-delete"
+                                            onclick="confirmDelete('@role.Id', '@role.Name')">
+                                        🗑️ Xoá
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
 </div>
 
-<table class="table table-bordered table-hover">
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-icon">🔐</div>
+        <div class="modal-title">Xác nhận xoá</div>
+        <div class="modal-msg">
+            Bạn có chắc muốn xoá role<br>
+            <span class="modal-name" id="modalName"></span>?
+        </div>
+        <div class="modal-note">Tất cả user có role này sẽ bị ảnh hưởng.</div>
+        <div class="modal-actions">
+            <button class="modal-btn-cancel" onclick="closeModal()">Huỷ</button>
+            <button class="modal-btn-confirm" onclick="submitDelete()">Xoá</button>
+        </div>
+    </div>
+</div>
 
-    <thead class="table-dark">
+<script>
+    let currentRoleId = null;
 
-        <tr>
+    function confirmDelete(id, name) {
+        currentRoleId = id;
+        document.getElementById('modalName').textContent = name;
+        document.getElementById('modalOverlay').classList.add('show');
+    }
 
-            <th>ID</th>
-            <th>Role Name</th>
-            <th></th>
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('show');
+        currentRoleId = null;
+    }
 
-        </tr>
-
-    </thead>
-
-    <tbody>
-
-        @foreach (var role in Model)
-        {
-
-            <tr>
-
-                <td>@role.Id</td>
-
-                <td>@role.Name</td>
-
-                <td>
-
-                    <a asp-action="DeleteRole"
-                       asp-route-id="@role.Id"
-                       class="btn btn-danger btn-sm">
-
-                        Xóa
-
-                    </a>
-
-                </td>
-
-            </tr>
-
+    function submitDelete() {
+        if (currentRoleId) {
+            document.getElementById('del-role-' + currentRoleId).submit();
         }
+    }
 
-    </tbody>
-
-</table>
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
+    });
+</script>
