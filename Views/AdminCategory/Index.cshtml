@@ -4,179 +4,12 @@
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-
-<style>
-    .page-wrap {
-        padding: 36px 40px;
-    }
-
-    .page-header {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 28px;
-    }
-
-    .page-title {
-        font-family: 'Rajdhani', sans-serif;
-        font-size: 26px;
-        font-weight: 700;
-        color: #a259ff;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        margin: 0;
-    }
-
-    .btn-add {
-        font-family: 'Rajdhani', sans-serif;
-        font-weight: 700;
-        font-size: 15px;
-        letter-spacing: 1px;
-        text-transform: uppercase;
-        padding: 11px 24px;
-        border-radius: 8px;
-        border: none;
-        background: linear-gradient(135deg, #6c2bd9, #a259ff);
-        color: #fff;
-        text-decoration: none;
-        transition: opacity 0.2s;
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-        .btn-add:hover {
-            opacity: 0.85;
-            color: #fff;
-        }
-
-    .total-count {
-        font-family: 'Inter', sans-serif;
-        font-size: 14px;
-        color: #6a6a9a;
-        margin-bottom: 20px;
-    }
-
-        .total-count span {
-            color: #a259ff;
-            font-weight: 500;
-        }
-
-    .cat-table {
-        width: 100%;
-        border-collapse: collapse;
-        font-family: 'Inter', sans-serif;
-        font-size: 15px;
-    }
-
-        .cat-table th {
-            text-align: left;
-            padding: 16px 20px;
-            background: rgba(162, 89, 255, 0.1);
-            color: #a259ff;
-            font-family: 'Rajdhani', sans-serif;
-            font-weight: 600;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-            font-size: 14px;
-            border-bottom: 1px solid rgba(162, 89, 255, 0.2);
-            white-space: nowrap;
-        }
-
-        .cat-table td {
-            padding: 16px 20px;
-            color: #c0c0e0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            vertical-align: middle;
-        }
-
-        .cat-table tr:hover td {
-            background: rgba(162, 89, 255, 0.05);
-        }
-
-    .cat-id {
-        color: #6a6a9a;
-        font-size: 14px;
-        width: 80px;
-    }
-
-    .cat-name {
-        font-weight: 500;
-        color: #e8e8ff;
-        font-size: 16px;
-    }
-
-    .cat-desc {
-        color: #8888aa;
-        font-size: 14px;
-    }
-
-    .action-wrap {
-        display: flex;
-        gap: 10px;
-        align-items: center;
-    }
-
-    .btn-edit {
-        font-family: 'Rajdhani', sans-serif;
-        font-weight: 600;
-        font-size: 14px;
-        letter-spacing: 0.5px;
-        padding: 8px 20px;
-        border-radius: 6px;
-        border: 1px solid rgba(0, 207, 255, 0.3);
-        background: rgba(0, 207, 255, 0.08);
-        color: #00cfff;
-        text-decoration: none;
-        transition: all 0.2s;
-        white-space: nowrap;
-    }
-
-        .btn-edit:hover {
-            background: rgba(0, 207, 255, 0.15);
-            border-color: #00cfff;
-            color: #00cfff;
-        }
-
-    .btn-delete {
-        font-family: 'Rajdhani', sans-serif;
-        font-weight: 600;
-        font-size: 14px;
-        letter-spacing: 0.5px;
-        padding: 8px 20px;
-        border-radius: 6px;
-        border: 1px solid rgba(255, 79, 123, 0.3);
-        background: rgba(255, 79, 123, 0.08);
-        color: #ff4f7b;
-        cursor: pointer;
-        transition: all 0.2s;
-        white-space: nowrap;
-    }
-
-        .btn-delete:hover {
-            background: rgba(255, 79, 123, 0.15);
-            border-color: #ff4f7b;
-        }
-
-    .empty-state {
-        text-align: center;
-        padding: 64px 0;
-        color: #6a6a9a;
-        font-family: 'Inter', sans-serif;
-        font-size: 15px;
-    }
-
-        .empty-state .empty-icon {
-            font-size: 40px;
-            margin-bottom: 12px;
-            display: block;
-        }
-</style>
+<link rel="stylesheet" href="~/css/admin-category.css" />
 
 <div class="page-wrap">
 
     <div class="page-header">
-        <h2 class="page-title">Quản lý danh mục</h2>
+        <h2 class="page-title">Quản Lý Danh Mục</h2>
         <a class="btn-add"
                asp-controller="AdminCategory"
                asp-action="CreateCategory">
@@ -229,11 +62,16 @@
                                 {
                                     <form asp-controller="AdminCategory"
                                           asp-action="DeleteCategory"
-                                          asp-route-id="@item.CategoryId"
                                           method="post"
-                                          onsubmit="return confirm('Xoá danh mục @item.Name?')">
+                                          class="delete-form"
+                                          id="form-@item.CategoryId">
                                         @Html.AntiForgeryToken()
-                                        <button type="submit" class="btn-delete">🗑️ Xoá</button>
+                                        <input type="hidden" name="id" value="@item.CategoryId" />
+                                        <button type="button"
+                                                class="btn-delete"
+                                                onclick="confirmDelete(@item.CategoryId, '@item.Name')">
+                                            🗑️ Xoá
+                                        </button>
                                     </form>
                                 }
                             </div>
@@ -245,3 +83,22 @@
     </table>
 
 </div>
+
+<!-- Modal/Thông báo xóa -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-icon">🗑️</div>
+        <div class="modal-title">Xác nhận xoá</div>
+        <div class="modal-msg">
+            Bạn có chắc muốn xoá danh mục<br>
+            <span class="modal-name" id="modalName"></span>?
+        </div>
+        <div class="modal-note">Hành động này không thể hoàn tác.</div>
+        <div class="modal-actions">
+            <button class="modal-btn-cancel" onclick="closeModal()">Huỷ</button>
+            <button class="modal-btn-confirm" onclick="submitDelete()">Xoá</button>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/admin-category.js"></script>
