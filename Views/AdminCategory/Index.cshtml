@@ -1,56 +1,247 @@
 ﻿@model IEnumerable<WebLinhKienPc.Models.Category>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
 
-<h2>Danh mục sản phẩm</h2>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
-<a asp-controller="AdminCategory"
-   asp-action="CreateCategory"
-   class="btn btn-primary mb-3">
-    Thêm danh mục
-</a>
+<style>
+    .page-wrap {
+        padding: 36px 40px;
+    }
 
-<table class="table table-bordered table-striped">
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 28px;
+    }
 
-    ```
-    <thead class="table-dark">
-        <tr>
-            <th>ID</th>
-            <th>Tên danh mục</th>
-            <th>Mô tả</th>
-            <th width="180">Thao tác</th>
-        </tr>
-    </thead>
+    .page-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        color: #a259ff;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin: 0;
+    }
 
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.CategoryId</td>
+    .btn-add {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 11px 24px;
+        border-radius: 8px;
+        border: none;
+        background: linear-gradient(135deg, #6c2bd9, #a259ff);
+        color: #fff;
+        text-decoration: none;
+        transition: opacity 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
 
-                <td>@item.Name</td>
-
-                <td>@item.Description</td>
-
-                <td>
-                    <a asp-controller="AdminCategory"
-                       asp-action="EditCategory"
-                       asp-route-id="@item.CategoryId"
-                       class="btn btn-warning btn-sm">
-                        Sửa
-                    </a>
-                    @if(User.IsInRole("Admin"))
-                    {
-                        <a asp-controller="AdminCategory"
-                           asp-action="DeleteCategory"
-                           asp-route-id="@item.CategoryId"
-                           class="btn btn-danger btn-sm">
-                            Xóa
-                        </a>
-                    }
-
-                </td>
-            </tr>
+        .btn-add:hover {
+            opacity: 0.85;
+            color: #fff;
         }
-    </tbody>
-    ```
 
-</table>
+    .total-count {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #6a6a9a;
+        margin-bottom: 20px;
+    }
+
+        .total-count span {
+            color: #a259ff;
+            font-weight: 500;
+        }
+
+    .cat-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Inter', sans-serif;
+        font-size: 15px;
+    }
+
+        .cat-table th {
+            text-align: left;
+            padding: 16px 20px;
+            background: rgba(162, 89, 255, 0.1);
+            color: #a259ff;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
+            font-size: 14px;
+            border-bottom: 1px solid rgba(162, 89, 255, 0.2);
+            white-space: nowrap;
+        }
+
+        .cat-table td {
+            padding: 16px 20px;
+            color: #c0c0e0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            vertical-align: middle;
+        }
+
+        .cat-table tr:hover td {
+            background: rgba(162, 89, 255, 0.05);
+        }
+
+    .cat-id {
+        color: #6a6a9a;
+        font-size: 14px;
+        width: 80px;
+    }
+
+    .cat-name {
+        font-weight: 500;
+        color: #e8e8ff;
+        font-size: 16px;
+    }
+
+    .cat-desc {
+        color: #8888aa;
+        font-size: 14px;
+    }
+
+    .action-wrap {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
+
+    .btn-edit {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        padding: 8px 20px;
+        border-radius: 6px;
+        border: 1px solid rgba(0, 207, 255, 0.3);
+        background: rgba(0, 207, 255, 0.08);
+        color: #00cfff;
+        text-decoration: none;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+        .btn-edit:hover {
+            background: rgba(0, 207, 255, 0.15);
+            border-color: #00cfff;
+            color: #00cfff;
+        }
+
+    .btn-delete {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.5px;
+        padding: 8px 20px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 79, 123, 0.3);
+        background: rgba(255, 79, 123, 0.08);
+        color: #ff4f7b;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+        .btn-delete:hover {
+            background: rgba(255, 79, 123, 0.15);
+            border-color: #ff4f7b;
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 64px 0;
+        color: #6a6a9a;
+        font-family: 'Inter', sans-serif;
+        font-size: 15px;
+    }
+
+        .empty-state .empty-icon {
+            font-size: 40px;
+            margin-bottom: 12px;
+            display: block;
+        }
+</style>
+
+<div class="page-wrap">
+
+    <div class="page-header">
+        <h2 class="page-title">Quản lý danh mục</h2>
+        <a class="btn-add"
+               asp-controller="AdminCategory"
+               asp-action="CreateCategory">
+            + Thêm danh mục
+        </a>
+    </div>
+
+    <div class="total-count">
+        Tổng cộng <span>@Model.Count()</span> danh mục
+    </div>
+
+    <table class="cat-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Tên danh mục</th>
+                <th>Mô tả</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="4">
+                        <div class="empty-state">
+                            <span class="empty-icon">📂</span>
+                            Chưa có danh mục nào
+                        </div>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="cat-id">#@item.CategoryId</td>
+                        <td class="cat-name">@item.Name</td>
+                        <td class="cat-desc">@(item.Description ?? "—")</td>
+                        <td>
+                            <div class="action-wrap">
+                                <a class="btn-edit"
+                                       asp-controller="AdminCategory"
+                                       asp-action="EditCategory"
+                                       asp-route-id="@item.CategoryId">
+                                    ✏️ Sửa
+                                </a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <form asp-controller="AdminCategory"
+                                          asp-action="DeleteCategory"
+                                          asp-route-id="@item.CategoryId"
+                                          method="post"
+                                          onsubmit="return confirm('Xoá danh mục @item.Name?')">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn-delete">🗑️ Xoá</button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+</div>
