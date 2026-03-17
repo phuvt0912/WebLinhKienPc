@@ -155,16 +155,19 @@
                    value="@Model.Email"
                    placeholder="user@example.com"
                    autocomplete="off" />
-            <span class="field-note">Đổi email sẽ đồng thời đổi username.</span>
         </div>
 
         <div class="divider"></div>
 
-        <!-- ID (readonly) -->
+        <!-- Username -->
         <div class="field">
-            <label>ID tài khoản</label>
-            <input type="text" value="@Model.Id" disabled />
-            <span class="field-note">Không thể thay đổi.</span>
+            <label>Username <span style="color:#ff4f7b">*</span></label>
+            <input type="text"
+                   name="username"
+                   value="@Model.UserName"
+                   placeholder="Nhập username hiển thị..."
+                   autocomplete="off" />
+            <span class="field-note">Username sẽ hiển thị trên giao diện thay vì email.</span>
         </div>
 
         <div class="form-actions">

@@ -4,8 +4,10 @@
 @inject UserManager<IdentityUser> UserManager
 
 @{
-    var email = User.Identity?.Name ?? "";
-    var avatar = !string.IsNullOrEmpty(email) ? email[0].ToString().ToUpper() : "?";
+    var currentUser = await UserManager.GetUserAsync(User);
+    var displayName = currentUser?.UserName ?? User.Identity?.Name ?? "";
+    var avatar = !string.IsNullOrEmpty(displayName) ? displayName[0].ToString().ToUpper() : "?";
+    var displayEmail = currentUser?.Email ?? "";
     int cartCount = Context.Session.GetInt32("CartCount") ?? 0;
 }
 
@@ -305,7 +307,7 @@
 
                         <!-- Tên tài khoản đầu dropdown -->
                         <div class="pc-dropdown-header">
-                            <span class="pc-dropdown-name">@email</span>
+                            <span class="pc-dropdown-name">@displayName</span>
                             <span class="pc-dropdown-role">
                                 @if (User.IsInRole("Admin"))
                                 {
