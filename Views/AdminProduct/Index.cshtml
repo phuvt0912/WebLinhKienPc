@@ -36,39 +36,39 @@
     .filter-input::placeholder { color: #3a3a5a; }
 
     .filter-select {
-    background: #12122a;
-    border: 1px solid rgba(162, 89, 255, 0.2);
-    border-radius: 8px;
-    padding: 10px 36px 10px 16px;
-    color: #e8e8ff;
-    font-family: 'Inter', sans-serif;
-    font-size: 14px;
-    outline: none;
-    cursor: pointer;
-    transition: border-color 0.2s, box-shadow 0.2s;
-    min-width: 180px;
-    appearance: none;
-    -webkit-appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a259ff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 14px center;
-}
+        background: #12122a;
+        border: 1px solid rgba(162, 89, 255, 0.2);
+        border-radius: 8px;
+        padding: 10px 36px 10px 16px;
+        color: #e8e8ff;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        outline: none;
+        cursor: pointer;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        min-width: 180px;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a259ff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+    }
 
-.filter-select:focus {
-    border-color: #a259ff;
-    box-shadow: 0 0 0 3px rgba(162, 89, 255, 0.1);
-}
+    .filter-select:focus {
+        border-color: #a259ff;
+        box-shadow: 0 0 0 3px rgba(162, 89, 255, 0.1);
+    }
 
-.filter-select option {
-    background: #12122a;
-    color: #e8e8ff;
-    padding: 8px;
-}
+    .filter-select option {
+        background: #12122a;
+        color: #e8e8ff;
+        padding: 8px;
+    }
 
-.filter-select option:checked {
-    background: rgba(162, 89, 255, 0.3);
-    color: #a259ff;
-}
+    .filter-select option:checked {
+        background: rgba(162, 89, 255, 0.3);
+        color: #a259ff;
+    }
 
     .btn-filter {
         font-family: 'Rajdhani', sans-serif;
@@ -96,11 +96,22 @@
         border-collapse: collapse;
         font-family: 'Inter', sans-serif;
         font-size: 14px;
+        table-layout: fixed; /* Quan trọng: fix độ rộng các cột */
     }
 
+    /* Đặt độ rộng cho từng cột */
+    .prod-table th:nth-child(1) { width: 8%; }   /* ID */
+    .prod-table th:nth-child(2) { width: 8%; }   /* Ảnh */
+    .prod-table th:nth-child(3) { width: 27%; }  /* Tên Sản Phẩm */
+    .prod-table th:nth-child(4) { width: 12%; }  /* Danh Mục */
+    .prod-table th:nth-child(5) { width: 15%; }  /* Giá */
+    .prod-table th:nth-child(6) { width: 10%; }  /* Tồn Kho */
+    .prod-table th:nth-child(7) { width: 20%; }  /* Thao Tác */
+
+    /* Header căn giữa */
     .prod-table th {
-        text-align: left;
-        padding: 16px 20px;
+        text-align: center;
+        padding: 16px 10px;
         background: rgba(162, 89, 255, 0.12);
         color: #c490ff;
         font-family: 'Rajdhani', sans-serif;
@@ -113,28 +124,40 @@
     }
 
     .prod-table td {
-        padding: 14px 20px;
+        padding: 14px 10px;
         color: #c0c0e0;
         border-bottom: 1px solid rgba(255,255,255,0.05);
         vertical-align: middle;
     }
 
+    /* Căn chỉnh nội dung từng cột */
+    .prod-table td:nth-child(1) { text-align: center; } /* ID */
+    .prod-table td:nth-child(2) { text-align: center; } /* Ảnh */
+    .prod-table td:nth-child(3) { text-align: left; }   /* Tên sản phẩm */
+    .prod-table td:nth-child(4) { text-align: center; } /* Danh mục */
+    .prod-table td:nth-child(5) { text-align: right; padding-right: 20px; } /* Giá */
+    .prod-table td:nth-child(6) { text-align: center; } /* Tồn kho */
+    .prod-table td:nth-child(7) { text-align: center; } /* Thao tác */
+
     .prod-table tr:hover td {
         background: rgba(162, 89, 255, 0.04);
     }
 
+    /* Ảnh sản phẩm */
     .prod-img {
-        width: 56px;
-        height: 56px;
+        width: 50px;
+        height: 50px;
         object-fit: cover;
         border-radius: 6px;
         border: 1px solid rgba(162, 89, 255, 0.2);
         background: #1a1a35;
+        display: block;
+        margin: 0 auto; /* Căn giữa ảnh */
     }
 
     .prod-img-empty {
-        width: 56px;
-        height: 56px;
+        width: 50px;
+        height: 50px;
         border-radius: 6px;
         border: 1px solid rgba(162, 89, 255, 0.15);
         background: #1a1a35;
@@ -143,31 +166,43 @@
         justify-content: center;
         font-size: 20px;
         color: #3a3a5a;
+        margin: 0 auto; /* Căn giữa */
     }
 
-    .prod-id { color: #6a6a9a; font-size: 13px; }
+    .prod-id { 
+        color: #6a6a9a; 
+        font-size: 13px;
+        font-weight: 500;
+    }
 
+    /* Giới hạn độ dài tên sản phẩm */
     .prod-name {
         font-weight: 500;
         color: #e8e8ff;
         font-size: 15px;
-        max-width: 240px;
+        max-width: 100%;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: block;
+        padding-right: 5px;
     }
 
     .prod-category {
         display: inline-block;
-        padding: 3px 10px;
+        padding: 4px 12px;
         background: rgba(162, 89, 255, 0.1);
         border: 1px solid rgba(162, 89, 255, 0.2);
-        border-radius: 4px;
+        border-radius: 20px;
         color: #a259ff;
         font-size: 13px;
+        font-weight: 500;
         white-space: nowrap;
     }
 
     .prod-price {
         color: #00cfff;
-        font-weight: 500;
+        font-weight: 600;
         white-space: nowrap;
     }
 
@@ -176,29 +211,50 @@
         white-space: nowrap;
     }
 
-    .stock-ok { color: #4cdf8a; }
-    .stock-low { color: #ffaa00; }
-    .stock-out { color: #ff4f7b; }
+    .stock-ok { 
+        color: #4cdf8a;
+        font-weight: 600;
+        background: rgba(76, 223, 138, 0.1);
+        padding: 4px 8px;
+        border-radius: 20px;
+    }
+    .stock-low { 
+        color: #ffaa00;
+        font-weight: 600;
+        background: rgba(255, 170, 0, 0.1);
+        padding: 4px 8px;
+        border-radius: 20px;
+    }
+    .stock-out { 
+        color: #ff4f7b;
+        font-weight: 600;
+        background: rgba(255, 79, 123, 0.1);
+        padding: 4px 8px;
+        border-radius: 20px;
+    }
 
     .action-wrap {
         display: flex;
-        gap: 8px;
+        gap: 6px;
         align-items: center;
+        justify-content: center;
     }
 
     .btn-edit {
         font-family: 'Rajdhani', sans-serif;
         font-weight: 600;
-        font-size: 13px;
+        font-size: 12px;
         letter-spacing: 0.5px;
-        padding: 7px 16px;
-        border-radius: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
         border: 1px solid rgba(0, 207, 255, 0.3);
         background: rgba(0, 207, 255, 0.08);
         color: #00cfff;
         text-decoration: none;
         transition: all 0.2s;
         white-space: nowrap;
+        min-width: 55px;
+        text-align: center;
     }
 
     .btn-edit:hover {
@@ -210,16 +266,19 @@
     .btn-delete {
         font-family: 'Rajdhani', sans-serif;
         font-weight: 600;
-        font-size: 13px;
+        font-size: 12px;
         letter-spacing: 0.5px;
-        padding: 7px 16px;
-        border-radius: 6px;
+        padding: 6px 14px;
+        border-radius: 20px;
         border: 1px solid rgba(255, 79, 123, 0.3);
         background: rgba(255, 79, 123, 0.08);
         color: #ff4f7b;
         cursor: pointer;
         transition: all 0.2s;
         white-space: nowrap;
+        min-width: 55px;
+        text-align: center;
+        border: none;
     }
 
     .btn-delete:hover {
@@ -330,7 +389,6 @@
 </style>
 
 <div class="page-wrap">
-
     <div class="page-header">
         <h2 class="page-title">Quản Lý Sản Phẩm</h2>
         <a class="btn-add" asp-action="CreateProduct">+ Thêm sản phẩm</a>
@@ -357,11 +415,11 @@
             <button type="submit" class="btn-filter">🔍 Lọc</button>
 
             @if (!string.IsNullOrEmpty(Model.Keyword) || Model.CategoryId != null)
-                {
-                    <a asp-action="Index" class="btn-filter" style="border-color:rgba(255,79,123,0.3);color:#ff4f7b;text-decoration:none">
-                        ✕ Xoá lọc
-                    </a>
-                }
+            {
+                <a asp-action="Index" class="btn-filter" style="border-color:rgba(255,79,123,0.3);color:#ff4f7b;text-decoration:none">
+                    ✕ Xoá lọc
+                </a>
+            }
         </div>
     </form>
 
@@ -406,7 +464,9 @@
                                 <div class="prod-img-empty">📷</div>
                             }
                         </td>
-                        <td class="prod-name">@p.Name</td>
+                        <td>
+                            <span class="prod-name" title="@p.Name">@p.Name</span>
+                        </td>
                         <td>
                             @if (p.Category != null)
                             {
@@ -436,7 +496,8 @@
                                 {
                                     <form asp-action="DeleteProduct"
                                           method="post"
-                                          id="form-@p.ProductId">
+                                          id="form-@p.ProductId"
+                                          style="display: inline;">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@p.ProductId" />
                                         <button type="button"

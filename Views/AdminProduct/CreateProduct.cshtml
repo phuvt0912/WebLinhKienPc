@@ -271,45 +271,40 @@
     .char-count.over { color: #ff4f7b; }
 
     /* Bỏ mũi tên tăng/giảm cho input number */
-input[type=number]::-webkit-outer-spin-button,
-input[type=number]::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
 
-input[type=number] {
-    -moz-appearance: textfield; /* Firefox */
-    appearance: textfield;
-}
+    input[type=number] {
+        -moz-appearance: textfield;
+        appearance: textfield;
+    }
 </style>
 
 <div class="form-wrap">
-
     <div class="page-header">
         <h2 class="page-title">Thêm Sản Phẩm</h2>
         <p class="page-sub">Điền thông tin để tạo sản phẩm mới</p>
     </div>
 
-    <form asp-action="CreateProduct" method="post"
-          enctype="multipart/form-data" id="createForm">
+    <form asp-action="CreateProduct" method="post" enctype="multipart/form-data" id="createForm">
         @Html.AntiForgeryToken()
 
         <div class="form-grid">
-
             <!-- Tên sản phẩm -->
             <div class="field full">
                 <div class="field-header">
                     <label>Tên sản phẩm <span style="color:#ff4f7b">*</span></label>
                 </div>
-                <input asp-for="Name"
-                       placeholder="VD: Intel Core i9-14900K..."
-                       autocomplete="off" />
+                <input asp-for="Name" placeholder="VD: Intel Core i9-14900K..." autocomplete="off" />
                 <span asp-validation-for="Name" class="text-danger"></span>
             </div>
 
             <div class="divider"></div>
 
-            <!-- Giá - Đã sửa thành type="text" để format được -->
+            <!-- Giá -->
             <div class="field">
                 <div class="field-header">
                     <label>Giá (VNĐ) <span style="color:#ff4f7b">*</span></label>
@@ -319,7 +314,8 @@ input[type=number] {
                        inputmode="numeric"
                        pattern="[0-9.]*"
                        min="0" 
-                       placeholder="VD: 12.500.000" />
+                       placeholder="VD: 12.500.000"
+                       id="priceInput" />
                 <span asp-validation-for="Price" class="text-danger"></span>
             </div>
 
@@ -350,14 +346,8 @@ input[type=number] {
                 </div>
 
                 <div class="img-tabs">
-                    <button type="button" class="img-tab active"
-                            onclick="switchTab('url', this)">
-                        🔗 URL
-                    </button>
-                    <button type="button" class="img-tab"
-                            onclick="switchTab('file', this)">
-                        📁 Tải lên
-                    </button>
+                    <button type="button" class="img-tab active" onclick="switchTab('url', this)">🔗 URL</button>
+                    <button type="button" class="img-tab" onclick="switchTab('file', this)">📁 Tải lên</button>
                 </div>
 
                 <!-- Tab URL -->
@@ -369,19 +359,18 @@ input[type=number] {
                            autocomplete="off" />
                 </div>
 
-                <!-- Tab File -->
+                <!-- Tab File (ĐÃ SỬA) -->
                 <div id="tab-file" style="display:none">
-                    <label class="upload-area" id="uploadArea">
-                        <input type="file"
-                               name="imageFile"
-                               id="imageFileInput"
-                               accept="image/*"
-                               style="display:none"
-                               onchange="previewFile(this)" />
+                    <div class="upload-area" id="uploadArea">
                         <span class="upload-icon">📁</span>
                         <span class="upload-text">Kéo thả hoặc click để chọn ảnh</span>
                         <span class="upload-sub">PNG, JPG, WEBP — tối đa 5MB</span>
-                    </label>
+                    </div>
+                    <input type="file"
+                           name="imageFile"
+                           id="imageFileInput"
+                           accept="image/*"
+                           style="display:none" />
                 </div>
 
                 <!-- Preview -->
@@ -408,49 +397,48 @@ input[type=number] {
 
             <!-- Actions -->
             <div class="form-actions">
-                <button type="submit" class="btn-submit" id="submitBtn">
-                    + Thêm sản phẩm
-                </button>
+                <button type="submit" class="btn-submit" id="submitBtn">+ Thêm sản phẩm</button>
                 <a asp-action="Index" class="btn-back">← Quay lại</a>
             </div>
-
         </div>
+        <!-- Hiển thị lỗi tổng quát nếu có -->
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger" style="background: rgba(255, 79, 123, 0.1); border: 1px solid #ff4f7b; color: #ff4f7b; padding: 12px; border-radius: 8px; margin-top: 20px; grid-column: 1 / -1;">
+                <strong>Vui lòng kiểm tra lại:</strong>
+                <ul style="margin-top: 8px; margin-bottom: 0;">
+                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <li>@error.ErrorMessage</li>
+                    }
+                </ul>
+            </div>
+        }
     </form>
 </div>
 
 <script>
     // ===== FORMAT GIÁ TIỀN =====
-    const priceInput = document.querySelector('input[name="Price"]');
+    const priceInput = document.getElementById('priceInput');
     if (priceInput) {
-        // Xử lý sự kiện input để format số
         priceInput.addEventListener('input', function(e) {
-            // Lưu vị trí cursor hiện tại
             const cursorPos = this.selectionStart;
-            
-            // Lấy giá trị hiện tại, loại bỏ tất cả ký tự không phải số
             let rawValue = this.value.replace(/\./g, '');
             
-            // Nếu không có số, để trống
             if (!rawValue) {
                 this.value = '';
                 return;
             }
             
-            // Đếm số chữ số trước cursor (trước khi format)
             const textBeforeCursor = this.value.substring(0, cursorPos);
             const digitsBeforeCursor = textBeforeCursor.replace(/\./g, '').length;
             
-            // Format số với dấu . phân cách hàng nghìn
             const formattedValue = Number(rawValue).toLocaleString('vi-VN');
-            
-            // Gán giá trị đã format
             this.value = formattedValue;
             
-            // Tính vị trí cursor mới sau khi format
             let newCursorPos = 0;
             let digitCount = 0;
             
-            // Duyệt qua chuỗi đã format để tìm vị trí tương ứng
             for (let i = 0; i < formattedValue.length; i++) {
                 if (formattedValue[i] >= '0' && formattedValue[i] <= '9') {
                     digitCount++;
@@ -461,39 +449,26 @@ input[type=number] {
                 }
             }
             
-            // Nếu không tìm thấy, đặt cursor ở cuối
-            if (newCursorPos === 0) {
-                newCursorPos = formattedValue.length;
-            }
-            
-            // Đặt lại vị trí cursor
+            if (newCursorPos === 0) newCursorPos = formattedValue.length;
             this.setSelectionRange(newCursorPos, newCursorPos);
         });
 
-        // Xử lý phím Backspace đặc biệt
         priceInput.addEventListener('keydown', function(e) {
             if (e.key === 'Backspace') {
                 const cursorPos = this.selectionStart;
                 const value = this.value;
                 
-                // Nếu cursor đang ở ngay sau dấu . và không có selection
                 if (cursorPos > 0 && value[cursorPos - 1] === '.' && this.selectionStart === this.selectionEnd) {
                     e.preventDefault();
                     
-                    // Tìm vị trí số trước dấu .
                     let newPos = cursorPos - 1;
                     while (newPos > 0 && value[newPos - 1] === '.') {
                         newPos--;
                     }
                     
-                    // Tạo giá trị mới
                     const newValue = value.substring(0, newPos) + value.substring(cursorPos);
                     this.value = newValue;
-                    
-                    // Đặt cursor ở vị trí mới
                     this.setSelectionRange(newPos, newPos);
-                    
-                    // Trigger input event để format lại
                     this.dispatchEvent(new Event('input'));
                 }
             }
@@ -501,32 +476,36 @@ input[type=number] {
     }
 
     // ===== XỬ LÝ SUBMIT =====
-    document.getElementById('createForm').addEventListener('submit', function () {
-        const priceInput = document.querySelector('input[name="Price"]');
+    document.getElementById('createForm').addEventListener('submit', function() {
+        const priceInput = document.getElementById('priceInput');
         if (priceInput) {
-            // Loại bỏ dấu . trước khi submit để gửi số nguyên
             priceInput.value = priceInput.value.replace(/\./g, '');
         }
         
-        // Disable button để tránh submit nhiều lần
         const btn = document.getElementById('submitBtn');
         btn.textContent = 'Đang lưu...';
         btn.disabled = true;
     });
 
-    // ===== CHUYỂN TAB URL / FILE =====
+    // ===== CHUYỂN TAB =====
     function switchTab(tab, btn) {
         document.querySelectorAll('.img-tab').forEach(t => t.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById('tab-url').style.display = tab === 'url' ? 'block' : 'none';
         document.getElementById('tab-file').style.display = tab === 'file' ? 'block' : 'none';
         clearImage();
+        
+        if (tab === 'file') {
+            const fileInput = document.getElementById('imageFileInput');
+            if (fileInput) fileInput.value = '';
+        }
     }
 
     // ===== PREVIEW IMAGE TỪ URL =====
     function previewImage(url) {
         const wrap = document.getElementById('imgPreviewWrap');
         const img = document.getElementById('imgPreview');
+        
         if (url && url.trim()) {
             img.src = url.trim();
             img.onload = () => wrap.classList.add('show');
@@ -546,14 +525,12 @@ input[type=number] {
         
         const file = input.files[0];
         
-        // Kiểm tra kích thước file
         if (file.size > 5 * 1024 * 1024) {
             alert('Ảnh không được vượt quá 5MB');
             input.value = '';
             return;
         }
         
-        // Kiểm tra định dạng file
         if (!file.type.startsWith('image/')) {
             alert('Vui lòng chọn file ảnh');
             input.value = '';
@@ -567,7 +544,6 @@ input[type=number] {
             img.src = e.target.result;
             wrap.classList.add('show');
             
-            // Hiển thị tên file
             const uploadText = document.querySelector('.upload-text');
             if (uploadText) {
                 uploadText.textContent = file.name.length > 30 ? file.name.substring(0, 27) + '...' : file.name;
@@ -597,10 +573,28 @@ input[type=number] {
         }
     }
 
-    // ===== DRAG & DROP =====
+    // ===== DRAG & DROP (ĐÃ SỬA) =====
     const uploadArea = document.getElementById('uploadArea');
-    if (uploadArea) {
-        // Prevent default drag behaviors
+    const fileInput = document.getElementById('imageFileInput');
+
+    if (uploadArea && fileInput) {
+        // Click để mở file dialog
+        uploadArea.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            fileInput.click();
+        });
+
+        // Xử lý khi chọn file
+        fileInput.addEventListener('change', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            if (this.files && this.files[0]) {
+                previewFile(this);
+            }
+        });
+
+        // Xử lý drag & drop
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             uploadArea.addEventListener(eventName, preventDefaults, false);
         });
@@ -610,46 +604,28 @@ input[type=number] {
             e.stopPropagation();
         }
 
-        // Highlight drop area khi kéo file vào
-        uploadArea.addEventListener('dragenter', () => {
-            uploadArea.classList.add('dragover');
-        });
+        uploadArea.addEventListener('dragenter', () => uploadArea.classList.add('dragover'));
+        uploadArea.addEventListener('dragover', () => uploadArea.classList.add('dragover'));
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
 
-        uploadArea.addEventListener('dragover', () => {
-            uploadArea.classList.add('dragover');
-        });
-
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
-
-        // Xử lý drop file
         uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
             uploadArea.classList.remove('dragover');
             
             const file = e.dataTransfer.files[0];
             if (file && file.type.startsWith('image/')) {
-                const fileInput = document.getElementById('imageFileInput');
-                
-                // Gán file vào input
                 const dt = new DataTransfer();
                 dt.items.add(file);
                 fileInput.files = dt.files;
-                
-                // Preview file
                 previewFile(fileInput);
             } else {
                 alert('Vui lòng thả file ảnh');
             }
         });
-
-        // Click vào upload area để mở file dialog
-        uploadArea.addEventListener('click', () => {
-            document.getElementById('imageFileInput').click();
-        });
     }
 
-    // ===== ĐẾM KÝ TỰ MÔ TẢ =====
+    // ===== ĐẾM KÝ TỰ =====
     function updateCharCount(val) {
         const el = document.getElementById('charCount');
         const len = val.length;
@@ -662,16 +638,10 @@ input[type=number] {
 
     // ===== KHỞI TẠO =====
     document.addEventListener('DOMContentLoaded', function() {
-        // Khởi tạo char count nếu có giá trị mặc định
         const descArea = document.querySelector('textarea[name="Description"]');
-        if (descArea && descArea.value) {
-            updateCharCount(descArea.value);
-        }
+        if (descArea && descArea.value) updateCharCount(descArea.value);
         
-        // Focus vào ô tên sản phẩm
         const nameInput = document.querySelector('input[name="Name"]');
-        if (nameInput) {
-            nameInput.focus();
-        }
+        if (nameInput) nameInput.focus();
     });
 </script>
