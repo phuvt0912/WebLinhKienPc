@@ -1,134 +1,147 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebLinhKienPc.ViewModels;
-using Microsoft.AspNetCore.Authorization;
+
 namespace WebLinhKienPc.Controllers
 {
-	[Authorize(Roles="Admin")]
-	public class AdminAccountController: Controller
-	{
-		private readonly UserManager<IdentityUser> _userManager;
-		private readonly RoleManager<IdentityRole> _roleManager;
+    [Authorize(Roles = "Admin")]
+    public class AdminAccountController : Controller
+    {
+        private readonly UserManager<IdentityUser> _userManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
 
-		public AdminAccountController(UserManager<IdentityUser> userManager,
-							   RoleManager<IdentityRole> roleManager)
-		{
-			_userManager = userManager;
-			_roleManager = roleManager;
-		}
+        public AdminAccountController(
+            UserManager<IdentityUser> userManager,
+            RoleManager<IdentityRole> roleManager)
+        {
+            _userManager = userManager;
+            _roleManager = roleManager;
+        }
 
-		public async Task<IActionResult> Index()
-		{
-			var users = _userManager.Users.ToList();
+        public async Task<IActionResult> Index()
+        {
+            var users = _userManager.Users.ToList();
+            var userRoles = new Dictionary<string, string>();
 
-			var userRoles = new Dictionary<string, string>();
+            foreach (var user in users)
+            {
+                var roles = await _userManager.GetRolesAsync(user);
+                userRoles[user.Id] = roles.FirstOrDefault() ?? "KhachHang";
+            }
 
-			foreach (var user in users)
-			{
-				var roles = await _userManager.GetRolesAsync(user);
-				userRoles[user.Id] = string.Join(", ", roles);
-			}
+            ViewBag.UserRoles = userRoles;
+            return View(users);
+        }
 
-			ViewBag.UserRoles = userRoles;
+        // ====== CHANGE ROLE ======
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangeRole(string userId, string newRole)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return NotFound();
 
-			return View(users);
-		}
+            var currentRoles = await _userManager.GetRolesAsync(user);
+            await _userManager.RemoveFromRolesAsync(user, currentRoles);
+            await _userManager.AddToRoleAsync(user, newRole);
 
-		public IActionResult CreateAccount()
-		{
-			ViewBag.Roles = _roleManager.Roles.Select(r => r.Name).ToList();
-			return View();
-		}
-		[HttpPost]
-		public async Task<IActionResult> CreateUser(CreateUserViewModel model)
-		{
-			if (!ModelState.IsValid)
-			{
-				ViewBag.Roles = _roleManager.Roles.Select(r => r.Name).ToList();
-				return View(model);
-			}
+            return RedirectToAction("Index");
+        }
 
-			var user = new IdentityUser
-			{
-				UserName = model.Email,
-				Email = model.Email
-			};
+        // ====== DELETE USER ======
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(string userId)
+        {
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user == null) return NotFound();
 
-			var result = await _userManager.CreateAsync(user, model.Password);
+            await _userManager.DeleteAsync(user);
+            return RedirectToAction("Index");
+        }
 
-			if (result.Succeeded)
-			{
-				if (!string.IsNullOrEmpty(model.Role))
-				{
-					await _userManager.AddToRoleAsync(user, model.Role);
-				}
+        // ====== CREATE ACCOUNT ======
+        [HttpGet]
+        public IActionResult CreateAccount()
+        {
+            ViewBag.Roles = _roleManager.Roles.Select(r => r.Name).ToList();
+            return View();
+        }
 
-				return RedirectToAction("Index");
-			}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateAccount(CreateUserViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                ViewBag.Roles = _roleManager.Roles.Select(r => r.Name).ToList();
+                return View(model);
+            }
 
-			foreach (var error in result.Errors)
-			{
-				ModelState.AddModelError("", error.Description);
-			}
+            var user = new IdentityUser
+            {
+                UserName = model.Email,
+                Email = model.Email
+            };
 
-			ViewBag.Roles = _roleManager.Roles.Select(r => r.Name).ToList();
+            var result = await _userManager.CreateAsync(user, model.Password);
 
-			return View(model);
-		}
-		public async Task<IActionResult> DeleteAccount(string id)
-		{
-			var user = await _userManager.FindByIdAsync(id);
+            if (result.Succeeded)
+            {
+                if (!string.IsNullOrEmpty(model.Role))
+                    await _userManager.AddToRoleAsync(user, model.Role);
 
-			if (user != null)
-			{
-				await _userManager.DeleteAsync(user);
-			}
+                return RedirectToAction("Index");
+            }
 
-			return RedirectToAction("Index");
-		}
+            foreach (var error in result.Errors)
+                ModelState.AddModelError("", error.Description);
 
+            ViewBag.Roles = _roleManager.Roles.Select(r => r.Name).ToList();
+            return View(model);
+        }
 
-		public IActionResult Roles()
-		{
-			var roles = _roleManager.Roles.ToList();
-			return View(roles);
-		}
+        // ====== ROLES ======
+        [HttpGet]
+        public IActionResult Roles()
+        {
+            var roles = _roleManager.Roles.ToList();
+            return View(roles);
+        }
 
-		public IActionResult CreateRole()
-		{
-			return View();
-		}
+        [HttpGet]
+        public IActionResult CreateRole() => View();
 
-		[HttpPost]
-		public async Task<IActionResult> CreateRole(string roleName)
-		{
-			if (!await _roleManager.RoleExistsAsync(roleName))
-			{
-				await _roleManager.CreateAsync(new IdentityRole(roleName));
-			}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateRole(string roleName)
+        {
+            if (!string.IsNullOrEmpty(roleName) &&
+                !await _roleManager.RoleExistsAsync(roleName))
+            {
+                await _roleManager.CreateAsync(new IdentityRole(roleName));
+            }
+            return RedirectToAction("Roles");
+        }
 
-			return RedirectToAction("Roles");
-		}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteRole(string id)
+        {
+            var role = await _roleManager.FindByIdAsync(id);
+            if (role != null)
+                await _roleManager.DeleteAsync(role);
 
-		public async Task<IActionResult> DeleteRole(string id)
-		{
-			var role = await _roleManager.FindByIdAsync(id);
+            return RedirectToAction("Roles");
+        }
 
-			if (role != null)
-			{
-				await _roleManager.DeleteAsync(role);
-			}
-
-			return RedirectToAction("Roles");
-		}
-
-		public async Task<IActionResult> UsersByRole(string role)
-		{
-			var users = await _userManager.GetUsersInRoleAsync(role);
-
-			ViewBag.Role = role;
-
-			return View(users);
-		}
-	}
+        [HttpGet]
+        public async Task<IActionResult> UsersByRole(string role)
+        {
+            var users = await _userManager.GetUsersInRoleAsync(role);
+            ViewBag.Role = role;
+            return View(users);
+        }
+    }
 }
