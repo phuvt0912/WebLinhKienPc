@@ -66,16 +66,16 @@
                 background: rgba(162,89,255,0.12);
             }
 
-        /* Link Quản trị giống hệt các menu khác */
+        
         .pc-nav .admin-link {
-            color: #8888aa; /* Màu giống các menu */
-            background: transparent; /* Không background */
-            border: none; /* Không border */
+            color: #8888aa; 
+            background: transparent;
+            border: none; 
         }
 
             .pc-nav .admin-link:hover {
                 color: #fff;
-                background: rgba(162,89,255,0.12); /* Hover giống các menu */
+                background: rgba(162,89,255,0.12); 
             }
 
     .pc-actions {
@@ -282,8 +282,7 @@
 
             @if (User.IsInRole("Admin") || User.IsInRole("NhanVien"))
             {
-                <!-- ĐÃ SỬA: Giống hệt các menu khác -->
-                <a asp-controller="Admin" asp-action="Index">Quản trị</a>
+                <a asp-controller="AdminProduct" asp-action="Index">Quản trị</a>
             }
         </nav>
 
