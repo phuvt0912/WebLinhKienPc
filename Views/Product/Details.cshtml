@@ -19,8 +19,6 @@
                 <img src="/images/no-image.png" class="img-fluid border rounded" />
             }
         </div>
-
-        <!-- Thông tin sản phẩm -->
         <div class="col-md-7">
 
             <h2>@Model.Name</h2>
@@ -28,8 +26,29 @@
             <p class="text-muted">
                 Danh mục: @Model.Category?.Name
             </p>
+            <div class="mb-3">
+                <label>Số lượng:</label>
+                <div class="d-flex align-items-center">
 
-            <h3 class="text-danger">
+                    <button type="button" class="btn btn-outline-secondary"
+                            onclick="decrease()">
+                        -
+                    </button>
+
+                    <input type="number" id="quantity" name="quantity"
+                           value="1" min="1"
+                           max="@Model.Stock"
+                           class="form-control mx-2"
+                           style="width:80px;" />
+
+                    <button type="button" class="btn btn-outline-secondary"
+                            onclick="increase()">
+                        +
+                    </button>
+
+                </div>
+            </div>
+            <h3 id="totalprice" class="text-danger">
                 @Model.Price.ToString("N0") VNĐ
             </h3>
 
@@ -49,13 +68,13 @@
 
             <div class="mt-3">
 
-                <button class="btn btn-success btn-lg">
+                <a asp-action="AddToCart" asp-route-productId="@Model.ProductId" asp-controller="Cart" class="btn btn-success btn-lg">
                     Mua ngay
-                </button>
+                </a>
 
-                <button class="btn btn-primary btn-lg">
+                <a asp-action="AddToCart" asp-route-productId="@Model.ProductId" asp-controller="Cart" class="btn btn-primary btn-lg">
                     Thêm vào giỏ
-                </button>
+                </a>
 
             </div>
 
@@ -64,3 +83,28 @@
     </div>
 
 </div>
+<script>
+    const price = @Model.Price;
+
+    function updateTotal() {
+        let qty = document.getElementById("quantity").value;
+        let total = qty * price;
+
+        document.getElementById("totalprice").innerText =
+            total.toLocaleString('vi-VN') + " VNĐ";
+    }
+
+    function increase() {
+        let qty = document.getElementById("quantity");
+        qty.value = parseInt(qty.value) + 1;
+        updateTotal();
+    }
+
+    function decrease() {
+        let qty = document.getElementById("quantity");
+        if (qty.value > 1) {
+            qty.value = parseInt(qty.value) - 1;
+            updateTotal();
+        }
+    }
+</script>
