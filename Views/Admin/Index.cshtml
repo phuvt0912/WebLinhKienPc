@@ -272,8 +272,9 @@
     <h2 class="page-title">Dashboard</h2>
 
     <!-- Stats -->
+    <div class="stats-grid">
         <div class="stat-card revenue">
-            <span class="stat-icon revenue-icon">📈</span>
+            <span class="stat-icon">📈</span>
             <div class="stat-label">Tổng doanh thu</div>
             <div class="stat-value revenue">
                 @(ViewBag.TotalRevenue != null
@@ -283,23 +284,23 @@
         </div>
 
         <div class="stat-card products">
-            <span class="stat-icon products-icon">📦</span>
+            <span class="stat-icon">📦</span>
             <div class="stat-label">Sản phẩm</div>
             <div class="stat-value products">@(ViewBag.ProductCount ?? 0)</div>
         </div>
 
         <div class="stat-card orders">
-            <span class="stat-icon orders-icon">🛒</span>
+            <span class="stat-icon">🛒</span>
             <div class="stat-label">Đơn hàng</div>
             <div class="stat-value orders">@(ViewBag.OrderCount ?? 0)</div>
         </div>
 
         <div class="stat-card users">
-            <span class="stat-icon users-icon">👥</span>
+            <span class="stat-icon">👥</span>
             <div class="stat-label">Người dùng</div>
             <div class="stat-value users">@(ViewBag.UserCount ?? 0)</div>
         </div>
-</div>
+    </div>
 
     <div class="divider"></div>
 
