@@ -35,7 +35,7 @@ namespace WebLinhKienPc.Controllers
 			return View(cart?.CartItems ?? new List<CartItem>());
 		}
 
-		public IActionResult AddToCart(int productId)
+		public IActionResult AddToCart(int productId, int quantity)
 		{
 			var userId = _userManager.GetUserId(User);
 			var cart = _context.Carts
@@ -62,12 +62,12 @@ namespace WebLinhKienPc.Controllers
 					new CartItem
 					{
 						ProductId = productId,
-						Quantity = 1
+						Quantity = quantity
 					});
 			}
 			else
 			{
-				cartitem.Quantity++;
+				cartitem.Quantity+= quantity;
 			}
 			_context.SaveChanges();
 			return RedirectToAction("Index");
