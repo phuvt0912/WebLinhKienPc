@@ -1,50 +1,555 @@
 ﻿@model WebLinhKienPc.Models.Product
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
 
-<h2>Sửa sản phẩm</h2>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
-<form asp-action="EditProduct" method="post">
+<style>
+    .form-wrap {
+        padding: 36px 40px;
+        max-width: 680px;
+    }
 
-    <input type="hidden" asp-for="ProductId" />
+    .page-header { margin-bottom: 32px; }
 
-    <div class="mb-3">
-        <label>Tên sản phẩm</label>
-        <input asp-for="Name" class="form-control" />
+    .page-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        color: #a259ff;
+        letter-spacing: 1px;
+        text-transform: none;
+        margin: 0 0 6px;
+        line-height: 1.2;
+    }
+
+    .page-sub {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #6a6a9a;
+    }
+
+    .edit-info {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        background: rgba(0, 207, 255, 0.06);
+        border: 1px solid rgba(0, 207, 255, 0.15);
+        border-radius: 6px;
+        margin-bottom: 28px;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #6a6a9a;
+    }
+
+    .edit-info span { color: #00cfff; font-weight: 500; }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0 24px;
+    }
+
+    .field { margin-bottom: 24px; }
+    .field.full { grid-column: 1 / -1; }
+
+    .field-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .field label {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 12px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: #6a6a9a;
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+        width: 100%;
+        background: #12122a;
+        border: 1px solid rgba(162, 89, 255, 0.2);
+        border-radius: 8px;
+        padding: 12px 16px;
+        color: #e8e8ff;
+        font-family: 'Inter', sans-serif;
+        font-size: 15px;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        resize: vertical;
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+        border-color: #a259ff;
+        box-shadow: 0 0 0 3px rgba(162, 89, 255, 0.1);
+    }
+
+    .field textarea { min-height: 120px; }
+    .field input::placeholder,
+    .field textarea::placeholder { color: #3a3a5a; }
+
+    .field select {
+        appearance: none;
+        -webkit-appearance: none;
+        cursor: pointer;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a259ff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 36px;
+    }
+
+    .field select option { background: #12122a; color: #e8e8ff; }
+
+    /* Bỏ mũi tên input number */
+    input[type=number]::-webkit-outer-spin-button,
+    input[type=number]::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+    input[type=number] { -moz-appearance: textfield; }
+
+    /* Image tabs */
+    .img-tabs {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 10px;
+    }
+
+    .img-tab {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 13px;
+        padding: 6px 14px;
+        border-radius: 6px;
+        border: 1px solid rgba(162, 89, 255, 0.2);
+        background: transparent;
+        color: #6a6a9a;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .img-tab.active {
+        background: rgba(162, 89, 255, 0.12);
+        border-color: #a259ff;
+        color: #a259ff;
+    }
+
+    .upload-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        width: 100%;
+        min-height: 120px;
+        border: 2px dashed rgba(162, 89, 255, 0.25);
+        border-radius: 8px;
+        background: rgba(162, 89, 255, 0.04);
+        cursor: pointer;
+        transition: all 0.2s;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    .upload-area:hover,
+    .upload-area.dragover {
+        border-color: #a259ff;
+        background: rgba(162, 89, 255, 0.08);
+    }
+
+    .upload-icon { font-size: 28px; }
+
+    .upload-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #c0c0e0;
+        text-align: center;
+        word-break: break-all;
+    }
+
+    .upload-sub {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #6a6a9a;
+    }
+
+    .img-preview-wrap {
+        margin-top: 12px;
+        display: none;
+        position: relative;
+        width: fit-content;
+    }
+
+    .img-preview-wrap.show { display: block; }
+
+    .img-preview {
+        width: 120px;
+        height: 120px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid rgba(162, 89, 255, 0.25);
+        display: block;
+    }
+
+    .img-clear {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        border: none;
+        background: #ff4f7b;
+        color: #fff;
+        font-size: 11px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 0.2s;
+    }
+
+    .img-clear:hover { opacity: 0.8; }
+
+    .text-danger {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #ff4f7b;
+        margin-top: 6px;
+        display: block;
+    }
+
+    .divider {
+        height: 1px;
+        background: rgba(162, 89, 255, 0.1);
+        margin: 4px 0 24px;
+        grid-column: 1 / -1;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 8px;
+        grid-column: 1 / -1;
+    }
+
+    .btn-submit {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 11px 28px;
+        border-radius: 8px;
+        border: none;
+        background: linear-gradient(135deg, #0f7a8a, #00cfff);
+        color: #fff;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+    .btn-submit:hover { opacity: 0.85; }
+    .btn-submit:active { opacity: 0.7; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-back {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 15px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        padding: 11px 28px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #6a6a9a;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-back:hover {
+        border-color: rgba(162, 89, 255, 0.3);
+        color: #c0c0e0;
+    }
+
+    .char-count {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        color: #6a6a9a;
+    }
+
+    .char-count.warn { color: #ffaa00; }
+    .char-count.over { color: #ff4f7b; }
+</style>
+
+<div class="form-wrap">
+
+    <div class="page-header">
+        <h2 class="page-title">Sửa Sản Phẩm</h2>
+        <p class="page-sub">Chỉnh sửa thông tin sản phẩm</p>
     </div>
 
-    <div class="mb-3">
-        <label>Giá</label>
-        <input asp-for="Price" class="form-control" />
+    <div class="edit-info">
+        Đang sửa: <span>#@Model.ProductId — @Model.Name</span>
     </div>
 
-    <div class="mb-3">
-        <label>Số lượng</label>
-        <input asp-for="Stock" class="form-control" />
-    </div>
+    <form asp-action="EditProduct" method="post"
+          enctype="multipart/form-data" id="editForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="ProductId" />
 
-    <div class="mb-3">
-        <label>Mô tả</label>
-<textarea asp-for="Description" class="form-control"></textarea>
-    </div>
+        <div class="form-grid">
 
-    <div class="mb-3">
-        <label>Ảnh</label>
-        <input asp-for="ImageUrl" class="form-control" />
-    </div>
+            <!-- Tên sản phẩm -->
+            <div class="field full">
+                <div class="field-header">
+                    <label>Tên sản phẩm <span style="color:#ff4f7b">*</span></label>
+                </div>
+                <input asp-for="Name" autocomplete="off" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
 
-    <div class="mb-3">
-        <label>Category</label>
-        <select asp-for="CategoryId"
-                asp-items="ViewBag.Categories"
-                class="form-control">
-        </select>
-    </div>
+            <div class="divider"></div>
 
-    <button class="btn btn-primary">
-        Lưu thay đổi
-    </button>
+            <!-- Giá -->
+            <div class="field">
+                <div class="field-header">
+                    <label>Giá (VNĐ) <span style="color:#ff4f7b">*</span></label>
+                </div>
+                <input asp-for="Price"
+                       type="text"
+                       inputmode="numeric"
+                       id="priceInput"
+                       placeholder="VD: 12500000" />
+                <span asp-validation-for="Price" class="text-danger"></span>
+            </div>
 
-    <a asp-action="Products" class="btn btn-secondary">
-        Quay lại
-    </a>
+            <!-- Số lượng -->
+            <div class="field">
+                <div class="field-header">
+                    <label>Số lượng tồn kho <span style="color:#ff4f7b">*</span></label>
+                </div>
+                <input asp-for="Stock"
+                       type="text"
+                       inputmode="numeric"
+                       placeholder="VD: 50" />
+                <span asp-validation-for="Stock" class="text-danger"></span>
+            </div>
 
-</form>
+            <!-- Danh mục -->
+            <div class="field">
+                <div class="field-header">
+                    <label>Danh mục <span style="color:#ff4f7b">*</span></label>
+                </div>
+                <select asp-for="CategoryId" asp-items="ViewBag.Categories">
+                    <option value="">-- Chọn danh mục --</option>
+                </select>
+                <span asp-validation-for="CategoryId" class="text-danger"></span>
+            </div>
+
+            <!-- Ảnh sản phẩm -->
+            <div class="field">
+                <div class="field-header">
+                    <label>Ảnh sản phẩm</label>
+                </div>
+
+                <div class="img-tabs">
+                    <button type="button" class="img-tab active"
+                            onclick="switchTab('url', this)">
+                        🔗 URL
+                    </button>
+                    <button type="button" class="img-tab"
+                            onclick="switchTab('file', this)">
+                        📁 Tải lên
+                    </button>
+                </div>
+
+                <!-- Tab URL -->
+                <div id="tab-url">
+                    <input asp-for="ImageUrl"
+                           id="imageUrlInput"
+                           placeholder="https://..."
+                           oninput="previewImage(this.value)"
+                           autocomplete="off" />
+                </div>
+
+                <!-- Tab File -->
+                <div id="tab-file" style="display:none">
+                    <label class="upload-area" id="uploadArea">
+                        <input type="file"
+                               name="imageFile"
+                               id="imageFileInput"
+                               accept="image/*"
+                               style="display:none"
+                               onchange="previewFile(this)" />
+                        <span class="upload-icon">📁</span>
+                        <span class="upload-text">Kéo thả hoặc click để chọn ảnh</span>
+                        <span class="upload-sub">PNG, JPG, WEBP — tối đa 5MB</span>
+                    </label>
+                </div>
+
+                <!-- Preview ảnh hiện tại -->
+                <div class="img-preview-wrap @(!string.IsNullOrEmpty(Model.ImageUrl) ? "show" : "")"
+                     id="imgPreviewWrap">
+                    <img id="imgPreview"
+                         class="img-preview"
+                         src="@Model.ImageUrl"
+                         alt="Preview" />
+                    <button type="button" class="img-clear" onclick="clearImage()">✕</button>
+                </div>
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- Mô tả -->
+            <div class="field full">
+                <div class="field-header">
+                    <label>Mô tả sản phẩm</label>
+                    <span class="char-count" id="charCount">
+                        @(Model.Description?.Length ?? 0) / 1000
+                    </span>
+                </div>
+                <textarea asp-for="Description"
+                          placeholder="Mô tả chi tiết sản phẩm..."
+                          oninput="updateCharCount(this.value)"
+                          maxlength="1000"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <!-- Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn-submit" id="submitBtn">
+                    ✏️ Lưu thay đổi
+                </button>
+                <a asp-action="Index" class="btn-back">← Quay lại</a>
+            </div>
+
+        </div>
+    </form>
+</div>
+
+<script>
+    // Chuyển tab URL / File
+    function switchTab(tab, btn) {
+        document.querySelectorAll('.img-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-url').style.display = tab === 'url' ? 'block' : 'none';
+        document.getElementById('tab-file').style.display = tab === 'file' ? 'block' : 'none';
+        clearImage();
+    }
+
+    // Preview từ URL
+    function previewImage(url) {
+        const wrap = document.getElementById('imgPreviewWrap');
+        const img = document.getElementById('imgPreview');
+        if (url.trim()) {
+            img.src = url;
+            img.onload = () => wrap.classList.add('show');
+            img.onerror = () => wrap.classList.remove('show');
+        } else {
+            wrap.classList.remove('show');
+        }
+    }
+
+    // Preview từ file
+    function previewFile(input) {
+        if (!input.files || !input.files[0]) return;
+        const file = input.files[0];
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Ảnh không được vượt quá 5MB');
+            input.value = '';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = e => {
+            const img = document.getElementById('imgPreview');
+            const wrap = document.getElementById('imgPreviewWrap');
+            img.src = e.target.result;
+            wrap.classList.add('show');
+            document.querySelector('.upload-text').textContent = file.name;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    // Xoá preview
+    function clearImage() {
+        document.getElementById('imgPreview').src = '';
+        document.getElementById('imgPreviewWrap').classList.remove('show');
+        const urlInput = document.getElementById('imageUrlInput');
+        if (urlInput) urlInput.value = '';
+        const fileInput = document.getElementById('imageFileInput');
+        if (fileInput) {
+            fileInput.value = '';
+            document.querySelector('.upload-text').textContent = 'Kéo thả hoặc click để chọn ảnh';
+        }
+    }
+
+    // Drag & drop
+    const uploadArea = document.getElementById('uploadArea');
+    if (uploadArea) {
+        uploadArea.addEventListener('dragover', e => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+        uploadArea.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file && file.type.startsWith('image/')) {
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                document.getElementById('imageFileInput').files = dt.files;
+                previewFile(document.getElementById('imageFileInput'));
+            }
+        });
+    }
+
+    // Format giá
+    const priceInput = document.getElementById('priceInput');
+    if (priceInput) {
+        // Format giá hiện có khi load trang
+        let initialVal = priceInput.value.replace(/\D/g, '');
+        if (initialVal) {
+            priceInput.value = Number(initialVal).toLocaleString('vi-VN');
+        }
+
+        priceInput.addEventListener('input', function () {
+            let raw = this.value.replace(/\D/g, '');
+            this.value = raw ? Number(raw).toLocaleString('vi-VN') : '';
+        });
+    }
+
+    // Đếm ký tự mô tả
+    function updateCharCount(val) {
+        const el = document.getElementById('charCount');
+        const len = val.length;
+        el.textContent = len + ' / 1000';
+        el.className = 'char-count';
+        if (len > 800) el.classList.add('warn');
+        if (len >= 1000) el.classList.add('over');
+    }
+
+    // Submit loading + bỏ format giá trước khi gửi
+    document.getElementById('editForm').addEventListener('submit', function () {
+        if (priceInput) {
+            priceInput.value = priceInput.value.replace(/\./g, '').replace(/,/g, '');
+        }
+        const btn = document.getElementById('submitBtn');
+        btn.textContent = 'Đang lưu...';
+        btn.disabled = true;
+    });
+</script>
