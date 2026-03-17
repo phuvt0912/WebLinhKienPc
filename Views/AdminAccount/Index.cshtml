@@ -1,66 +1,497 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @model IEnumerable<IdentityUser>
-
 @{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
     var roles = ViewBag.UserRoles as Dictionary<string, string>;
 }
 
-<h2>Quản lý tài khoản</h2>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
-<div class="mb-3">
-    <a asp-action="CreateAccount" class="btn btn-success">
-        Tạo tài khoản
-    </a>
-    <a asp-controller="AdminAccount" asp-action="Roles" class="btn btn-success">
-        Xem quyền hạn
-    </a>
+<style>
+    .page-wrap { padding: 36px 40px; }
+
+    .page-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 28px;
+    }
+
+    .page-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        color: #a259ff;
+        letter-spacing: 1px;
+        margin: 0;
+        line-height: 1.2;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-add {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: none;
+        background: linear-gradient(135deg, #6c2bd9, #a259ff);
+        color: #fff;
+        text-decoration: none;
+        transition: opacity 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-add:hover { opacity: 0.85; color: #fff; }
+
+    .btn-roles {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        padding: 10px 20px;
+        border-radius: 8px;
+        border: 1px solid rgba(0, 207, 255, 0.3);
+        background: rgba(0, 207, 255, 0.08);
+        color: #00cfff;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-roles:hover {
+        background: rgba(0, 207, 255, 0.15);
+        border-color: #00cfff;
+        color: #00cfff;
+    }
+
+    .total-count {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #6a6a9a;
+        margin-bottom: 20px;
+    }
+
+    .total-count span { color: #a259ff; font-weight: 500; }
+
+    .user-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+    }
+
+    .user-table th {
+        text-align: left;
+        padding: 14px 18px;
+        background: rgba(162, 89, 255, 0.12);
+        color: #c490ff;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        letter-spacing: 1px;
+        font-size: 14px;
+        border-bottom: 2px solid rgba(162, 89, 255, 0.3);
+        white-space: nowrap;
+    }
+
+    .user-table td {
+        padding: 14px 18px;
+        color: #c0c0e0;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+        vertical-align: middle;
+    }
+
+    .user-table tr:hover td {
+        background: rgba(162, 89, 255, 0.04);
+    }
+
+    .user-id {
+        color: #3a3a5a;
+        font-size: 11px;
+        font-family: 'Inter', sans-serif;
+        max-width: 80px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .user-email {
+        font-weight: 500;
+        color: #e8e8ff;
+    }
+
+    .user-name { color: #8888aa; font-size: 13px; }
+
+    /* Role badge */
+    .role-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        font-family: 'Inter', sans-serif;
+        white-space: nowrap;
+    }
+
+    .role-Admin {
+        background: rgba(162, 89, 255, 0.12);
+        border: 1px solid rgba(162, 89, 255, 0.3);
+        color: #a259ff;
+    }
+
+    .role-NhanVien {
+        background: rgba(0, 207, 255, 0.1);
+        border: 1px solid rgba(0, 207, 255, 0.25);
+        color: #00cfff;
+    }
+
+    .role-KhachHang {
+    background: rgba(138, 138, 170, 0.1);
+    border: 1px solid rgba(138, 138, 170, 0.25);
+    color: #aaaacc;
+    }
+
+    /* Change role select */
+    .role-select {
+        background: #12122a;
+        border: 1px solid rgba(162, 89, 255, 0.2);
+        border-radius: 6px;
+        padding: 6px 30px 6px 10px;
+        color: #e8e8ff;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        outline: none;
+        cursor: pointer;
+        transition: border-color 0.2s;
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23a259ff' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+    }
+
+    .role-select:focus { border-color: #a259ff; }
+    .role-select option { background: #12122a; }
+
+    .btn-save-role {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 13px;
+        padding: 6px 14px;
+        border-radius: 6px;
+        border: none;
+        background: linear-gradient(135deg, #6c2bd9, #a259ff);
+        color: #fff;
+        cursor: pointer;
+        transition: opacity 0.2s;
+        white-space: nowrap;
+    }
+
+    .btn-save-role:hover { opacity: 0.85; }
+
+    .action-wrap {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .btn-delete {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+        padding: 6px 14px;
+        border-radius: 6px;
+        border: 1px solid rgba(255, 79, 123, 0.3);
+        background: rgba(255, 79, 123, 0.08);
+        color: #ff4f7b;
+        cursor: pointer;
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
+
+    .btn-delete:hover {
+        background: rgba(255, 79, 123, 0.15);
+        border-color: #ff4f7b;
+    }
+
+    /* Modal */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.6);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(4px);
+    }
+
+    .modal-overlay.show { display: flex; }
+
+    .modal-box {
+        background: #12122a;
+        border: 1px solid rgba(255, 79, 123, 0.25);
+        border-radius: 14px;
+        padding: 36px 40px;
+        max-width: 400px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+        animation: popIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    @@keyframes popIn {
+        from { transform: scale(0.9); opacity: 0; }
+        to   { transform: scale(1);   opacity: 1; }
+    }
+
+    .modal-icon { font-size: 40px; margin-bottom: 16px; }
+
+    .modal-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: #ff4f7b;
+        letter-spacing: 1px;
+        margin-bottom: 12px;
+    }
+
+    .modal-msg {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #8888aa;
+        line-height: 1.7;
+        margin-bottom: 8px;
+    }
+
+    .modal-name { color: #e8e8ff; font-weight: 500; }
+
+    .modal-note {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #ff4f7b;
+        opacity: 0.7;
+        margin-bottom: 28px;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+    }
+
+    .modal-btn-cancel {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        padding: 10px 24px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: none;
+        color: #6a6a9a;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .modal-btn-cancel:hover {
+        border-color: rgba(162,89,255,0.3);
+        color: #c0c0e0;
+    }
+
+    .modal-btn-confirm {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        padding: 10px 24px;
+        border-radius: 8px;
+        border: none;
+        background: linear-gradient(135deg, #c0294f, #ff4f7b);
+        color: #fff;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+    .modal-btn-confirm:hover { opacity: 0.85; }
+
+    .empty-state {
+        text-align: center;
+        padding: 64px 0;
+        color: #6a6a9a;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+    }
+
+    .empty-icon { font-size: 40px; margin-bottom: 12px; display: block; }
+</style>
+
+<div class="page-wrap">
+
+    <div class="page-header">
+        <h2 class="page-title">Quản Lý Tài Khoản</h2>
+        <div class="header-actions">
+            <a class="btn-add" asp-action="CreateAccount">+ Tạo tài khoản</a>
+            <a class="btn-roles" asp-action="Roles">🔐 Xem quyền hạn</a>
+        </div>
+    </div>
+
+    <div class="total-count">
+        Tổng cộng <span>@Model.Count()</span> tài khoản
+    </div>
+
+    <table class="user-table">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Email</th>
+                <th>Username</th>
+                <th>Role hiện tại</th>
+                <th>Đổi Role</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="6">
+                        <div class="empty-state">
+                            <span class="empty-icon">👤</span>
+                            Chưa có tài khoản nào
+                        </div>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                string[] allRoles = { "Admin", "NhanVien", "KhachHang" };
+                @foreach (var user in Model)
+                {
+                    var role = roles != null && roles.ContainsKey(user.Id)
+                        ? roles[user.Id] : "KhachHang";
+
+                    <tr>
+                        <td>
+                            <span class="user-id" title="@user.Id">
+                                @user.Id[..8]...
+                            </span>
+                        </td>
+                        <td class="user-email">@user.Email</td>
+                        <td class="user-name">@user.UserName</td>
+                        <td>
+                            @{
+                                var roleLabel = role switch
+                                {
+                                    "Admin" => "⚡ Admin",
+                                    "NhanVien" => "🔧 Nhân viên",
+                                    "KhachHang" => "👤 Khách hàng",
+                                    _ => "👤 Khách hàng"
+                                };
+                                var roleClass = role switch
+                                {
+                                    "Admin" => "role-Admin",
+                                    "NhanVien" => "role-NhanVien",
+                                    _ => "role-KhachHang"
+                                };
+                            }
+                            <span class="role-badge @roleClass">@roleLabel</span>
+                        </td>
+                        <td>
+                            <form asp-action="ChangeRole" method="post"
+                                  style="display:inline-flex;gap:6px;align-items:center">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="userId" value="@user.Id" />
+                                <select name="newRole" class="role-select">
+                                    @foreach (var r in allRoles)
+                                    {
+                                        if (r == role)
+                                        {
+                                            <option value="@r" selected>@r</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@r">@r</option>
+                                        }
+                                    }
+                                </select>
+                                <button type="submit" class="btn-save-role">Lưu</button>
+                            </form>
+                        </td>
+                        <td>
+                            <div class="action-wrap">
+                                <form id="del-@user.Id" asp-action="Delete" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="userId" value="@user.Id" />
+                                    <button type="button" class="btn-delete"
+                                            onclick="confirmDelete('@user.Id', '@user.Email')">
+                                        🗑️ Xoá
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
 </div>
 
-<table class="table table-bordered table-hover">
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-icon">🗑️</div>
+        <div class="modal-title">Xác nhận xoá</div>
+        <div class="modal-msg">
+            Bạn có chắc muốn xoá tài khoản<br>
+            <span class="modal-name" id="modalName"></span>?
+        </div>
+        <div class="modal-note">Hành động này không thể hoàn tác.</div>
+        <div class="modal-actions">
+            <button class="modal-btn-cancel" onclick="closeModal()">Huỷ</button>
+            <button class="modal-btn-confirm" onclick="submitDelete()">Xoá</button>
+        </div>
+    </div>
+</div>
 
-    <thead class="table-dark">
+<script>
+    let currentUserId = null;
 
-        <tr>
-            <th>ID</th>
-            <th>Role</th>
-            <th>Email</th>
-            <th>UserName</th>
-            <th></th>
-        </tr>
+    function confirmDelete(id, email) {
+        currentUserId = id;
+        document.getElementById('modalName').textContent = email;
+        document.getElementById('modalOverlay').classList.add('show');
+    }
 
-    </thead>
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('show');
+        currentUserId = null;
+    }
 
-    <tbody>
-
-        @foreach (var user in Model)
-        {
-
-            <tr>
-
-                <td>@user.Id</td>
-
-                <td>@roles[user.Id]</td>
-
-                <td>@user.Email</td>
-
-                <td>@user.UserName</td>
-
-                <td>
-
-                    <a asp-action="DeleteUser"
-                       asp-route-id="@user.Id"
-                       class="btn btn-danger btn-sm">
-
-                        Xóa
-
-                    </a>
-
-                </td>
-
-            </tr>
-
+    function submitDelete() {
+        if (currentUserId) {
+            document.getElementById('del-' + currentUserId).submit();
         }
+    }
 
-    </tbody>
-
-</table>
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
+    });
+</script>
