@@ -111,15 +111,14 @@ namespace WebLinhKienPc.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditAccount(string id, string email, string username)
+        public async Task<IActionResult> EditAccount(string id, string email)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
 
             user.Email = email;
-            user.UserName = username;
+            user.UserName = email;
             await _userManager.UpdateAsync(user);
-
             return RedirectToAction("Index");
         }
 

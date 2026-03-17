@@ -74,17 +74,22 @@
 
     .field input::placeholder { color: #3a3a5a; }
 
-    .field-note {
-        font-family: 'Inter', sans-serif;
-        font-size: 12px;
-        color: #6a6a9a;
-        margin-top: 6px;
+    .field input:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
     }
 
     .divider {
         height: 1px;
         background: rgba(162, 89, 255, 0.1);
-        margin: 4px 0 24px;
+        margin: 8px 0 24px;
+    }
+
+    .field-note {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #6a6a9a;
+        margin-top: 6px;
     }
 
     .form-actions {
@@ -139,8 +144,7 @@
         Đang sửa: <span>@Model.Email</span>
     </div>
 
-    <form asp-action="EditAccount" asp-route-id="@Model.Id"
-          method="post" id="editForm">
+    <form asp-action="EditAccount" asp-route-id="@Model.Id" method="post" id="editForm">
         @Html.AntiForgeryToken()
 
         <!-- Email -->
@@ -156,14 +160,11 @@
 
         <div class="divider"></div>
 
-        <!-- Username -->
+        <!-- ID (readonly) -->
         <div class="field">
-            <label>Username <span style="color:#ff4f7b">*</span></label>
-            <input type="text"
-                   name="username"
-                   value="@Model.UserName"
-                   placeholder="Nhập username..."
-                   autocomplete="off" />
+            <label>ID tài khoản</label>
+            <input type="text" value="@Model.Id" disabled />
+            <span class="field-note">Không thể thay đổi.</span>
         </div>
 
         <div class="form-actions">
