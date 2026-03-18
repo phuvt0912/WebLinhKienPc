@@ -4,110 +4,825 @@
     ViewData["Title"] = "Chi tiết sản phẩm";
 }
 
-<div class="container mt-4">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
-    <div class="row">
+<style>
+    .detail-wrap {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 48px;
+    }
 
-        <!-- Ảnh sản phẩm -->
-        <div class="col-md-5">
+    /* Breadcrumb */
+    .breadcrumb-wrap {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #6a6a9a;
+        margin-bottom: 28px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .breadcrumb-wrap a {
+        color: #6a6a9a;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+
+    .breadcrumb-wrap a:hover { color: #a259ff; }
+    .breadcrumb-wrap .sep { color: #3a3a5a; }
+    .breadcrumb-wrap .current { color: #c0c0e0; }
+
+    /* Layout */
+    .detail-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 48px;
+        align-items: start;
+    }
+
+    /* Image */
+    .product-img-wrap {
+        position: relative;
+        border-radius: 16px;
+        overflow: hidden;
+        background: #12122a;
+        border: 1px solid rgba(162, 89, 255, 0.15);
+        aspect-ratio: 1;
+    }
+
+    .product-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .product-img-empty {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 80px;
+        color: #2a2a4a;
+        min-height: 400px;
+    }
+
+    .category-badge {
+        position: absolute;
+        top: 14px;
+        left: 14px;
+        padding: 4px 12px;
+        background: rgba(13, 13, 26, 0.85);
+        border: 1px solid rgba(162, 89, 255, 0.3);
+        border-radius: 4px;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #a259ff;
+        backdrop-filter: blur(4px);
+    }
+
+    /* Info */
+    .product-info { display: flex; flex-direction: column; gap: 20px; }
+
+    .product-name {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        color: #e8e8ff;
+        line-height: 1.3;
+        margin: 0;
+    }
+
+    .product-price {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 36px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #a259ff, #00cfff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        line-height: 1;
+    }
+
+    .stock-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+    }
+
+    .stock-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .stock-ok .stock-dot { background: #4cdf8a; }
+    .stock-low .stock-dot { background: #ffaa00; }
+    .stock-out .stock-dot { background: #ff4f7b; }
+    .stock-ok { color: #4cdf8a; }
+    .stock-low { color: #ffaa00; }
+    .stock-out { color: #ff4f7b; }
+
+    .divider {
+        height: 1px;
+        background: rgba(162, 89, 255, 0.1);
+    }
+
+    /* Quantity */
+    .qty-label {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: #6a6a9a;
+        margin-bottom: 10px;
+        display: block;
+    }
+
+    .qty-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        width: fit-content;
+        background: #12122a;
+        border: 1px solid rgba(162, 89, 255, 0.2);
+        border-radius: 8px;
+        overflow: hidden;
+    }
+
+    .qty-btn {
+        width: 40px;
+        height: 44px;
+        background: none;
+        border: none;
+        color: #a259ff;
+        font-size: 20px;
+        cursor: pointer;
+        transition: background 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+    }
+
+    .qty-btn:hover { background: rgba(162, 89, 255, 0.1); }
+    .qty-btn:disabled { color: #3a3a5a; cursor: not-allowed; }
+
+    .qty-input {
+        width: 60px;
+        height: 44px;
+        background: transparent;
+        border: none;
+        border-left: 1px solid rgba(162, 89, 255, 0.15);
+        border-right: 1px solid rgba(162, 89, 255, 0.15);
+        color: #e8e8ff;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        text-align: center;
+        outline: none;
+        -moz-appearance: textfield;
+    }
+
+    .qty-input::-webkit-outer-spin-button,
+    .qty-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+    /* Total price */
+    .total-wrap {
+        background: rgba(162, 89, 255, 0.06);
+        border: 1px solid rgba(162, 89, 255, 0.15);
+        border-radius: 10px;
+        padding: 16px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .total-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #6a6a9a;
+    }
+
+    .total-price {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #a259ff, #00cfff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* Buttons */
+    .action-btns {
+        display: flex;
+        gap: 12px;
+    }
+
+    .btn-buy {
+        flex: 1;
+        padding: 14px;
+        border: none;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #6c2bd9, #a259ff);
+        color: #fff;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+
+    .btn-buy:hover { opacity: 0.85; }
+
+    .btn-cart {
+        flex: 1;
+        padding: 14px;
+        border: 1.5px solid rgba(0, 207, 255, 0.4);
+        border-radius: 10px;
+        background: rgba(0, 207, 255, 0.06);
+        color: #00cfff;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-cart:hover {
+        background: rgba(0, 207, 255, 0.12);
+        border-color: #00cfff;
+    }
+
+    .btn-buy:disabled,
+    .btn-cart:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    /* Description */
+    .desc-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: #a259ff;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+    }
+
+    .desc-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #8888aa;
+        line-height: 1.7;
+    }
+    .desc-line {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 5px 0;
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #c0c0e0;
+        line-height: 1.5;
+        border-bottom: 1px solid rgba(162, 89, 255, 0.06);
+    }
+
+    .desc-icon {
+        flex-shrink: 0;
+        margin-top: 1px;
+    }
+
+    /* Slider styles */
+    .slider-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        z-index: 10;
+    }
+
+    .slider-viewport {
+        overflow: hidden;
+        flex: 1;
+        width: 100%;
+    }
+
+    .slider-track {
+        display: flex;
+        gap: 16px;
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+    }
+
+    .slider-card {
+        flex: 0 0 calc(25% - 12px);
+        min-width: calc(25% - 12px);
+        background: #12122a;
+        border: 1px solid rgba(162, 89, 255, 0.12);
+        border-radius: 12px;
+        overflow: hidden;
+        text-decoration: none !important;
+        transition: border-color 0.2s, transform 0.2s;
+        box-sizing: border-box;
+    }
+
+    .slider-card:hover {
+        border-color: rgba(162, 89, 255, 0.35);
+        transform: translateY(-3px);
+    }
+
+    .slider-img-wrap {
+        position: relative;
+        padding-top: 70%;
+        background: #0d0d1a;
+        overflow: hidden;
+    }
+
+    .slider-img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s;
+    }
+
+    .slider-card:hover .slider-img { transform: scale(1.04); }
+
+    .slider-img-empty {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        color: #2a2a4a;
+    }
+
+    .slider-info { padding: 12px; }
+
+    .slider-name {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        color: #e8e8ff;
+        line-height: 1.4;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-bottom: 8px;
+    }
+
+    .slider-price {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #a259ff, #00cfff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    /* NÚT SLIDER - SỬA LẠI */
+    .slider-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 2px solid #a259ff;
+        background: #12122a;
+        color: #a259ff;
+        font-size: 28px;
+        font-weight: bold;
+        cursor: pointer !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        transition: all 0.2s;
+        flex-shrink: 0;
+        z-index: 9999 !important;
+        position: relative;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        outline: none;
+        padding: 0;
+        line-height: 1;
+        pointer-events: auto !important;
+        opacity: 1 !important;
+    }
+
+    .slider-btn:hover {
+        background: #a259ff;
+        color: #fff;
+        transform: scale(1.1);
+        border-color: #a259ff;
+    }
+
+    .slider-btn:active {
+        transform: scale(0.95);
+    }
+
+    .slider-btn:disabled {
+        opacity: 0.3 !important;
+        cursor: not-allowed !important;
+        background: #2a2a4a;
+        border-color: #6a6a9a;
+        color: #6a6a9a;
+        transform: none;
+        pointer-events: none !important;
+    }
+
+    .slider-btn.prev {
+        margin-right: 5px;
+    }
+
+    .slider-btn.next {
+        margin-left: 5px;
+    }
+
+    /* Responsive */
+    @@media (max-width: 992px) {
+        .slider-card {
+            flex: 0 0 calc(33.333% - 11px);
+            min-width: calc(33.333% - 11px);
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .slider-card {
+            flex: 0 0 calc(50% - 8px);
+            min-width: calc(50% - 8px);
+        }
+    }
+
+    @@media (max-width: 480px) {
+        .slider-card {
+            flex: 0 0 100%;
+            min-width: 100%;
+        }
+        
+        .slider-btn {
+            width: 36px;
+            height: 36px;
+            font-size: 22px;
+        }
+    }
+
+.slider-track {
+    cursor: grab;
+}
+
+.slider-track:active {
+    cursor: grabbing;
+}
+</style>
+
+<div class="detail-wrap">
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-wrap">
+        <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+        <span class="sep">›</span>
+        <a asp-controller="Product" asp-action="Index">Sản phẩm</a>
+        <span class="sep">›</span>
+        <span class="current">@Model.Name</span>
+    </div>
+
+    <div class="detail-grid">
+
+        <!-- Ảnh -->
+        <div class="product-img-wrap">
             @if (!string.IsNullOrEmpty(Model.ImageUrl))
             {
-                <img src="@Model.ImageUrl" class="img-fluid border rounded" />
+                <img class="product-img" src="@Model.ImageUrl" alt="@Model.Name" />
             }
             else
             {
-                <img src="/images/no-image.png" class="img-fluid border rounded" />
+                <div class="product-img-empty">📷</div>
+            }
+            @if (Model.Category != null)
+            {
+                <span class="category-badge">@Model.Category.Name</span>
             }
         </div>
-        <div class="col-md-7">
-            <form asp-controller="Cart" asp-action="AddToCart" method="post">
-                <h2>@Model.Name</h2>
 
-                <p class="text-muted">
-                    Danh mục: @Model.Category?.Name
-                </p>
+        <!-- Thông tin -->
+        <div class="product-info">
+
+            <h1 class="product-name">@Model.Name</h1>
+
+            <div class="product-price">@Model.Price.ToString("N0") ₫</div>
+
+            @{
+                var stockClass = Model.Stock > 10 ? "stock-ok" : Model.Stock > 0 ? "stock-low" : "stock-out";
+                var stockLabel = Model.Stock > 10 ? "Còn hàng" : Model.Stock > 0 ? $"Còn {Model.Stock} sản phẩm" : "Hết hàng";
+            }
+            <div class="stock-info @stockClass">
+                <span class="stock-dot"></span>
+                @stockLabel
+            </div>
+
+            <div class="divider"></div>
+
+            <form asp-controller="Cart" asp-action="AddToCart" method="post">
                 <input type="hidden" name="productId" value="@Model.ProductId" />
 
-                <label>Số lượng:</label>
-
-                <div class="d-flex align-items-center">
-
-                    <button type="button"
-                            class="btn btn-outline-secondary"
-                            onclick="decrease()">
-                        -
-                    </button>
-
-                    <input type="number" id="quantity" name="quantity"
-                           value="1" min="1" max="@Model.Stock"
-                           oninput="validateQuantity()"
-                           class="form-control mx-2 text-center"
-                           style="width:80px;" />
-
-                    <button type="button"
-                            class="btn btn-outline-secondary"
-                            onclick="increase()">
-                        +
-                    </button>
-
+                <!-- Số lượng -->
+                <span class="qty-label">Số lượng</span>
+                <div class="qty-wrap">
+                    <button type="button" class="qty-btn" onclick="decrease()" id="btnDecrease">−</button>
+                    <input type="number"
+                           id="quantity"
+                           name="quantity"
+                           value="1"
+                           min="1"
+                           max="@Model.Stock"
+                           class="qty-input"
+                           oninput="updateTotal()" />
+                    <button type="button" class="qty-btn" onclick="increase()" id="btnIncrease">+</button>
                 </div>
-                <h3 id="totalprice" class="text-danger">
-                    @Model.Price.ToString("N0") VNĐ
-                </h3>
 
-                <p>
-                    Tồn kho: <strong>@Model.Stock</strong>
-                </p>
+                <!-- Tổng tiền -->
+                <div class="total-wrap" style="margin-top:16px">
+                    <span class="total-label">Thành tiền</span>
+                    <span class="total-price" id="totalprice">@Model.Price.ToString("N0") ₫</span>
+                </div>
 
-                <hr />
+                <div class="divider" style="margin-top:20px"></div>
 
-                <h5>Mô tả sản phẩm</h5>
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <div>
+                        <div class="desc-title">Mô tả sản phẩm</div>
+                        <div class="desc-text">
+                            @if (!string.IsNullOrEmpty(Model.Description))
+                            {
+                                @foreach (var line in Model.Description.Split('\n'))
+                                {
+                                    if (!string.IsNullOrWhiteSpace(line))
+                                    {
+                                        <div class="desc-line">
+                                            <span class="desc-icon">✅</span>
+                                            <span>@line.Trim()</span>
+                                        </div>
+                                    }
+                                }
+                            }
+                        </div>
+                    </div>
+                    <div class="divider"></div>
+                }
 
-                <p>
-                    @Model.Description
-                </p>
-
-                <hr />
-
-                <button type="submit" class="btn btn-success btn-lg">
-                    Mua ngay
-                </button>
-
-                <button type="submit" class="btn btn-primary btn-lg">
-                    Thêm vào giỏ
-                </button>
+                <!-- Buttons -->
+                <div class="action-btns">
+                    <button type="submit"
+                            name="action"
+                            value="buy"
+                            class="btn-buy"
+                            @(Model.Stock == 0 ? "disabled" : "")>
+                        🛒 Mua ngay
+                    </button>
+                    <button type="submit"
+                            name="action"
+                            value="cart"
+                            class="btn-cart"
+                            @(Model.Stock == 0 ? "disabled" : "")>
+                        + Giỏ hàng
+                    </button>
+                </div>
             </form>
-
         </div>
-
     </div>
-
 </div>
-@section Scripts
+
+@if (ViewBag.RelatedProducts != null)
 {
-    <script>
-        const price = @Model.Price.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    var related = ViewBag.RelatedProducts as List<WebLinhKienPc.Models.Product>;
+    if (related != null && related.Any())
+    {
+        <div style="margin-top:48px">
+            <div class="divider"></div>
+            <h3 style="font-family:'Rajdhani',sans-serif;font-size:22px;font-weight:700;color:#e8e8ff;margin:24px 0 20px;">
+                Sản phẩm liên quan
+            </h3>
 
-        function updateTotal() {
-            let qty = document.getElementById("quantity").value;
-            let total = qty * price;
+            <div class="slider-wrap">
+                <button class="slider-btn prev" id="prevBtn">‹</button>
 
-            document.getElementById("totalprice").innerText =
-                total.toLocaleString('vi-VN') + " VNĐ";
-        }
+                <div class="slider-viewport">
+                    <div class="slider-track" id="sliderTrack">
+                        @foreach (var p in related)
+                        {
+                            <a class="slider-card"
+                               asp-controller="Product"
+                               asp-action="Details"
+                               asp-route-id="@p.ProductId">
+                                <div class="slider-img-wrap">
+                                    @if (!string.IsNullOrEmpty(p.ImageUrl))
+                                    {
+                                        <img src="@p.ImageUrl" class="slider-img" />
+                                    }
+                                    else
+                                    {
+                                        <div class="slider-img-empty">📷</div>
+                                    }
+                                </div>
+                                <div class="slider-info">
+                                    <div class="slider-name">@p.Name</div>
+                                    <div class="slider-price">@p.Price.ToString("N0") ₫</div>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                </div>
 
-        function increase() {
-            let qty = document.getElementById("quantity");
-            qty.value = parseInt(qty.value) + 1;
+                <button class="slider-btn next" id="nextBtn">›</button>
+            </div>
+        </div>
+    }
+}
+
+<script>
+    // ===== FUNCTIONS CHO SỐ LƯỢNG =====
+    function increase() {
+        let input = document.getElementById('quantity');
+        let max = parseInt(input.getAttribute('max'));
+        let current = parseInt(input.value);
+        if (current < max) {
+            input.value = current + 1;
             updateTotal();
         }
+    }
 
-        function decrease() {
-            let qty = document.getElementById("quantity");
-            if (qty.value > 1) {
-                qty.value = parseInt(qty.value) - 1;
+    function decrease() {
+        let input = document.getElementById('quantity');
+        let current = parseInt(input.value);
+        if (current > 1) {
+            input.value = current - 1;
+            updateTotal();
+        }
+    }
+
+    function updateTotal() {
+        let input = document.getElementById('quantity');
+        let quantity = parseInt(input.value) || 1;
+        let price = @Model.Price;
+        let total = quantity * price;
+        
+        document.getElementById('totalprice').textContent = total.toLocaleString('vi-VN') + ' ₫';
+        
+        // Enable/disable buttons
+        let max = parseInt(input.getAttribute('max'));
+        document.getElementById('btnIncrease').disabled = quantity >= max;
+        document.getElementById('btnDecrease').disabled = quantity <= 1;
+    }
+
+    // ===== KHỞI TẠO =====
+    document.addEventListener('DOMContentLoaded', function () {
+        // Khởi tạo số lượng
+        updateTotal();
+        
+        // Xử lý input trực tiếp
+        const qtyInput = document.getElementById('quantity');
+        if (qtyInput) {
+            qtyInput.addEventListener('input', function(e) {
+                let value = parseInt(e.target.value) || 1;
+                let max = parseInt(e.target.getAttribute('max'));
+                let min = parseInt(e.target.getAttribute('min'));
+                
+                if (value > max) e.target.value = max;
+                if (value < min) e.target.value = min;
+                
                 updateTotal();
+            });
+        }
+
+        // ===== SLIDER CODE =====
+        const track = document.getElementById('sliderTrack');
+        if (!track) return;
+
+        const originalCards = Array.from(track.children);
+
+        // Clone 2 đầu để loop mượt
+        originalCards.forEach(card => {
+            track.appendChild(card.cloneNode(true));
+        });
+        originalCards.slice().reverse().forEach(card => {
+            track.insertBefore(card.cloneNode(true), track.firstChild);
+        });
+
+        let cards = Array.from(track.children);
+        let index = originalCards.length;
+        let isDragging = false;
+        let startX = 0;
+        let currentTranslate = 0;
+        let prevTranslate = 0;
+
+        function getCardWidth() {
+            return cards[0].getBoundingClientRect().width + 16;
+        }
+
+        function setPosition(x) {
+            track.style.transform = `translateX(${x}px)`;
+        }
+
+        function updateSlider(animate = true) {
+            const width = getCardWidth();
+            track.style.transition = animate ? 'transform 0.4s' : 'none';
+            currentTranslate = -index * width;
+            prevTranslate = currentTranslate;
+            setPosition(currentTranslate);
+        }
+
+        function next() {
+            index++;
+            updateSlider(true);
+            if (index >= cards.length - originalCards.length) {
+                setTimeout(() => {
+                    index = originalCards.length;
+                    updateSlider(false);
+                }, 400);
             }
         }
-    </script>
-}
+
+        function prev() {
+            index--;
+            updateSlider(true);
+            if (index < originalCards.length) {
+                setTimeout(() => {
+                    index = cards.length - originalCards.length * 2;
+                    updateSlider(false);
+                }, 400);
+            }
+        }
+
+        // BUTTON
+        document.getElementById('nextBtn')?.addEventListener('click', next);
+        document.getElementById('prevBtn')?.addEventListener('click', prev);
+
+        // AUTO SLIDE
+        let auto = setInterval(next, 3000);
+
+        function resetAuto() {
+            clearInterval(auto);
+            auto = setInterval(next, 3000);
+        }
+
+        // DRAG
+        track.addEventListener('mousedown', startDrag);
+        track.addEventListener('touchstart', startDrag);
+        track.addEventListener('mousemove', drag);
+        track.addEventListener('touchmove', drag);
+        track.addEventListener('mouseup', endDrag);
+        track.addEventListener('mouseleave', endDrag);
+        track.addEventListener('touchend', endDrag);
+
+        function startDrag(e) {
+            isDragging = true;
+            startX = getX(e);
+            track.style.transition = 'none';
+            clearInterval(auto);
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            const currentX = getX(e);
+            const diff = currentX - startX;
+            setPosition(prevTranslate + diff);
+        }
+
+        function endDrag(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            const endX = getX(e);
+            const diff = endX - startX;
+
+            if (diff < -50) next();
+            else if (diff > 50) prev();
+            else updateSlider();
+
+            resetAuto();
+        }
+
+        function getX(e) {
+            return e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+        }
+
+        // INIT
+        updateSlider(false);
+        window.addEventListener('resize', () => updateSlider(false));
+    });
+</script>

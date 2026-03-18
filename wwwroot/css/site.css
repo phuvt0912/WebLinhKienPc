@@ -29,3 +29,83 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+/* ===== GLOBAL DARK THEME ===== */
+body {
+    background: #0d0d1a !important;
+    color: #c0c0e0;
+    font-family: 'Inter', sans-serif;
+}
+
+/* Override Bootstrap */
+.bg-white {
+    background: #12122a !important;
+}
+
+.bg-light {
+    background: #12122a !important;
+}
+
+.text-dark {
+    color: #c0c0e0 !important;
+}
+
+.text-muted {
+    color: #6a6a9a !important;
+}
+
+/* Card */
+.card {
+    background: #12122a !important;
+    border: 1px solid rgba(162, 89, 255, 0.15) !important;
+    color: #c0c0e0 !important;
+}
+
+.card-body {
+    color: #c0c0e0 !important;
+}
+
+/* Table */
+.table {
+    color: #c0c0e0 !important;
+}
+
+.table-bordered td,
+.table-bordered th {
+    border-color: rgba(162, 89, 255, 0.15) !important;
+}
+
+/* Navbar */
+.navbar {
+    background: #0d0d1a !important;
+    border-bottom: 1px solid rgba(162, 89, 255, 0.2) !important;
+}
+
+.navbar-light .navbar-brand,
+.navbar-light .nav-link {
+    color: #c0c0e0 !important;
+}
+
+    .navbar-light .nav-link:hover {
+        color: #a259ff !important;
+    }
+
+/* Footer */
+.footer {
+    background: #0d0d1a !important;
+    border-top: 1px solid rgba(162, 89, 255, 0.15) !important;
+    color: #6a6a9a !important;
+}
+
+    .footer a {
+        color: #a259ff !important;
+    }
+
+        .footer a:hover {
+            color: #00cfff !important;
+        }
+
+/* Border */
+.border-bottom {
+    border-bottom-color: rgba(162, 89, 255, 0.2) !important;
+}

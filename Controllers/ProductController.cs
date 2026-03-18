@@ -4,57 +4,63 @@ using Microsoft.EntityFrameworkCore;
 
 namespace WebLinhKienPc.Controllers
 {
-	public class ProductController: Controller
-	{
-		ApplicationDbContext _context;
+    public class ProductController : Controller
+    {
+        ApplicationDbContext _context;
 
-		public ProductController(ApplicationDbContext context) { _context = context; }
-		public IActionResult Index(string keyword, int? categoryId, decimal? minPrice, decimal? maxPrice)
-		{
-			var query = _context.Products
-				.Include(p => p.Category)
-				.AsQueryable();
+        public ProductController(ApplicationDbContext context) { _context = context; }
 
-			// tìm kiếm theo tên
-			if (!string.IsNullOrEmpty(keyword))
-			{
-				query = query.Where(p => p.Name.Contains(keyword));
-			}
+        public IActionResult Index(string keyword, int? categoryId, decimal? minPrice, decimal? maxPrice)
+        {
+            var query = _context.Products
+                .Include(p => p.Category)
+                .AsQueryable();
 
-			// lọc theo danh mục
-			if (categoryId.HasValue)
-			{
-				query = query.Where(p => p.CategoryId == categoryId);
-			}
+            if (!string.IsNullOrEmpty(keyword))
+                query = query.Where(p => p.Name.Contains(keyword));
 
-			// lọc theo giá
-			if (minPrice.HasValue)
-			{
-				query = query.Where(p => p.Price >= minPrice);
-			}
+            if (categoryId.HasValue)
+                query = query.Where(p => p.CategoryId == categoryId);
 
-			if (maxPrice.HasValue)
-			{
-				query = query.Where(p => p.Price <= maxPrice);
-			}
+            if (minPrice.HasValue)
+                query = query.Where(p => p.Price >= minPrice);
 
-			var products = query
-				.OrderByDescending(p => p.CreatedDate)
-				.ToList();
+            if (maxPrice.HasValue)
+                query = query.Where(p => p.Price <= maxPrice);
 
-			ViewBag.Categories = _context.Categories.ToList();
+            var products = query
+                .OrderByDescending(p => p.CreatedDate)
+                .ToList();
 
-			return View(products);
-		}
+            ViewBag.Categories = _context.Categories.ToList();
 
-		public async Task<IActionResult> Details(int id)
-		{
-			var product = await _context.Products.Include(p => p.Category).FirstOrDefaultAsync(p => p.ProductId == id);
-			if (product == null)
-			{
-				return NotFound();
-			}
-			return View(product);
-		}
-	}
+            // Truyền filter về view để hiện nút xoá lọc
+            ViewBag.Keyword = keyword;
+            ViewBag.CategoryId = categoryId;
+            ViewBag.MinPrice = minPrice;
+            ViewBag.MaxPrice = maxPrice;
+
+            return View(products);
+        }
+
+        public async Task<IActionResult> Details(int id)
+        {
+            var product = await _context.Products
+                .Include(p => p.Category)
+                .FirstOrDefaultAsync(p => p.ProductId == id);
+
+            if (product == null) return NotFound();
+
+            // Sản phẩm liên quan — cùng danh mục, khác sản phẩm hiện tại
+            var related = await _context.Products
+                .Include(p => p.Category)
+                .Where(p => p.CategoryId == product.CategoryId && p.ProductId != id)
+                .Take(4)
+                .ToListAsync();
+
+            ViewBag.RelatedProducts = related;
+
+            return View(product);
+        }
+    }
 }
