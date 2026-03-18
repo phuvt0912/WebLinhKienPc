@@ -327,7 +327,7 @@
                         <a asp-controller="Account" asp-action="Profile">Tài khoản</a>
                         <a asp-controller="Order" asp-action="Index">Đơn hàng</a>
 
-                        @if (User.IsInRole("Admin") || User.IsInRole("NhanVien"))
+                        @if (User.IsInRole("Admin"))
                         {
                             <div class="pc-divider"></div>
                             <a asp-controller="Admin" asp-action="Index">Dashboard</a>

@@ -106,7 +106,6 @@
                         background: rgba(162, 89, 255, 0.1);
                     }
 
-                    /* Icon SVG mặc định xám */
                     .admin-nav a svg {
                         width: 17px;
                         height: 17px;
@@ -116,7 +115,6 @@
                         transition: stroke 0.2s;
                     }
 
-                    /* Icon SVG khi hover đổi sang gradient */
                     .admin-nav a:hover svg,
                     .admin-nav a.active svg {
                         stroke: url(#navGrad);
@@ -182,11 +180,19 @@
         <div class="admin-inner">
 
             <a class="admin-logo" asp-controller="Admin" asp-action="Index">⚡ LinhKienPC</a>
-            <span class="admin-badge">Admin</span>
+
+            <!-- Badge role -->
+            @if (User.IsInRole("Admin"))
+            {
+                <span class="admin-badge">Admin</span>
+            }
+            else
+            {
+                <span class="admin-badge" style="color:#00cfff;border-color:rgba(0,207,255,0.3);background:rgba(0,207,255,0.1)">Nhân viên</span>
+            }
 
             <nav class="admin-nav">
 
-                <!-- Gradient dùng chung cho icon SVG -->
                 <svg width="0" height="0" style="position:absolute">
                     <defs>
                         <linearGradient id="navGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -196,7 +202,7 @@
                     </defs>
                 </svg>
 
-                <!-- Sản phẩm -->
+                <!-- Sản phẩm — Admin + NhanVien -->
                 <a asp-controller="AdminProduct" asp-action="Index">
                     <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
@@ -204,7 +210,7 @@
                     Sản phẩm
                 </a>
 
-                <!-- Danh mục -->
+                <!-- Danh mục — Admin + NhanVien -->
                 <a asp-controller="AdminCategory" asp-action="Index">
                     <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M3 7h18M3 12h18M3 17h18" />
@@ -212,7 +218,7 @@
                     Danh mục
                 </a>
 
-                <!-- Đơn hàng -->
+                <!-- Đơn hàng — Admin + NhanVien -->
                 <a asp-controller="AdminOrder" asp-action="Index">
                     <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -220,25 +226,28 @@
                     Đơn hàng
                 </a>
 
-                <!-- Tài khoản -->
-                <a asp-controller="AdminAccount" asp-action="Index">
-                    <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <circle cx="12" cy="8" r="4" stroke="inherit" />
-                        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-                    </svg>
-                    Tài khoản
-                </a>
+                <!-- Tài khoản — chỉ Admin -->
+                @if (User.IsInRole("Admin"))
+                {
+                    <a asp-controller="AdminAccount" asp-action="Index">
+                        <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="8" r="4" stroke="inherit" />
+                            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                        </svg>
+                        Tài khoản
+                    </a>
 
-                <!-- Dashboard -->
-                <a asp-controller="Admin" asp-action="Index">
-                    <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5z" />
-                        <path d="M14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5z" />
-                        <path d="M4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4z" />
-                        <path d="M14 13a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
-                    </svg>
-                    Dashboard
-                </a>
+                    <!-- Dashboard — chỉ Admin -->
+                    <a asp-controller="Admin" asp-action="Index">
+                        <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5z" />
+                            <path d="M14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5z" />
+                            <path d="M4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4z" />
+                            <path d="M14 13a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
+                        </svg>
+                        Dashboard
+                    </a>
+                }
 
             </nav>
 
@@ -260,7 +269,7 @@
     </div>
 
     @await RenderSectionAsync("Scripts", required: false)
-    
+
     <script>
             const currentPath = window.location.pathname.toLowerCase();
             document.querySelectorAll('.admin-nav a').forEach(link => {
