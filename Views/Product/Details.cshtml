@@ -656,128 +656,173 @@
 }
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const track = document.getElementById('sliderTrack');
-    if (!track) return;
-
-    const originalCards = Array.from(track.children);
-
-    // Clone 2 đầu để loop mượt
-    originalCards.forEach(card => {
-        track.appendChild(card.cloneNode(true));
-    });
-    originalCards.slice().reverse().forEach(card => {
-        track.insertBefore(card.cloneNode(true), track.firstChild);
-    });
-
-    let cards = Array.from(track.children);
-
-    let index = originalCards.length;
-    let isDragging = false;
-    let startX = 0;
-    let currentTranslate = 0;
-    let prevTranslate = 0;
-
-    function getCardWidth() {
-        return cards[0].getBoundingClientRect().width + 16;
-    }
-
-    function setPosition(x) {
-        track.style.transform = `translateX(${x}px)`;
-    }
-
-    function updateSlider(animate = true) {
-        const width = getCardWidth();
-
-        track.style.transition = animate ? 'transform 0.4s' : 'none';
-
-        currentTranslate = -index * width;
-        prevTranslate = currentTranslate;
-        setPosition(currentTranslate);
-    }
-
-    function next() {
-        index++;
-        updateSlider(true);
-
-        if (index >= cards.length - originalCards.length) {
-            setTimeout(() => {
-                index = originalCards.length;
-                updateSlider(false);
-            }, 400);
+    // ===== FUNCTIONS CHO SỐ LƯỢNG =====
+    function increase() {
+        let input = document.getElementById('quantity');
+        let max = parseInt(input.getAttribute('max'));
+        let current = parseInt(input.value);
+        if (current < max) {
+            input.value = current + 1;
+            updateTotal();
         }
     }
 
-    function prev() {
-        index--;
-        updateSlider(true);
-
-        if (index < originalCards.length) {
-            setTimeout(() => {
-                index = cards.length - originalCards.length * 2;
-                updateSlider(false);
-            }, 400);
+    function decrease() {
+        let input = document.getElementById('quantity');
+        let current = parseInt(input.value);
+        if (current > 1) {
+            input.value = current - 1;
+            updateTotal();
         }
     }
 
-    // BUTTON
-    document.getElementById('nextBtn')?.addEventListener('click', next);
-    document.getElementById('prevBtn')?.addEventListener('click', prev);
-
-    // AUTO SLIDE
-    let auto = setInterval(next, 3000);
-
-    function resetAuto() {
-        clearInterval(auto);
-        auto = setInterval(next, 3000);
+    function updateTotal() {
+        let input = document.getElementById('quantity');
+        let quantity = parseInt(input.value) || 1;
+        let price = @Model.Price;
+        let total = quantity * price;
+        
+        document.getElementById('totalprice').textContent = total.toLocaleString('vi-VN') + ' ₫';
+        
+        // Enable/disable buttons
+        let max = parseInt(input.getAttribute('max'));
+        document.getElementById('btnIncrease').disabled = quantity >= max;
+        document.getElementById('btnDecrease').disabled = quantity <= 1;
     }
 
-    // DRAG
-    track.addEventListener('mousedown', startDrag);
-    track.addEventListener('touchstart', startDrag);
+    // ===== KHỞI TẠO =====
+    document.addEventListener('DOMContentLoaded', function () {
+        // Khởi tạo số lượng
+        updateTotal();
+        
+        // Xử lý input trực tiếp
+        const qtyInput = document.getElementById('quantity');
+        if (qtyInput) {
+            qtyInput.addEventListener('input', function(e) {
+                let value = parseInt(e.target.value) || 1;
+                let max = parseInt(e.target.getAttribute('max'));
+                let min = parseInt(e.target.getAttribute('min'));
+                
+                if (value > max) e.target.value = max;
+                if (value < min) e.target.value = min;
+                
+                updateTotal();
+            });
+        }
 
-    track.addEventListener('mousemove', drag);
-    track.addEventListener('touchmove', drag);
+        // ===== SLIDER CODE =====
+        const track = document.getElementById('sliderTrack');
+        if (!track) return;
 
-    track.addEventListener('mouseup', endDrag);
-    track.addEventListener('mouseleave', endDrag);
-    track.addEventListener('touchend', endDrag);
+        const originalCards = Array.from(track.children);
 
-    function startDrag(e) {
-        isDragging = true;
-        startX = getX(e);
-        track.style.transition = 'none';
-        clearInterval(auto);
-    }
+        // Clone 2 đầu để loop mượt
+        originalCards.forEach(card => {
+            track.appendChild(card.cloneNode(true));
+        });
+        originalCards.slice().reverse().forEach(card => {
+            track.insertBefore(card.cloneNode(true), track.firstChild);
+        });
 
-    function drag(e) {
-        if (!isDragging) return;
-        const currentX = getX(e);
-        const diff = currentX - startX;
-        setPosition(prevTranslate + diff);
-    }
+        let cards = Array.from(track.children);
+        let index = originalCards.length;
+        let isDragging = false;
+        let startX = 0;
+        let currentTranslate = 0;
+        let prevTranslate = 0;
 
-    function endDrag(e) {
-        if (!isDragging) return;
-        isDragging = false;
+        function getCardWidth() {
+            return cards[0].getBoundingClientRect().width + 16;
+        }
 
-        const endX = getX(e);
-        const diff = endX - startX;
+        function setPosition(x) {
+            track.style.transform = `translateX(${x}px)`;
+        }
 
-        if (diff < -50) next();
-        else if (diff > 50) prev();
-        else updateSlider();
+        function updateSlider(animate = true) {
+            const width = getCardWidth();
+            track.style.transition = animate ? 'transform 0.4s' : 'none';
+            currentTranslate = -index * width;
+            prevTranslate = currentTranslate;
+            setPosition(currentTranslate);
+        }
 
-        resetAuto();
-    }
+        function next() {
+            index++;
+            updateSlider(true);
+            if (index >= cards.length - originalCards.length) {
+                setTimeout(() => {
+                    index = originalCards.length;
+                    updateSlider(false);
+                }, 400);
+            }
+        }
 
-    function getX(e) {
-        return e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
-    }
+        function prev() {
+            index--;
+            updateSlider(true);
+            if (index < originalCards.length) {
+                setTimeout(() => {
+                    index = cards.length - originalCards.length * 2;
+                    updateSlider(false);
+                }, 400);
+            }
+        }
 
-    // INIT (quan trọng)
-    updateSlider(false);
+        // BUTTON
+        document.getElementById('nextBtn')?.addEventListener('click', next);
+        document.getElementById('prevBtn')?.addEventListener('click', prev);
 
-    window.addEventListener('resize', () => updateSlider(false));
-});
+        // AUTO SLIDE
+        let auto = setInterval(next, 3000);
+
+        function resetAuto() {
+            clearInterval(auto);
+            auto = setInterval(next, 3000);
+        }
+
+        // DRAG
+        track.addEventListener('mousedown', startDrag);
+        track.addEventListener('touchstart', startDrag);
+        track.addEventListener('mousemove', drag);
+        track.addEventListener('touchmove', drag);
+        track.addEventListener('mouseup', endDrag);
+        track.addEventListener('mouseleave', endDrag);
+        track.addEventListener('touchend', endDrag);
+
+        function startDrag(e) {
+            isDragging = true;
+            startX = getX(e);
+            track.style.transition = 'none';
+            clearInterval(auto);
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            const currentX = getX(e);
+            const diff = currentX - startX;
+            setPosition(prevTranslate + diff);
+        }
+
+        function endDrag(e) {
+            if (!isDragging) return;
+            isDragging = false;
+            const endX = getX(e);
+            const diff = endX - startX;
+
+            if (diff < -50) next();
+            else if (diff > 50) prev();
+            else updateSlider();
+
+            resetAuto();
+        }
+
+        function getX(e) {
+            return e.type.includes('mouse') ? e.pageX : e.touches[0].clientX;
+        }
+
+        // INIT
+        updateSlider(false);
+        window.addEventListener('resize', () => updateSlider(false));
+    });
 </script>
