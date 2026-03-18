@@ -1,14 +1,24 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Http
+@using Microsoft.EntityFrameworkCore
+@using WebLinhKienPc.AppDbContext
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
+@inject ApplicationDbContext DbContext
 
 @{
     var currentUser = await UserManager.GetUserAsync(User);
     var displayName = currentUser?.UserName ?? User.Identity?.Name ?? "";
     var avatar = !string.IsNullOrEmpty(displayName) ? displayName[0].ToString().ToUpper() : "?";
-    var displayEmail = currentUser?.Email ?? "";
-    int cartCount = Context.Session.GetInt32("CartCount") ?? 0;
+
+    int cartCount = 0;
+    if (currentUser != null)
+    {
+        var cart = await DbContext.Carts
+            .Include(c => c.CartItems)
+            .FirstOrDefaultAsync(c => c.UserId == currentUser.Id);
+        cartCount = cart?.CartItems.Sum(i => i.Quantity) ?? 0;
+    }
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -23,10 +33,10 @@
     }
 
     .header-inner {
-        max-width: 1600px; 
+        max-width: 1600px;
         margin: auto;
-        padding: 0 36px; 
-        height: 70px; 
+        padding: 0 36px;
+        height: 70px;
         display: flex;
         align-items: center;
         gap: 32px;
@@ -51,6 +61,7 @@
         display: flex;
         gap: 8px;
         flex: 1;
+        align-items: center;
     }
 
         .pc-nav a {
@@ -67,7 +78,7 @@
                 color: #fff;
                 background: rgba(162,89,255,0.12);
             }
-        
+
     .pc-nav-admin {
         font-family: 'Rajdhani', sans-serif;
         font-weight: 700;
@@ -128,15 +139,18 @@
         position: absolute;
         top: 4px;
         right: 4px;
-        width: 16px;
+        min-width: 16px;
         height: 16px;
+        padding: 0 4px;
         background: linear-gradient(135deg, #a259ff, #00cfff);
-        border-radius: 50%;
+        border-radius: 8px;
         font-size: 10px;
         color: #fff;
         display: flex;
         align-items: center;
         justify-content: center;
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
     }
 
     .pc-btn-login {
@@ -210,7 +224,6 @@
         pointer-events: auto;
     }
 
-    /* Phần tên tài khoản đầu dropdown */
     .pc-dropdown-header {
         padding: 14px 18px 10px;
         border-bottom: 1px solid rgba(162,89,255,0.15);
@@ -304,7 +317,14 @@
             <!-- Cart -->
             <a class="pc-cart" asp-controller="Cart" asp-action="Index" title="Giỏ hàng">
                 <span class="pc-cart-icon">🛒</span>
-                <span class="pc-cart-badge">@cartCount</span>
+                @if (cartCount > 0)
+                {
+                    <span class="pc-cart-badge" id="cartBadge">@cartCount</span>
+                }
+                else
+                {
+                    <span class="pc-cart-badge" id="cartBadge" style="display:none">0</span>
+                }
             </a>
 
             @if (SignInManager.IsSignedIn(User))
@@ -315,7 +335,6 @@
 
                     <div class="pc-dropdown">
 
-                        <!-- Tên tài khoản đầu dropdown -->
                         <div class="pc-dropdown-header">
                             <span class="pc-dropdown-name">@displayName</span>
                             <span class="pc-dropdown-role">
