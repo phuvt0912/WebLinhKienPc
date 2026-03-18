@@ -69,16 +69,25 @@
             }
 
         
-        .pc-nav .admin-link {
-            color: #8888aa; 
-            background: transparent;
-            border: none; 
-        }
+    .pc-nav-admin {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: 0.8px;
+        color: #a259ff !important;
+        padding: 7px 16px;
+        border-radius: 6px;
+        border: 1.5px solid rgba(162, 89, 255, 0.35);
+        background: rgba(162, 89, 255, 0.08);
+        transition: all 0.2s;
+        white-space: nowrap;
+    }
 
-            .pc-nav .admin-link:hover {
-                color: #fff;
-                background: rgba(162,89,255,0.12); 
-            }
+        .pc-nav-admin:hover {
+            color: #fff !important;
+            background: rgba(162, 89, 255, 0.2) !important;
+            border-color: #a259ff !important;
+        }
 
     .pc-actions {
         display: flex;
@@ -284,7 +293,9 @@
 
             @if (User.IsInRole("Admin") || User.IsInRole("NhanVien"))
             {
-                <a asp-controller="AdminProduct" asp-action="Index">Quản trị</a>
+                <a class="pc-nav-admin" asp-controller="AdminProduct" asp-action="Index">
+                    ⚡ Quản trị
+                </a>
             }
         </nav>
 

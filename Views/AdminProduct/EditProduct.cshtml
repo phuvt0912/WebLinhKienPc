@@ -110,7 +110,6 @@
 
     .field select option { background: #12122a; color: #e8e8ff; }
 
-    /* Bỏ mũi tên input number */
     input[type=number]::-webkit-outer-spin-button,
     input[type=number]::-webkit-inner-spin-button {
         -webkit-appearance: none;
@@ -118,7 +117,6 @@
     }
     input[type=number] { -moz-appearance: textfield; }
 
-    /* Image tabs */
     .img-tabs {
         display: flex;
         gap: 6px;
@@ -309,9 +307,11 @@
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="ProductId" />
 
+        <!-- Hidden lưu URL gốc để restore khi cần -->
+        <input type="hidden" id="originalImageUrl" name="OriginalImageUrl" value="@Model.ImageUrl" />
+
         <div class="form-grid">
 
-            <!-- Tên sản phẩm -->
             <div class="field full">
                 <div class="field-header">
                     <label>Tên sản phẩm <span style="color:#ff4f7b">*</span></label>
@@ -322,7 +322,6 @@
 
             <div class="divider"></div>
 
-            <!-- Giá -->
             <div class="field">
                 <div class="field-header">
                     <label>Giá (VNĐ) <span style="color:#ff4f7b">*</span></label>
@@ -335,7 +334,6 @@
                 <span asp-validation-for="Price" class="text-danger"></span>
             </div>
 
-            <!-- Số lượng -->
             <div class="field">
                 <div class="field-header">
                     <label>Số lượng tồn kho <span style="color:#ff4f7b">*</span></label>
@@ -347,7 +345,6 @@
                 <span asp-validation-for="Stock" class="text-danger"></span>
             </div>
 
-            <!-- Danh mục -->
             <div class="field">
                 <div class="field-header">
                     <label>Danh mục <span style="color:#ff4f7b">*</span></label>
@@ -358,24 +355,20 @@
                 <span asp-validation-for="CategoryId" class="text-danger"></span>
             </div>
 
-            <!-- Ảnh sản phẩm -->
             <div class="field">
                 <div class="field-header">
                     <label>Ảnh sản phẩm</label>
                 </div>
 
                 <div class="img-tabs">
-                    <button type="button" class="img-tab active"
-                            onclick="switchTab('url', this)">
+                    <button type="button" class="img-tab active" onclick="switchTab('url', this)">
                         🔗 URL
                     </button>
-                    <button type="button" class="img-tab"
-                            onclick="switchTab('file', this)">
+                    <button type="button" class="img-tab" onclick="switchTab('file', this)">
                         📁 Tải lên
                     </button>
                 </div>
 
-                <!-- Tab URL -->
                 <div id="tab-url">
                     <input asp-for="ImageUrl"
                            id="imageUrlInput"
@@ -384,7 +377,6 @@
                            autocomplete="off" />
                 </div>
 
-                <!-- Tab File -->
                 <div id="tab-file" style="display:none">
                     <label class="upload-area" id="uploadArea">
                         <input type="file"
@@ -399,7 +391,6 @@
                     </label>
                 </div>
 
-                <!-- Preview ảnh hiện tại -->
                 <div class="img-preview-wrap @(!string.IsNullOrEmpty(Model.ImageUrl) ? "show" : "")"
                      id="imgPreviewWrap">
                     <img id="imgPreview"
@@ -412,7 +403,6 @@
 
             <div class="divider"></div>
 
-            <!-- Mô tả -->
             <div class="field full">
                 <div class="field-header">
                     <label>Mô tả sản phẩm</label>
@@ -427,7 +417,6 @@
                 <span asp-validation-for="Description" class="text-danger"></span>
             </div>
 
-            <!-- Actions -->
             <div class="form-actions">
                 <button type="submit" class="btn-submit" id="submitBtn">
                     ✏️ Lưu thay đổi
@@ -440,16 +429,15 @@
 </div>
 
 <script>
-    // Chuyển tab URL / File
+    // ===== TABS =====
     function switchTab(tab, btn) {
         document.querySelectorAll('.img-tab').forEach(t => t.classList.remove('active'));
         btn.classList.add('active');
         document.getElementById('tab-url').style.display = tab === 'url' ? 'block' : 'none';
         document.getElementById('tab-file').style.display = tab === 'file' ? 'block' : 'none';
-        clearImage();
     }
 
-    // Preview từ URL
+    // ===== PREVIEW =====
     function previewImage(url) {
         const wrap = document.getElementById('imgPreviewWrap');
         const img = document.getElementById('imgPreview');
@@ -462,7 +450,6 @@
         }
     }
 
-    // Preview từ file
     function previewFile(input) {
         if (!input.files || !input.files[0]) return;
         const file = input.files[0];
@@ -473,38 +460,33 @@
         }
         const reader = new FileReader();
         reader.onload = e => {
-            const img = document.getElementById('imgPreview');
-            const wrap = document.getElementById('imgPreviewWrap');
-            img.src = e.target.result;
-            wrap.classList.add('show');
+            document.getElementById('imgPreview').src = e.target.result;
+            document.getElementById('imgPreviewWrap').classList.add('show');
             document.querySelector('.upload-text').textContent = file.name;
         };
         reader.readAsDataURL(file);
     }
 
-    // Xoá preview
     function clearImage() {
+        const isUrlTab = document.getElementById('tab-url').style.display !== 'none';
+        if (isUrlTab) {
+            const urlInput = document.getElementById('imageUrlInput');
+            if (urlInput) urlInput.value = '';
+        } else {
+            const fileInput = document.getElementById('imageFileInput');
+            if (fileInput) fileInput.value = '';
+            const uploadText = document.querySelector('.upload-text');
+            if (uploadText) uploadText.textContent = 'Kéo thả hoặc click để chọn ảnh';
+        }
         document.getElementById('imgPreview').src = '';
         document.getElementById('imgPreviewWrap').classList.remove('show');
-        const urlInput = document.getElementById('imageUrlInput');
-        if (urlInput) urlInput.value = '';
-        const fileInput = document.getElementById('imageFileInput');
-        if (fileInput) {
-            fileInput.value = '';
-            document.querySelector('.upload-text').textContent = 'Kéo thả hoặc click để chọn ảnh';
-        }
     }
 
-    // Drag & drop
+    // ===== DRAG DROP =====
     const uploadArea = document.getElementById('uploadArea');
     if (uploadArea) {
-        uploadArea.addEventListener('dragover', e => {
-            e.preventDefault();
-            uploadArea.classList.add('dragover');
-        });
-        uploadArea.addEventListener('dragleave', () => {
-            uploadArea.classList.remove('dragover');
-        });
+        uploadArea.addEventListener('dragover', e => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+        uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
         uploadArea.addEventListener('drop', e => {
             e.preventDefault();
             uploadArea.classList.remove('dragover');
@@ -518,22 +500,32 @@
         });
     }
 
-    // Format giá
+    // ===== FORMAT GIÁ =====
     const priceInput = document.getElementById('priceInput');
     if (priceInput) {
-        // Format giá hiện có khi load trang
-        let initialVal = priceInput.value.replace(/\D/g, '');
-        if (initialVal) {
-            priceInput.value = Number(initialVal).toLocaleString('vi-VN');
-        }
+        // Format khi load — bỏ phần thập phân
+        const intPrice = Math.round(parseFloat(priceInput.value) || 0);
+        priceInput.value = intPrice > 0 ? intPrice.toLocaleString('vi-VN') : '';
 
+        // Cho phép sửa ở giữa — giữ cursor position
         priceInput.addEventListener('input', function () {
-            let raw = this.value.replace(/\D/g, '');
-            this.value = raw ? Number(raw).toLocaleString('vi-VN') : '';
+            const cursorPos = this.selectionStart;
+            const prevLen = this.value.length;
+            const dotsBeforeCursor = (this.value.substring(0, cursorPos).match(/\./g) || []).length;
+
+            const raw = this.value.replace(/\D/g, '');
+            const formatted = raw ? Number(raw).toLocaleString('vi-VN') : '';
+            this.value = formatted;
+
+            // Tính lại cursor sau khi format
+            const newDotsBeforeCursor = (formatted.substring(0, cursorPos).match(/\./g) || []).length;
+            const dotDiff = newDotsBeforeCursor - dotsBeforeCursor;
+            const newPos = Math.max(0, Math.min(cursorPos + dotDiff, formatted.length));
+            this.setSelectionRange(newPos, newPos);
         });
     }
 
-    // Đếm ký tự mô tả
+    // ===== ĐẾM KÝ TỰ =====
     function updateCharCount(val) {
         const el = document.getElementById('charCount');
         const len = val.length;
@@ -543,11 +535,31 @@
         if (len >= 1000) el.classList.add('over');
     }
 
-    // Submit loading + bỏ format giá trước khi gửi
+    // ===== SUBMIT =====
     document.getElementById('editForm').addEventListener('submit', function () {
+        // 1. Bỏ format giá
         if (priceInput) {
             priceInput.value = priceInput.value.replace(/\./g, '').replace(/,/g, '');
         }
+
+        // 2. Xử lý ảnh
+        const isFileTab = document.getElementById('tab-file').style.display !== 'none';
+        const fileInput = document.getElementById('imageFileInput');
+        const urlInput = document.getElementById('imageUrlInput');
+        const originalUrl = document.getElementById('originalImageUrl').value;
+
+        if (isFileTab) {
+            if (!fileInput || fileInput.files.length === 0) {
+                // Tab File nhưng không chọn file → restore URL gốc
+                if (urlInput) urlInput.value = originalUrl;
+            } else {
+                // Có file mới → xóa URL
+                if (urlInput) urlInput.value = '';
+            }
+        }
+        // Tab URL → gửi bình thường
+
+        // 3. Loading
         const btn = document.getElementById('submitBtn');
         btn.textContent = 'Đang lưu...';
         btn.disabled = true;

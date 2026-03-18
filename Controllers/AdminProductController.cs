@@ -173,72 +173,53 @@ namespace WebLinhKienPc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditProduct(int id, IFormFile? imageFile)
         {
-            // Lấy sản phẩm từ database
             var product = await _context.Products.FindAsync(id);
             if (product == null) return NotFound();
 
-            // Cập nhật dữ liệu từ form
             product.Name = Request.Form["Name"];
             product.Description = Request.Form["Description"];
 
-            // Xử lý CategoryId
             if (int.TryParse(Request.Form["CategoryId"], out int categoryId))
-            {
                 product.CategoryId = categoryId;
-            }
 
-            // Xử lý Price
-            string priceString = Request.Form["Price"].ToString().Replace(".", "");
+            string priceString = Request.Form["Price"].ToString().Replace(".", "").Replace(",", "");
             if (decimal.TryParse(priceString, out decimal price))
-            {
                 product.Price = price;
-            }
 
-            // Xử lý Stock
             if (int.TryParse(Request.Form["Stock"], out int stock))
-            {
                 product.Stock = stock;
-            }
 
-            // XỬ LÝ ẢNH
-            string imageUrl = Request.Form["ImageUrl"].ToString();
-
-            // Ưu tiên file upload mới
+            // Xử lý ảnh
             if (imageFile != null && imageFile.Length > 0)
             {
-                // Xóa ảnh cũ nếu là file local
-                if (!string.IsNullOrEmpty(product.ImageUrl) && product.ImageUrl.StartsWith("/images/products/"))
+                // Có file mới → upload
+                if (!string.IsNullOrEmpty(product.ImageUrl)
+                    && product.ImageUrl.StartsWith("/images/products/"))
                 {
                     var oldPath = Path.Combine("wwwroot", product.ImageUrl.TrimStart('/'));
                     if (System.IO.File.Exists(oldPath))
                         System.IO.File.Delete(oldPath);
                 }
 
-                // Upload file mới
                 var fileName = Guid.NewGuid() + Path.GetExtension(imageFile.FileName);
                 var savePath = Path.Combine("wwwroot/images/products", fileName);
                 Directory.CreateDirectory("wwwroot/images/products");
-
                 using var stream = new FileStream(savePath, FileMode.Create);
                 await imageFile.CopyToAsync(stream);
-
                 product.ImageUrl = "/images/products/" + fileName;
             }
-            else if (!string.IsNullOrEmpty(imageUrl))
+            else
             {
-                // Nếu có link ảnh mới từ tab URL
-                // Xóa ảnh cũ nếu là file local
-                if (!string.IsNullOrEmpty(product.ImageUrl) && product.ImageUrl.StartsWith("/images/products/"))
-                {
-                    var oldPath = Path.Combine("wwwroot", product.ImageUrl.TrimStart('/'));
-                    if (System.IO.File.Exists(oldPath))
-                        System.IO.File.Delete(oldPath);
-                }
+                string newImageUrl = Request.Form["ImageUrl"].ToString().Trim();
+                string originalImageUrl = Request.Form["OriginalImageUrl"].ToString().Trim();
 
-                // Gán link mới
-                product.ImageUrl = imageUrl;
+                // Chỉ thay đổi nếu URL mới khác URL gốc
+                if (!string.IsNullOrEmpty(newImageUrl) && newImageUrl != originalImageUrl)
+                {
+                    product.ImageUrl = newImageUrl;
+                }
+                // Ngược lại giữ nguyên product.ImageUrl từ DB
             }
-            // Nếu không có ảnh mới, giữ nguyên ảnh cũ
 
             _context.Products.Update(product);
             await _context.SaveChangesAsync();
