@@ -253,6 +253,28 @@
     .stock-low { color: #ffaa00; }
     .stock-out { color: #ff4f7b; }
 
+    .btn-quickview {
+        display: block;
+        width: calc(100% - 32px);
+        margin: 0 16px 8px;
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid rgba(0, 207, 255, 0.25);
+        background: rgba(0, 207, 255, 0.05);
+        color: #00cfff;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-quickview:hover {
+        background: rgba(0, 207, 255, 0.12);
+        border-color: #00cfff;
+    }
+
     .btn-detail {
         display: block;
         text-align: center;
@@ -287,6 +309,237 @@
 
     .empty-icon { font-size: 48px; margin-bottom: 16px; display: block; }
 
+    /* Quick View Modal */
+    .qv-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.7);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+        backdrop-filter: blur(6px);
+    }
+
+    .qv-overlay.show { display: flex; }
+
+    .qv-box {
+        background: #12122a;
+        border: 1px solid rgba(162, 89, 255, 0.25);
+        border-radius: 16px;
+        width: 90%;
+        max-width: 800px;
+        max-height: 90vh;
+        overflow-y: auto;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        animation: qvPop 0.25s cubic-bezier(0.4,0,0.2,1);
+        position: relative;
+    }
+
+    @@keyframes qvPop {
+        from { transform: scale(0.92); opacity: 0; }
+        to   { transform: scale(1);    opacity: 1; }
+    }
+
+    .qv-close {
+        position: absolute;
+        top: 14px;
+        right: 14px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.05);
+        color: #8888aa;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+        z-index: 10;
+    }
+
+    .qv-close:hover {
+        background: rgba(255,79,123,0.15);
+        border-color: #ff4f7b;
+        color: #ff4f7b;
+    }
+
+    /* Quick View Modal - ẢNH TO BẰNG KHUNG */
+    .qv-img-wrap {
+        aspect-ratio: 1;
+        background: #0d0d1a;
+        border-radius: 16px 0 0 16px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+    }
+
+    .qv-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+
+    .qv-img-empty {
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 60px;
+        color: #2a2a4a;
+        background: #0d0d1a;
+    }
+
+    .qv-info {
+        padding: 32px 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+    }
+
+    .qv-category {
+        display: inline-block;
+        padding: 3px 10px;
+        background: rgba(162,89,255,0.1);
+        border: 1px solid rgba(162,89,255,0.25);
+        border-radius: 4px;
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #a259ff;
+        width: fit-content;
+    }
+
+    .qv-name {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: #e8e8ff;
+        line-height: 1.3;
+    }
+
+    .qv-price {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 30px;
+        font-weight: 700;
+        background: linear-gradient(135deg, #a259ff, #00cfff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .qv-stock {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .qv-stock-dot {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+
+    .qv-divider { height: 1px; background: rgba(162,89,255,0.1); }
+
+    /* QUICK VIEW DESCRIPTION - THANH CUỘN MÀU TÍM */
+    .qv-desc {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #8888aa;
+        line-height: 1.6;
+        max-height: 150px;
+        overflow-y: auto;
+        padding-right: 12px;
+        scrollbar-width: thin;
+        scrollbar-color: #a259ff #2a2a4a;
+    }
+
+    /* Thanh cuộn cho Chrome, Edge, Safari */
+    .qv-desc::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .qv-desc::-webkit-scrollbar-track {
+        background: #2a2a4a;
+        border-radius: 10px;
+    }
+
+    .qv-desc::-webkit-scrollbar-thumb {
+        background: linear-gradient(135deg, #a259ff, #00cfff);
+        border-radius: 10px;
+        border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .qv-desc::-webkit-scrollbar-thumb:hover {
+        background: linear-gradient(135deg, #b274ff, #33d9ff);
+    }
+
+    .qv-desc-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 6px 0;
+        border-bottom: 1px dashed rgba(162, 89, 255, 0.1);
+    }
+
+    .qv-desc-item:last-child {
+        border-bottom: none;
+    }
+
+    .qv-desc-bullet {
+        color: #a259ff;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .qv-desc-text {
+        color: #c0c0e0;
+        font-size: 13px;
+        line-height: 1.5;
+        word-break: break-word;
+    }
+
+    .qv-desc-empty {
+        color: #6a6a9a;
+        font-style: italic;
+        padding: 12px 0;
+        text-align: center;
+    }
+
+    .qv-actions { display: flex; gap: 10px; margin-top: 8px; }
+
+    .qv-btn-detail {
+        flex: 1;
+        padding: 11px;
+        border: none;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #6c2bd9, #a259ff);
+        color: #fff !important;
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 14px;
+        letter-spacing: 0.8px;
+        text-align: center;
+        text-decoration: none !important;
+        transition: opacity 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .qv-btn-detail:hover { opacity: 0.85; }
+
     @@media (max-width: 1200px) {
         .product-grid { grid-template-columns: repeat(3, 1fr); }
     }
@@ -296,6 +549,8 @@
         .product-grid { grid-template-columns: repeat(2, 1fr); }
         .filter-bar { flex-wrap: wrap; }
         .price-range { flex-wrap: wrap; }
+        .qv-box { grid-template-columns: 1fr; }
+        .qv-img-wrap { border-radius: 16px 16px 0 0; aspect-ratio: 16/9; }
     }
 </style>
 
@@ -305,7 +560,6 @@
 
     <form method="get" id="filterForm">
         <div class="filter-bar">
-
             <input class="filter-input"
                    type="text"
                    name="keyword"
@@ -353,7 +607,6 @@
             {
                 <a asp-action="Index" class="btn-clear">✕ Xoá lọc</a>
             }
-
         </div>
     </form>
 
@@ -375,6 +628,10 @@
             {
                 var stockClass = item.Stock > 10 ? "stock-ok" : item.Stock > 0 ? "stock-low" : "stock-out";
                 var stockLabel = item.Stock > 10 ? "Còn hàng" : item.Stock > 0 ? $"Còn {item.Stock} sản phẩm" : "Hết hàng";
+                var safeName = item.Name.Replace("\\", "\\\\").Replace("'", "\\'");
+                var safeDesc = (item.Description ?? "").Replace("\\", "\\\\").Replace("'", "\\'").Replace("\n", "\\n").Replace("\r", "");
+                var safeImg = item.ImageUrl ?? "";
+                var safeCat = (item.Category?.Name ?? "").Replace("'", "\\'");
 
                 <div class="product-card">
                     <div class="product-img-wrap">
@@ -398,6 +655,11 @@
                         <div class="product-stock @stockClass">@stockLabel</div>
                     </div>
 
+                    <button class="btn-quickview"
+                            onclick="openQuickView(@item.ProductId, '@safeName', '@safeImg', @item.Price.ToString(System.Globalization.CultureInfo.InvariantCulture), '@safeCat', @item.Stock, '@safeDesc')">
+                        👁 Xem nhanh
+                    </button>
+
                     <a class="btn-detail"
                        asp-controller="Product"
                        asp-action="Details"
@@ -408,16 +670,40 @@
             }
         }
     </div>
+</div>
 
+<!-- Quick View Modal - SỬA ẢNH TO BẰNG KHUNG -->
+<div class="qv-overlay" id="qvOverlay" onclick="closeQuickView()">
+    <div class="qv-box" onclick="event.stopPropagation()">
+        <button class="qv-close" onclick="closeQuickView()">✕</button>
+
+        <div class="qv-img-wrap" id="qvImgWrap">
+            <img id="qvImg" class="qv-img" src="" alt="" />
+        </div>
+
+        <div class="qv-info">
+            <span class="qv-category" id="qvCategory"></span>
+            <div class="qv-name" id="qvName"></div>
+            <div class="qv-price" id="qvPrice"></div>
+            <div class="qv-stock" id="qvStock"></div>
+            <div class="qv-divider"></div>
+            <div class="qv-desc" id="qvDesc"></div>
+            <div class="qv-actions">
+                <a id="qvBtnDetail" class="qv-btn-detail" href="#">
+                    Xem chi tiết
+                </a>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
+    // ===== FILTER =====
     function formatPrice(input) {
         let raw = input.value.replace(/\D/g, '');
         input.value = raw ? Number(raw).toLocaleString('vi-VN') : '';
     }
 
-    // Format khi load trang nếu đã có giá trị
     document.addEventListener('DOMContentLoaded', function () {
         const minPrice = document.getElementById('minPrice');
         const maxPrice = document.getElementById('maxPrice');
@@ -425,11 +711,77 @@
         if (maxPrice?.value) maxPrice.value = Number(maxPrice.value).toLocaleString('vi-VN');
     });
 
-    // Trước khi submit bỏ format
     document.getElementById('filterForm').addEventListener('submit', function () {
         const minPrice = document.getElementById('minPrice');
         const maxPrice = document.getElementById('maxPrice');
         if (minPrice) minPrice.value = minPrice.value.replace(/\./g, '').replace(/,/g, '');
         if (maxPrice) maxPrice.value = maxPrice.value.replace(/\./g, '').replace(/,/g, '');
+    });
+
+    // ===== QUICK VIEW =====
+    function openQuickView(id, name, img, price, category, stock, desc) {
+        // Ảnh
+        const imgEl = document.getElementById('qvImg');
+        const imgWrap = document.getElementById('qvImgWrap');
+
+        if (img) {
+            imgEl.src = img;
+            imgEl.style.display = 'block';
+            imgWrap.innerHTML = '';
+            imgWrap.appendChild(imgEl);
+        } else {
+            imgWrap.innerHTML = '<div class="qv-img-empty">📷</div>';
+        }
+
+        document.getElementById('qvName').textContent = name;
+        document.getElementById('qvPrice').textContent = Number(price).toLocaleString('vi-VN') + ' ₫';
+        document.getElementById('qvCategory').textContent = category || 'Chưa phân loại';
+        document.getElementById('qvBtnDetail').href = '/Product/Details/' + id;
+
+        // Stock
+        const stockEl = document.getElementById('qvStock');
+        const color = stock > 10 ? '#4cdf8a' : stock > 0 ? '#ffaa00' : '#ff4f7b';
+        const label = stock > 10 ? 'Còn hàng' : stock > 0 ? `Còn ${stock} sản phẩm` : 'Hết hàng';
+
+        stockEl.innerHTML = `
+            <span class="qv-stock-dot" style="background:${color}"></span>
+            <span style="color:${color}">${label}</span>
+        `;
+
+        // ===== MÔ TẢ GỌN GÀNG =====
+        const descEl = document.getElementById('qvDesc');
+
+        if (desc && desc.trim() !== '') {
+            const lines = desc.split('\n').filter(x => x.trim() !== '');
+            
+            if (lines.length > 0) {
+                let html = '';
+                lines.forEach(line => {
+                    html += `
+                        <div class="qv-desc-item">
+                            <span class="qv-desc-bullet">•</span>
+                            <span class="qv-desc-text">${line.trim()}</span>
+                        </div>
+                    `;
+                });
+                descEl.innerHTML = html;
+            } else {
+                descEl.innerHTML = '<div class="qv-desc-empty">Không có mô tả chi tiết</div>';
+            }
+        } else {
+            descEl.innerHTML = '<div class="qv-desc-empty">Không có mô tả chi tiết</div>';
+        }
+
+        document.getElementById('qvOverlay').classList.add('show');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeQuickView() {
+        document.getElementById('qvOverlay').classList.remove('show');
+        document.body.style.overflow = '';
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeQuickView();
     });
 </script>

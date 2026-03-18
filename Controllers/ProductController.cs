@@ -51,6 +51,15 @@ namespace WebLinhKienPc.Controllers
 
             if (product == null) return NotFound();
 
+            // Sản phẩm liên quan — cùng danh mục, khác sản phẩm hiện tại
+            var related = await _context.Products
+                .Include(p => p.Category)
+                .Where(p => p.CategoryId == product.CategoryId && p.ProductId != id)
+                .Take(4)
+                .ToListAsync();
+
+            ViewBag.RelatedProducts = related;
+
             return View(product);
         }
     }
