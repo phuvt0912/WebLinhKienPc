@@ -1,56 +1,104 @@
 ﻿@model IEnumerable<WebLinhKienPc.Models.Category>
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
 
-<h2>Danh mục sản phẩm</h2>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="~/css/admin-category.css" />
 
-<a asp-controller="AdminCategory"
-   asp-action="CreateCategory"
-   class="btn btn-primary mb-3">
-    Thêm danh mục
-</a>
+<div class="page-wrap">
 
-<table class="table table-bordered table-striped">
+    <div class="page-header">
+        <h2 class="page-title">Quản Lý Danh Mục</h2>
+        <a class="btn-add"
+               asp-controller="AdminCategory"
+               asp-action="CreateCategory">
+            + Thêm danh mục
+        </a>
+    </div>
 
-    ```
-    <thead class="table-dark">
-        <tr>
-            <th>ID</th>
-            <th>Tên danh mục</th>
-            <th>Mô tả</th>
-            <th width="180">Thao tác</th>
-        </tr>
-    </thead>
+    <div class="total-count">
+        Tổng cộng <span>@Model.Count()</span> danh mục
+    </div>
 
-    <tbody>
-        @foreach (var item in Model)
-        {
+    <table class="cat-table">
+        <thead>
             <tr>
-                <td>@item.CategoryId</td>
-
-                <td>@item.Name</td>
-
-                <td>@item.Description</td>
-
-                <td>
-                    <a asp-controller="AdminCategory"
-                       asp-action="EditCategory"
-                       asp-route-id="@item.CategoryId"
-                       class="btn btn-warning btn-sm">
-                        Sửa
-                    </a>
-                    @if(User.IsInRole("Admin"))
-                    {
-                        <a asp-controller="AdminCategory"
-                           asp-action="DeleteCategory"
-                           asp-route-id="@item.CategoryId"
-                           class="btn btn-danger btn-sm">
-                            Xóa
-                        </a>
-                    }
-
-                </td>
+                <th>ID</th>
+                <th>Tên danh mục</th>
+                <th>Mô tả</th>
+                <th>Thao tác</th>
             </tr>
-        }
-    </tbody>
-    ```
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="4">
+                        <div class="empty-state">
+                            <span class="empty-icon">📂</span>
+                            Chưa có danh mục nào
+                        </div>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td class="cat-id">#@item.CategoryId</td>
+                        <td class="cat-name">@item.Name</td>
+                        <td class="cat-desc">@(item.Description ?? "—")</td>
+                        <td>
+                            <div class="action-wrap">
+                                <a class="btn-edit"
+                                       asp-controller="AdminCategory"
+                                       asp-action="EditCategory"
+                                       asp-route-id="@item.CategoryId">
+                                    ✏️ Sửa
+                                </a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <form asp-controller="AdminCategory"
+                                          asp-action="DeleteCategory"
+                                          method="post"
+                                          class="delete-form"
+                                          id="form-@item.CategoryId">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.CategoryId" />
+                                        <button type="button"
+                                                class="btn-delete"
+                                                onclick="confirmDelete(@item.CategoryId, '@item.Name')">
+                                            🗑️ Xoá
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
 
-</table>
+</div>
+
+<!-- Modal/Thông báo xóa -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-icon">🗑️</div>
+        <div class="modal-title">Xác nhận xoá</div>
+        <div class="modal-msg">
+            Bạn có chắc muốn xoá danh mục<br>
+            <span class="modal-name" id="modalName"></span>?
+        </div>
+        <div class="modal-note">Hành động này không thể hoàn tác.</div>
+        <div class="modal-actions">
+            <button class="modal-btn-cancel" onclick="closeModal()">Huỷ</button>
+            <button class="modal-btn-confirm" onclick="submitDelete()">Xoá</button>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/admin-category.js"></script>

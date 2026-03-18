@@ -5,7 +5,6 @@ using WebLinhKienPc.Models;
 
 namespace WebLinhKienPc.Controllers
 {
-
     public class AccountController : Controller
     {
         private readonly UserManager<IdentityUser> userManager;
@@ -79,8 +78,20 @@ namespace WebLinhKienPc.Controllers
                 return View("Auth", model);
             }
 
+            // Tìm user theo Email trước
+            var user = await userManager.FindByEmailAsync(model.Email);
+            if (user == null)
+            {
+                if (isAjax)
+                    return BadRequest(new { message = "Email hoặc mật khẩu không đúng." });
+                ModelState.AddModelError("", "Email hoặc mật khẩu không đúng.");
+                return View("Auth", model);
+            }
+
+            // Đăng nhập bằng UserName hiện tại của user
             var result = await signInManager.PasswordSignInAsync(
-                model.Email, model.Password,
+                user.UserName,
+                model.Password,
                 isPersistent: false,
                 lockoutOnFailure: false
             );

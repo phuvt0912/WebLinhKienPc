@@ -1,11 +1,13 @@
-﻿@{
+﻿@using Microsoft.AspNetCore.Identity
+@model IdentityUser
+@{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
-    .form-wrap { padding: 36px 40px; max-width: 480px; }
+    .form-wrap { padding: 36px 40px; max-width: 560px; }
 
     .page-title {
         font-family: 'Rajdhani', sans-serif;
@@ -22,6 +24,22 @@
         color: #6a6a9a;
         margin-bottom: 28px;
     }
+
+    .edit-info {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        background: rgba(0, 207, 255, 0.06);
+        border: 1px solid rgba(0, 207, 255, 0.15);
+        border-radius: 6px;
+        margin-bottom: 28px;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #6a6a9a;
+    }
+
+    .edit-info span { color: #00cfff; font-weight: 500; }
 
     .field { margin-bottom: 24px; }
 
@@ -56,37 +74,22 @@
 
     .field input::placeholder { color: #3a3a5a; }
 
-    /* Preview badge */
-    .preview-box {
-        margin-top: 10px;
-        padding: 10px 14px;
-        background: rgba(162, 89, 255, 0.06);
-        border: 1px solid rgba(162, 89, 255, 0.15);
-        border-radius: 6px;
-        display: none;
-        align-items: center;
-        gap: 10px;
+    .field input:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
     }
 
-    .preview-box.show { display: flex; }
+    .divider {
+        height: 1px;
+        background: rgba(162, 89, 255, 0.1);
+        margin: 8px 0 24px;
+    }
 
-    .preview-label {
+    .field-note {
         font-family: 'Inter', sans-serif;
         font-size: 12px;
         color: #6a6a9a;
-        white-space: nowrap;
-    }
-
-    .preview-badge {
-        font-family: 'Rajdhani', sans-serif;
-        font-weight: 600;
-        font-size: 14px;
-        padding: 3px 12px;
-        background: rgba(162, 89, 255, 0.15);
-        border: 1px solid rgba(162, 89, 255, 0.3);
-        border-radius: 4px;
-        color: #a259ff;
-        letter-spacing: 0.5px;
+        margin-top: 6px;
     }
 
     .form-actions {
@@ -104,7 +107,7 @@
         padding: 11px 28px;
         border-radius: 8px;
         border: none;
-        background: linear-gradient(135deg, #6c2bd9, #a259ff);
+        background: linear-gradient(135deg, #0f7a8a, #00cfff);
         color: #fff;
         cursor: pointer;
         transition: opacity 0.2s;
@@ -134,51 +137,52 @@
 </style>
 
 <div class="form-wrap">
+    <h2 class="page-title">Sửa Tài Khoản</h2>
+    <p class="page-sub">Chỉnh sửa thông tin tài khoản</p>
 
-    <h2 class="page-title">Tạo Role</h2>
-    <p class="page-sub">Tạo role mới để phân quyền người dùng</p>
+    <div class="edit-info">
+        Đang sửa: <span>@Model.Email</span>
+    </div>
 
-    <form asp-action="CreateRole" method="post" id="createForm">
+    <form asp-action="EditAccount" asp-route-id="@Model.Id" method="post" id="editForm">
         @Html.AntiForgeryToken()
 
+        <!-- Email -->
         <div class="field">
-            <label>Tên Role <span style="color:#ff4f7b">*</span></label>
-            <input name="roleName"
-                   id="roleInput"
-                   placeholder="VD: QuanLy, KhoHang..."
-                   oninput="updatePreview(this.value)"
+            <label>Email <span style="color:#ff4f7b">*</span></label>
+            <input type="email"
+                   name="email"
+                   value="@Model.Email"
+                   placeholder="user@example.com"
                    autocomplete="off" />
+        </div>
 
-            <div class="preview-box" id="previewBox">
-                <span class="preview-label">Hiển thị:</span>
-                <span class="preview-badge" id="previewText"></span>
-            </div>
+        <div class="divider"></div>
+
+        <!-- Username -->
+        <div class="field">
+            <label>Username <span style="color:#ff4f7b">*</span></label>
+            <input type="text"
+                   name="username"
+                   value="@Model.UserName"
+                   placeholder="Nhập username hiển thị..."
+                   autocomplete="off" />
+            <span class="field-note">Username sẽ hiển thị trên giao diện thay vì email.</span>
         </div>
 
         <div class="form-actions">
             <button type="submit" class="btn-submit" id="submitBtn">
-                + Tạo Role
+                ✏️ Lưu thay đổi
             </button>
-            <a asp-action="Roles" class="btn-back">← Quay lại</a>
+            <a asp-action="Index" class="btn-back">← Quay lại</a>
         </div>
     </form>
 </div>
 
 <script>
-    function updatePreview(val) {
-        const box = document.getElementById('previewBox');
-        const text = document.getElementById('previewText');
-        if (val.trim()) {
-            box.classList.add('show');
-            text.textContent = val.trim();
-        } else {
-            box.classList.remove('show');
-        }
-    }
-
-    document.getElementById('createForm').addEventListener('submit', function () {
+    document.getElementById('editForm').addEventListener('submit', function () {
         const btn = document.getElementById('submitBtn');
-        btn.textContent = 'Đang tạo...';
+        btn.textContent = 'Đang lưu...';
         btn.disabled = true;
     });
 </script>

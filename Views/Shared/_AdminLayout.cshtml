@@ -1,0 +1,277 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Admin | LinhKienPC</title>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                background: #0d0d1a;
+                color: #c0c0e0;
+                font-family: 'Inter', sans-serif;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .admin-header {
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                background: #0d0d1a;
+                border-bottom: 1px solid rgba(162, 89, 255, 0.2);
+            }
+
+                .admin-header::after {
+                    content: '';
+                    display: block;
+                    height: 1px;
+                    background: linear-gradient(90deg, transparent, #a259ff 30%, #00cfff 70%, transparent);
+                    opacity: 0.4;
+                }
+
+            .admin-inner {
+                max-width: 1600px;
+                margin: 0 auto;
+                padding: 0 36px;
+                height: 70px;
+                display: flex;
+                align-items: center;
+                gap: 28px;
+            }
+
+            .admin-logo {
+                font-family: 'Rajdhani', sans-serif;
+                font-weight: 700;
+                font-size: 22px;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+                text-decoration: none;
+                background: linear-gradient(135deg, #a259ff, #00cfff);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+
+            .admin-badge {
+                font-family: 'Inter', sans-serif;
+                font-size: 11px;
+                font-weight: 500;
+                padding: 3px 10px;
+                background: rgba(162, 89, 255, 0.15);
+                border: 1px solid rgba(162, 89, 255, 0.3);
+                border-radius: 4px;
+                color: #a259ff;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                flex-shrink: 0;
+            }
+
+            .admin-nav {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                flex: 1;
+            }
+
+                .admin-nav a {
+                    font-family: 'Rajdhani', sans-serif;
+                    font-weight: 600;
+                    font-size: 15px;
+                    letter-spacing: 0.8px;
+                    text-transform: uppercase;
+                    color: #6a6a9a;
+                    text-decoration: none;
+                    padding: 8px 18px;
+                    border-radius: 6px;
+                    transition: color 0.2s, background 0.2s;
+                    display: flex;
+                    align-items: center;
+                    gap: 7px;
+                    white-space: nowrap;
+                }
+
+                    .admin-nav a:hover,
+                    .admin-nav a.active {
+                        color: #e8e8ff;
+                        background: rgba(162, 89, 255, 0.1);
+                    }
+
+                    /* Icon SVG mặc định xám */
+                    .admin-nav a svg {
+                        width: 17px;
+                        height: 17px;
+                        flex-shrink: 0;
+                        stroke: #6a6a9a;
+                        fill: none;
+                        transition: stroke 0.2s;
+                    }
+
+                    /* Icon SVG khi hover đổi sang gradient */
+                    .admin-nav a:hover svg,
+                    .admin-nav a.active svg {
+                        stroke: url(#navGrad);
+                    }
+
+            .admin-right {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                flex-shrink: 0;
+            }
+
+            .admin-site-link {
+                font-family: 'Inter', sans-serif;
+                font-size: 14px;
+                color: #6a6a9a;
+                text-decoration: none;
+                padding: 7px 16px;
+                border-radius: 6px;
+                border: 1px solid rgba(255,255,255,0.08);
+                transition: all 0.2s;
+                white-space: nowrap;
+            }
+
+                .admin-site-link:hover {
+                    color: #c0c0e0;
+                    border-color: rgba(162,89,255,0.3);
+                }
+
+            .admin-logout {
+                font-family: 'Rajdhani', sans-serif;
+                font-weight: 700;
+                font-size: 14px;
+                letter-spacing: 1px;
+                text-transform: uppercase;
+                padding: 7px 18px;
+                border-radius: 6px;
+                border: 1px solid rgba(255, 79, 123, 0.3);
+                color: #ff4f7b;
+                background: none;
+                cursor: pointer;
+                transition: all 0.2s;
+                white-space: nowrap;
+            }
+
+                .admin-logout:hover {
+                    background: rgba(255, 79, 123, 0.08);
+                    border-color: #ff4f7b;
+                }
+
+            .admin-content {
+                flex: 1;
+                max-width: 1600px;
+                width: 100%;
+                margin: 0 auto;
+                padding: 12px 0;
+            }
+    </style>
+</head>
+<body>
+
+    <header class="admin-header">
+        <div class="admin-inner">
+
+            <a class="admin-logo" asp-controller="Admin" asp-action="Index">⚡ LinhKienPC</a>
+            <span class="admin-badge">Admin</span>
+
+            <nav class="admin-nav">
+
+                <!-- Gradient dùng chung cho icon SVG -->
+                <svg width="0" height="0" style="position:absolute">
+                    <defs>
+                        <linearGradient id="navGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#a259ff" />
+                            <stop offset="100%" stop-color="#00cfff" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+
+                <!-- Sản phẩm -->
+                <a asp-controller="AdminProduct" asp-action="Index">
+                    <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
+                    </svg>
+                    Sản phẩm
+                </a>
+
+                <!-- Danh mục -->
+                <a asp-controller="AdminCategory" asp-action="Index">
+                    <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 7h18M3 12h18M3 17h18" />
+                    </svg>
+                    Danh mục
+                </a>
+
+                <!-- Đơn hàng -->
+                <a asp-controller="AdminOrder" asp-action="Index">
+                    <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                    Đơn hàng
+                </a>
+
+                <!-- Tài khoản -->
+                <a asp-controller="AdminAccount" asp-action="Index">
+                    <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="8" r="4" stroke="inherit" />
+                        <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                    </svg>
+                    Tài khoản
+                </a>
+
+                <!-- Dashboard -->
+                <a asp-controller="Admin" asp-action="Index">
+                    <svg viewBox="0 0 24 24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 5a1 1 0 011-1h4a1 1 0 011 1v5a1 1 0 01-1 1H5a1 1 0 01-1-1V5z" />
+                        <path d="M14 5a1 1 0 011-1h4a1 1 0 011 1v2a1 1 0 01-1 1h-4a1 1 0 01-1-1V5z" />
+                        <path d="M4 15a1 1 0 011-1h4a1 1 0 011 1v4a1 1 0 01-1 1H5a1 1 0 01-1-1v-4z" />
+                        <path d="M14 13a1 1 0 011-1h4a1 1 0 011 1v6a1 1 0 01-1 1h-4a1 1 0 01-1-1v-6z" />
+                    </svg>
+                    Dashboard
+                </a>
+
+            </nav>
+
+            <div class="admin-right">
+                <a class="admin-site-link" asp-controller="Home" asp-action="Index">
+                    ← Về trang chủ
+                </a>
+                <form asp-controller="Account" asp-action="Logout" method="post" style="margin:0">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="admin-logout">Đăng xuất</button>
+                </form>
+            </div>
+
+        </div>
+    </header>
+
+    <div class="admin-content">
+        @RenderBody()
+    </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
+    
+    <script>
+            const currentPath = window.location.pathname.toLowerCase();
+            document.querySelectorAll('.admin-nav a').forEach(link => {
+                const href = link.getAttribute('href')?.toLowerCase();
+                if (!href) return;
+                const linkController = href.split('/').filter(x => x)[0];
+                const pathController = currentPath.split('/').filter(x => x)[0];
+                if (linkController && pathController && linkController === pathController) {
+                    link.classList.add('active');
+                }
+            });
+    </script>
+</body>
+</html>

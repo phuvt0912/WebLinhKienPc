@@ -4,8 +4,10 @@
 @inject UserManager<IdentityUser> UserManager
 
 @{
-    var email = User.Identity?.Name ?? "";
-    var avatar = !string.IsNullOrEmpty(email) ? email[0].ToString().ToUpper() : "?";
+    var currentUser = await UserManager.GetUserAsync(User);
+    var displayName = currentUser?.UserName ?? User.Identity?.Name ?? "";
+    var avatar = !string.IsNullOrEmpty(displayName) ? displayName[0].ToString().ToUpper() : "?";
+    var displayEmail = currentUser?.Email ?? "";
     int cartCount = Context.Session.GetInt32("CartCount") ?? 0;
 }
 
@@ -21,10 +23,10 @@
     }
 
     .header-inner {
-        max-width: 1200px;
+        max-width: 1600px; 
         margin: auto;
-        padding: 0 24px;
-        height: 64px;
+        padding: 0 36px; 
+        height: 70px; 
         display: flex;
         align-items: center;
         gap: 32px;
@@ -58,11 +60,24 @@
             color: #8888aa;
             padding: 8px 20px;
             border-radius: 6px;
+            transition: all 0.2s;
         }
 
             .pc-nav a:hover {
                 color: #fff;
                 background: rgba(162,89,255,0.12);
+            }
+
+        
+        .pc-nav .admin-link {
+            color: #8888aa; 
+            background: transparent;
+            border: none; 
+        }
+
+            .pc-nav .admin-link:hover {
+                color: #fff;
+                background: rgba(162,89,255,0.12); 
             }
 
     .pc-actions {
@@ -269,17 +284,7 @@
 
             @if (User.IsInRole("Admin") || User.IsInRole("NhanVien"))
             {
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        Quản trị
-                    </a>
-                    <ul class="dropdown-menu">
-                        <li><a class="dropdown-item" asp-controller="Admin" asp-action="Index">Dashboard</a></li>
-                        <li><a class="dropdown-item" asp-controller="AdminProduct" asp-action="Index">Quản lý sản phẩm</a></li>
-                        <li><a class="dropdown-item" asp-controller="AdminCategory" asp-action="Index">Quản lý danh mục</a></li>
-                        <li><a class="dropdown-item" asp-controller="AdminAccount" asp-action="Index">Quản lý tài khoản</a></li>
-                    </ul>
-                </li>
+                <a asp-controller="AdminProduct" asp-action="Index">Quản trị</a>
             }
         </nav>
 
@@ -302,7 +307,7 @@
 
                         <!-- Tên tài khoản đầu dropdown -->
                         <div class="pc-dropdown-header">
-                            <span class="pc-dropdown-name">@email</span>
+                            <span class="pc-dropdown-name">@displayName</span>
                             <span class="pc-dropdown-role">
                                 @if (User.IsInRole("Admin"))
                                 {
@@ -322,7 +327,7 @@
                         <a asp-controller="Account" asp-action="Profile">Tài khoản</a>
                         <a asp-controller="Order" asp-action="Index">Đơn hàng</a>
 
-                        @if (User.IsInRole("Admin"))
+                        @if (User.IsInRole("Admin") || User.IsInRole("NhanVien"))
                         {
                             <div class="pc-divider"></div>
                             <a asp-controller="Admin" asp-action="Index">Dashboard</a>

@@ -1,29 +1,295 @@
 ﻿@model WebLinhKienPc.Models.Category
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
 
-<h2>Sửa danh mục</h2>
+<style>
+    .form-wrap {
+        padding: 36px 40px;
+        max-width: 620px;
+    }
 
-<form asp-action="EditCategory" method="post">
+    .page-header {
+        margin-bottom: 32px;
+    }
 
-    ```
-    <div class="mb-3">
-        <label>Tên danh mục</label>
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
+    .page-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        color: #a259ff;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin: 0 0 6px;
+    }
+
+    .page-sub {
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #6a6a9a;
+    }
+
+    .field {
+        position: relative;
+        margin-bottom: 28px;
+    }
+
+    .field-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+    }
+
+    .field label {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 12px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: #6a6a9a;
+    }
+
+    .char-count {
+        font-family: 'Inter', sans-serif;
+        font-size: 11px;
+        color: #6a6a9a;
+    }
+
+    .char-count.warn { color: #ffaa00; }
+    .char-count.over { color: #ff4f7b; }
+
+    .field input,
+    .field textarea {
+        width: 100%;
+        background: #12122a;
+        border: 1px solid rgba(162, 89, 255, 0.2);
+        border-radius: 8px;
+        padding: 12px 16px;
+        color: #e8e8ff;
+        font-family: 'Inter', sans-serif;
+        font-size: 15px;
+        outline: none;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        resize: vertical;
+    }
+
+    .field input:focus,
+    .field textarea:focus {
+        border-color: #a259ff;
+        box-shadow: 0 0 0 3px rgba(162, 89, 255, 0.1);
+    }
+
+    .field textarea { min-height: 110px; }
+
+    .field input::placeholder,
+    .field textarea::placeholder { color: #3a3a5a; }
+
+    /* Preview badge */
+    .preview-box {
+        margin-top: 10px;
+        padding: 10px 14px;
+        background: rgba(162, 89, 255, 0.06);
+        border: 1px solid rgba(162, 89, 255, 0.15);
+        border-radius: 6px;
+        display: none;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .preview-box.show { display: flex; }
+
+    .preview-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #6a6a9a;
+        white-space: nowrap;
+    }
+
+    .preview-badge {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 14px;
+        padding: 3px 12px;
+        background: rgba(162, 89, 255, 0.15);
+        border: 1px solid rgba(162, 89, 255, 0.3);
+        border-radius: 4px;
+        color: #a259ff;
+        letter-spacing: 0.5px;
+    }
+
+    .text-danger {
+        font-family: 'Inter', sans-serif;
+        font-size: 12px;
+        color: #ff4f7b;
+        margin-top: 6px;
+        display: block;
+    }
+
+    .divider {
+        height: 1px;
+        background: rgba(162, 89, 255, 0.1);
+        margin: 8px 0 28px;
+    }
+
+    /* Thông tin đang sửa */
+    .edit-info {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        background: rgba(0, 207, 255, 0.06);
+        border: 1px solid rgba(0, 207, 255, 0.15);
+        border-radius: 6px;
+        margin-bottom: 28px;
+        font-family: 'Inter', sans-serif;
+        font-size: 13px;
+        color: #6a6a9a;
+    }
+
+    .edit-info span {
+        color: #00cfff;
+        font-weight: 500;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 8px;
+    }
+
+    .btn-submit {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 11px 28px;
+        border-radius: 8px;
+        border: none;
+        background: linear-gradient(135deg, #0f7a8a, #00cfff);
+        color: #fff;
+        cursor: pointer;
+        transition: opacity 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .btn-submit:hover { opacity: 0.85; }
+    .btn-submit:active { opacity: 0.7; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-back {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 15px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        padding: 11px 28px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #6a6a9a;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-back:hover {
+        border-color: rgba(162, 89, 255, 0.3);
+        color: #c0c0e0;
+    }
+</style>
+
+<div class="form-wrap">
+
+    <div class="page-header">
+        <h2 class="page-title">Sửa danh mục</h2>
+        <p class="page-sub">Chỉnh sửa thông tin danh mục hiện có</p>
     </div>
 
-    <div class="mb-3">
-        <label>Mô tả</label>
-        <textarea asp-for="Description" class="form-control"></textarea>
-        <span asp-validation-for="Description" class="text-danger"></span>
+    <!-- Thông tin đang sửa -->
+    <div class="edit-info">
+        Đang sửa danh mục: <span>#@Model.CategoryId — @Model.Name</span>
     </div>
 
-    <button class="btn btn-success">
-        Thêm danh mục
-    </button>
+    <form asp-action="EditCategory" method="post" id="editForm">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="CategoryId" />
 
-    <a asp-action="Index" class="btn btn-secondary">
-        Quay lại
-    </a>
-    ```
+        <!-- Tên danh mục -->
+        <div class="field">
+            <div class="field-header">
+                <label>Tên danh mục <span style="color:#ff4f7b">*</span></label>
+            </div>
+            <input asp-for="Name"
+                   id="nameInput"
+                   placeholder="VD: CPU, GPU, RAM, Ổ cứng..."
+                   oninput="updatePreview(this.value)"
+                   autocomplete="off" />
+            <span asp-validation-for="Name" class="text-danger"></span>
 
-</form>
+            <!-- Preview badge -->
+            <div class="preview-box show" id="previewBox">
+                <span class="preview-label">Hiển thị:</span>
+                <span class="preview-badge" id="previewText">@Model.Name</span>
+            </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Mô tả -->
+        <div class="field">
+            <div class="field-header">
+                <label>Mô tả</label>
+                <span class="char-count" id="charCount">@(Model.Description?.Length ?? 0) / 200</span>
+            </div>
+            <textarea asp-for="Description"
+                      id="descInput"
+                      placeholder="Mô tả ngắn về danh mục này (không bắt buộc)..."
+                      oninput="updateCharCount(this.value)"
+                      maxlength="200"></textarea>
+            <span asp-validation-for="Description" class="text-danger"></span>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn-submit" id="submitBtn">
+                ✏️ Lưu thay đổi
+            </button>
+            <a asp-action="Index" class="btn-back">← Quay lại</a>
+        </div>
+
+    </form>
+</div>
+
+<script>
+    // Preview tên danh mục
+    function updatePreview(val) {
+        const box = document.getElementById('previewBox');
+        const text = document.getElementById('previewText');
+        if (val.trim()) {
+            box.classList.add('show');
+            text.textContent = val.trim();
+        } else {
+            box.classList.remove('show');
+        }
+    }
+
+    // Đếm ký tự mô tả
+    function updateCharCount(val) {
+        const el = document.getElementById('charCount');
+        const len = val.length;
+        el.textContent = len + ' / 200';
+        el.className = 'char-count';
+        if (len > 160) el.classList.add('warn');
+        if (len >= 200) el.classList.add('over');
+    }
+
+    // Submit với loading state
+    document.getElementById('editForm').addEventListener('submit', function () {
+        const btn = document.getElementById('submitBtn');
+        btn.textContent = 'Đang lưu...';
+        btn.disabled = true;
+    });
+</script>
