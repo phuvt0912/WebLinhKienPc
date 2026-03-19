@@ -205,14 +205,58 @@
         font-size: 14px;
         font-family: 'Inter', sans-serif;
     }
+
+    .toggle-wrap {
+    position: relative;
+    width: 38px; height: 22px;
+    cursor: pointer; flex-shrink: 0;
+}
+
+.toggle-wrap input { display: none; }
+
+.toggle-slider {
+    position: absolute;
+    inset: 0;
+    background: #2a2a4a;
+    border-radius: 22px;
+    border: 1px solid rgba(162,89,255,0.2);
+    transition: background 0.2s;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    width: 16px; height: 16px;
+    left: 2px; top: 2px;
+    background: #6a6a9a;
+    border-radius: 50%;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.toggle-wrap input:checked + .toggle-slider {
+    background: rgba(76,223,138,0.15);
+    border-color: rgba(76,223,138,0.3);
+}
+
+.toggle-wrap input:checked + .toggle-slider::before {
+    transform: translateX(16px);
+    background: #4cdf8a;
+}
 </style>
 
 <div class="sc-wrap">
 
     <div class="sc-users">
         <div class="sc-users-hdr">
-            💬 Khách hàng
-            <button class="refresh-btn" onclick="loadUsers()" title="Làm mới">↻</button>
+        💬 Khách hàng
+            <div style="display:flex;align-items:center;gap:8px">
+                <span id="statusLabel" style="font-size:12px;color:#6a6a9a">Offline</span>
+                <label class="toggle-wrap" title="Bật để nhận chat từ khách">
+                    <input type="checkbox" id="onlineToggle" onchange="setOnlineStatus(this.checked)" />
+                    <span class="toggle-slider"></span>
+                </label>
+                <button class="refresh-btn" onclick="loadUsers()">↻</button>
+            </div>
         </div>
         <div class="sc-users-body" id="userListBody">
             <div class="sc-no-users">Đang tải...</div>
@@ -343,4 +387,39 @@
     loadUsers();
     setInterval(loadUsers, 10000);
     setInterval(() => { if (selectedUserId) loadStaffMsgs(); }, 4000);
+
+    // Load trạng thái online khi vào trang
+    async function loadMyStatus() {
+        try {
+            const res  = await fetch('/Chat/GetMyStatus');
+            const data = await res.json();
+            const toggle = document.getElementById('onlineToggle');
+            const label  = document.getElementById('statusLabel');
+            toggle.checked      = data.isOnline;
+            label.textContent   = data.isOnline ? 'Online' : 'Offline';
+            label.style.color   = data.isOnline ? '#4cdf8a' : '#6a6a9a';
+        } catch {}
+    }
+
+    async function setOnlineStatus(isOnline) {
+        try {
+            await fetch('/Chat/SetOnlineStatus', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(isOnline)
+            });
+            const label = document.getElementById('statusLabel');
+            label.textContent = isOnline ? 'Online' : 'Offline';
+            label.style.color = isOnline ? '#4cdf8a' : '#6a6a9a';
+        } catch {}
+    }
+
+    // Tự động set offline khi đóng tab
+    window.addEventListener('beforeunload', () => {
+        navigator.sendBeacon('/Chat/SetOnlineStatus',
+            new Blob([JSON.stringify(false)], { type: 'application/json' })
+        );
+    });
+
+    loadMyStatus();
 </script>
