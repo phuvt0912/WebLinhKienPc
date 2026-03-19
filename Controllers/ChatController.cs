@@ -14,10 +14,6 @@ namespace WebLinhKienPc.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IConfiguration _config;
-        private static readonly Dictionary<string, DateTime> _lastUserRequest = new();
-        private static readonly object _lock = new object();
-        private static int _apiFailureCount = 0;
-        private static DateTime _lastFailureTime = DateTime.Now;
 
         public ChatController(ApplicationDbContext context,
             UserManager<IdentityUser> userManager,
@@ -28,11 +24,14 @@ namespace WebLinhKienPc.Controllers
             _config = config;
         }
 
+        // ================= USER =================
+
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> GetMessages()
         {
             var userId = _userManager.GetUserId(User);
+
             var messages = await _context.ChatMessages
                 .Where(m => m.UserId == userId)
                 .OrderBy(m => m.CreatedAt)
@@ -52,100 +51,74 @@ namespace WebLinhKienPc.Controllers
         [IgnoreAntiforgeryToken]
         public async Task<IActionResult> SendMessage([FromBody] SendMessageRequest req)
         {
-            try
+            if (!User.Identity.IsAuthenticated)
+                return Json(new { success = false, requireLogin = true });
+
+            if (string.IsNullOrWhiteSpace(req?.Content))
+                return Json(new { success = false, message = "Nội dung không được trống." });
+
+            var userId = _userManager.GetUserId(User);
+
+            // lưu tin nhắn user
+            var userMsg = new ChatMessage
             {
-                if (!User.Identity.IsAuthenticated)
-                    return Json(new { success = false, requireLogin = true });
+                UserId = userId,
+                Content = req.Content.Trim(),
+                IsFromUser = true,
+                IsFromAI = false,
+                CreatedAt = DateTime.Now
+            };
+            _context.ChatMessages.Add(userMsg);
+            await _context.SaveChangesAsync();
 
-                if (string.IsNullOrWhiteSpace(req?.Content))
-                    return Json(new { success = false, message = "Nội dung không được trống." });
+            // check staff online
+            var hasStaffOnline = await _context.StaffStatuses.AnyAsync(s => s.IsOnline);
 
-                var userId = _userManager.GetUserId(User);
-
-                // KIỂM TRA SPAM
-                lock (_lock)
-                {
-                    if (_lastUserRequest.ContainsKey(userId))
-                    {
-                        var timeSinceLastRequest = DateTime.Now - _lastUserRequest[userId];
-                        if (timeSinceLastRequest.TotalSeconds < 3)
-                        {
-                            return Json(new
-                            {
-                                success = false,
-                                message = "Vui lòng chờ 3 giây giữa các tin nhắn."
-                            });
-                        }
-                    }
-                    _lastUserRequest[userId] = DateTime.Now;
-                }
-
-                // Lưu tin nhắn user
-                var userMsg = new ChatMessage
-                {
-                    UserId = userId,
-                    Content = req.Content.Trim(),
-                    IsFromUser = true,
-                    IsFromAI = false,
-                    CreatedAt = DateTime.Now
-                };
-                _context.ChatMessages.Add(userMsg);
-                await _context.SaveChangesAsync();
-
-                // Check nhân viên online
-                var hasStaffOnline = await _context.StaffStatuses.AnyAsync(s => s.IsOnline);
-
-                if (hasStaffOnline)
-                {
-                    return Json(new
-                    {
-                        success = true,
-                        waitingForStaff = true,
-                        message = "Đã gửi tin nhắn, nhân viên sẽ phản hồi sớm!"
-                    });
-                }
-
-                // KHÔNG CÓ NHÂN VIÊN - GỌI AI
-                var aiReply = await CallGeminiAI(req.Content);
-
-                // Lưu tin nhắn AI
-                var aiMsg = new ChatMessage
-                {
-                    UserId = userId,
-                    Content = aiReply,
-                    IsFromUser = false,
-                    IsFromAI = true,
-                    CreatedAt = DateTime.Now
-                };
-                _context.ChatMessages.Add(aiMsg);
-                await _context.SaveChangesAsync();
-
+            if (hasStaffOnline)
+            {
                 return Json(new
                 {
                     success = true,
-                    reply = aiMsg.Content,
-                    isAI = true,
+                    waitingForStaff = true,
+                    reply = "Nhân viên đang online, chờ xíu nha 😄",
+                    isAI = false,
                     time = DateTime.Now.ToString("HH:mm")
                 });
             }
-            catch (Exception ex)
+
+            // AI trả lời
+            var aiReply = await CallOpenRouterAI(req.Content);
+
+            var aiMsg = new ChatMessage
             {
-                Console.WriteLine($"SendMessage Error: {ex.Message}");
-                return Json(new
-                {
-                    success = false,
-                    message = "Có lỗi xảy ra, vui lòng thử lại."
-                });
-            }
+                UserId = userId,
+                Content = aiReply,
+                IsFromUser = false,
+                IsFromAI = true,
+                CreatedAt = DateTime.Now
+            };
+
+            _context.ChatMessages.Add(aiMsg);
+            await _context.SaveChangesAsync();
+
+            return Json(new
+            {
+                success = true,
+                reply = aiReply,
+                isAI = true,
+                time = DateTime.Now.ToString("HH:mm")
+            });
         }
 
-        // ===== STAFF: Bật/tắt online =====
+        // ================= STAFF =================
+
         [Authorize(Roles = "Admin,NhanVien")]
         [HttpPost]
         [IgnoreAntiforgeryToken]
         public async Task<IActionResult> SetOnlineStatus([FromBody] bool isOnline)
         {
             var staffId = _userManager.GetUserId(User);
+
             var status = await _context.StaffStatuses
                 .FirstOrDefaultAsync(s => s.StaffId == staffId);
 
@@ -168,12 +141,12 @@ namespace WebLinhKienPc.Controllers
             return Json(new { success = true, isOnline });
         }
 
-        // ===== STAFF: Lấy trạng thái online của mình =====
         [Authorize(Roles = "Admin,NhanVien")]
         [HttpGet]
         public async Task<IActionResult> GetMyStatus()
         {
             var staffId = _userManager.GetUserId(User);
+
             var status = await _context.StaffStatuses
                 .FirstOrDefaultAsync(s => s.StaffId == staffId);
 
@@ -197,9 +170,11 @@ namespace WebLinhKienPc.Controllers
                 .ToListAsync();
 
             var result = new List<object>();
+
             foreach (var u in userIds)
             {
                 var user = await _userManager.FindByIdAsync(u.userId);
+
                 result.Add(new
                 {
                     u.userId,
@@ -235,10 +210,7 @@ namespace WebLinhKienPc.Controllers
                 .Where(m => m.UserId == userId && m.IsFromUser && !m.IsRead)
                 .ToListAsync();
 
-            foreach (var msg in unread)
-            {
-                msg.IsRead = true;
-            }
+            unread.ForEach(m => m.IsRead = true);
             await _context.SaveChangesAsync();
 
             return Json(messages);
@@ -263,6 +235,7 @@ namespace WebLinhKienPc.Controllers
                 IsFromAI = false,
                 CreatedAt = DateTime.Now
             };
+
             _context.ChatMessages.Add(msg);
             await _context.SaveChangesAsync();
 
@@ -272,184 +245,166 @@ namespace WebLinhKienPc.Controllers
         [Authorize(Roles = "Admin,NhanVien")]
         public IActionResult StaffChat() => View();
 
-        private async Task<string> CallGeminiAI(string userMessage)
+        // ================= AI =================
+
+        private async Task<string> CallOpenRouterAI(string userMessage)
         {
             try
             {
-                // Kiểm tra nếu API đang lỗi liên tục thì dùng mock luôn
-                if (_apiFailureCount > 5 && (DateTime.Now - _lastFailureTime).TotalMinutes < 30)
-                {
-                    return GetMockResponse(userMessage);
-                }
-
-                var apiKey = _config["Gemini:ApiKey"];
-
+                var apiKey = _config["OpenRouter:ApiKey"];
                 if (string.IsNullOrEmpty(apiKey))
-                {
-                    return GetMockResponse(userMessage);
-                }
+                    return "Shop chưa bật AI nha 😢";
 
-                // Danh sách models để thử
-                string[] models = new[]
-                {
-                    "gemini-1.5-flash",
-                    "gemini-1.5-flash-8b",
-                    "gemini-2.0-flash-exp",
-                    "gemini-pro"
-                };
+                // Lấy sản phẩm từ database
+                var products = await _context.Products
+                    .OrderByDescending(p => p.Price)
+                    .Take(5)
+                    .Select(p => $"- {p.Name}: {p.Price:N0}đ")
+                    .ToListAsync();
+
+                var productInfo = products.Any() ? string.Join("\n", products) : "- Chưa có sản phẩm";
 
                 using var client = new HttpClient();
-                client.Timeout = TimeSpan.FromSeconds(10);
+                client.Timeout = TimeSpan.FromSeconds(30);
+                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
+                client.DefaultRequestHeaders.Add("HTTP-Referer", "http://localhost:5000");
+                client.DefaultRequestHeaders.Add("X-Title", "WebLinhKienPC");
+
+                // Danh sách models ưu tiên
+                string[] models = new[]
+                {
+                    "google/gemma-2b-it:free",
+                    "microsoft/phi-3-mini-128k-instruct:free",
+                    "meta-llama/llama-3-8b-instruct:free",
+                    "mistralai/mistral-7b-instruct:free"
+                };
 
                 foreach (var model in models)
                 {
                     try
                     {
-                        var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
+                        Console.WriteLine($"Đang thử model: {model}");
 
                         var body = new
                         {
-                            contents = new[]
+                            model = model,
+                            messages = new[]
                             {
-                                new
-                                {
-                                    parts = new[]
-                                    {
-                                        new { text = userMessage }
-                                    }
-                                }
-                            }
+                                new {
+                                    role = "system",
+                                    content = $@"
+Bạn là nhân viên tư vấn PC của shop Linh Kiện PC.
+
+QUY TẮC:
+- Trả lời NGẮN GỌN (1-2 câu)
+- Tư vấn CỤ THỂ, không hỏi lại
+- Dùng tiếng Việt, phong cách Gen Z
+- Có thể dùng emoji 😄🔥
+- KHÔNG nói mình là AI
+
+SẢN PHẨM HIỆN CÓ:
+{productInfo}
+
+VÍ DỤ:
+- Hỏi: 'RTX 3060 giá bao nhiêu?'
+- Trả lời: 'RTX 3060 đang có giá từ 6.5 - 7.5tr tùy hãng nha bạn 🔥'
+- Hỏi: 'Build PC 15tr'
+- Trả lời: 'Bạn có thể tham khảo: i5-13400F + RTX 3060 + 16GB RAM, ok luôn 😄'
+"
+                                },
+                                new { role = "user", content = userMessage }
+                            },
+                            temperature = 0.7,
+                            max_tokens = 200
                         };
 
                         var json = JsonSerializer.Serialize(body);
-                        var content = new StringContent(json, Encoding.UTF8, "application/json");
+                        var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
 
-                        var response = await client.PostAsync(url, content);
+                        var response = await client.PostAsync("https://openrouter.ai/api/v1/chat/completions", httpContent);
 
                         if (response.IsSuccessStatusCode)
                         {
-                            var responseJson = await response.Content.ReadAsStringAsync();
-                            var parsed = JsonDocument.Parse(responseJson);
+                            var responseString = await response.Content.ReadAsStringAsync();
+                            var doc = JsonDocument.Parse(responseString);
 
-                            var text = parsed.RootElement
-                                .GetProperty("candidates")[0]
+                            var reply = doc.RootElement
+                                .GetProperty("choices")[0]
+                                .GetProperty("message")
                                 .GetProperty("content")
-                                .GetProperty("parts")[0]
-                                .GetProperty("text")
                                 .GetString();
 
-                            // Reset failure count khi thành công
-                            _apiFailureCount = 0;
-                            return text;
+                            if (!string.IsNullOrWhiteSpace(reply))
+                            {
+                                Console.WriteLine($"✅ Model {model} thành công");
+                                return reply.Trim();
+                            }
                         }
-                        else if ((int)response.StatusCode == 429 || (int)response.StatusCode == 403 || (int)response.StatusCode == 404)
+                        else
                         {
-                            // Lỗi quota hoặc không có quyền - thử model tiếp
-                            continue;
+                            var error = await response.Content.ReadAsStringAsync();
+                            Console.WriteLine($"❌ Model {model} lỗi: {response.StatusCode} - {error}");
                         }
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        Console.WriteLine($"❌ Model {model} exception: {ex.Message}");
                         continue;
                     }
                 }
 
-                // Nếu tất cả đều lỗi
-                _apiFailureCount++;
-                _lastFailureTime = DateTime.Now;
-
-                return GetMockResponse(userMessage);
+                // Nếu tất cả đều lỗi, dùng response mặc định
+                return GetDefaultResponse(userMessage);
             }
-            catch
+            catch (Exception ex)
             {
-                _apiFailureCount++;
-                _lastFailureTime = DateTime.Now;
-
-                return GetMockResponse(userMessage);
+                Console.WriteLine($"AI Error: {ex.Message}");
+                return GetDefaultResponse(userMessage);
             }
         }
 
-        private string GetMockResponse(string userMessage)
+        private string GetDefaultResponse(string userMessage)
         {
-            var random = new Random();
             userMessage = userMessage.ToLower();
 
-            // Phản hồi theo từ khóa
             if (userMessage.Contains("xin chào") || userMessage.Contains("hello") || userMessage.Contains("hi") || userMessage.Contains("chào"))
-            {
-                string[] greetings = new[]
-                {
-                    "Xin chào! Tôi là trợ lý ảo của Linh Kiện PC. Bạn cần tư vấn gì ạ?",
-                    "Chào bạn! Rất vui được hỗ trợ bạn. Bạn quan tâm đến linh kiện nào?",
-                    "Xin chào! Bạn cần tìm hiểu thông tin về sản phẩm gì?",
-                    "Chào bạn! Tôi có thể giúp gì cho bạn hôm nay?"
-                };
-                return greetings[random.Next(greetings.Length)];
-            }
-
-            if (userMessage.Contains("giá") || userMessage.Contains("bao nhiêu") || userMessage.Contains("giá cả"))
-            {
-                string[] priceResponses = new[]
-                {
-                    "Vui lòng cho tôi biết tên sản phẩm bạn quan tâm để tôi kiểm tra giá nhé!",
-                    "Bạn có thể xem giá chi tiết tại danh mục sản phẩm trên website.",
-                    "Hiện tại có nhiều sản phẩm đang được giảm giá, bạn muốn tham khảo dòng nào?",
-                    "Giá sản phẩm thay đổi tùy theo cấu hình. Bạn quan tâm đến sản phẩm cụ thể nào không?"
-                };
-                return priceResponses[random.Next(priceResponses.Length)];
-            }
-
-            if (userMessage.Contains("cấu hình") || userMessage.Contains("main") || userMessage.Contains("ram") ||
-                userMessage.Contains("cpu") || userMessage.Contains("card") || userMessage.Contains("vga") ||
-                userMessage.Contains("bộ nhớ") || userMessage.Contains("ổ cứng"))
-            {
-                string[] configResponses = new[]
-                {
-                    "Bạn muốn tư vấn cấu hình máy tính cho mục đích gì? (Văn phòng, Gaming, Đồ họa)",
-                    "Bạn có ngân sách khoảng bao nhiêu cho bộ cấu hình này?",
-                    "Chúng tôi có nhiều lựa chọn linh kiện phù hợp với nhu cầu của bạn.",
-                    "Bạn có thể tham khảo các bộ cấu hình có sẵn trên website hoặc để lại thông tin để được tư vấn chi tiết."
-                };
-                return configResponses[random.Next(configResponses.Length)];
-            }
+                return "Chào bạn! Mình là nhân viên tư vấn shop Linh Kiện PC đây 😄 Bạn cần tìm linh kiện gì ạ?";
 
             if (userMessage.Contains("cảm ơn"))
+                return "Không có gì đâu bạn ơi! Cần gì cứ hỏi nha 😄";
+
+            if (userMessage.Contains("tạm biệt") || userMessage.Contains("bye"))
+                return "Tạm biệt bạn! Nếu cần gì cứ quay lại shop nha 🔥";
+
+            if (userMessage.Contains("giá") || userMessage.Contains("bao nhiêu"))
             {
-                string[] thankResponses = new[]
-                {
-                    "Không có gì ạ! Nếu cần thêm thông tin, bạn cứ hỏi nhé.",
-                    "Rất vui được hỗ trợ bạn! Chúc bạn một ngày tốt lành.",
-                    "Cảm ơn bạn đã quan tâm đến Linh Kiện PC!",
-                    "Có gì cần hỗ trợ thêm, bạn đừng ngần ngại nhắn tin nhé."
-                };
-                return thankResponses[random.Next(thankResponses.Length)];
+                if (userMessage.Contains("rtx") || userMessage.Contains("card") || userMessage.Contains("vga"))
+                    return "Card đồ họa đang có RTX 3060 (6.5tr), RTX 4060 (8.5tr), RTX 4070 (12tr) bạn nha! 😄";
+
+                if (userMessage.Contains("cpu") || userMessage.Contains("i5") || userMessage.Contains("i7") || userMessage.Contains("ryzen"))
+                    return "CPU Intel i5-13400F (5.2tr), i7-13700F (8.5tr), AMD Ryzen 5 7600 (5.8tr) bạn ơi! 🔥";
+
+                if (userMessage.Contains("ram"))
+                    return "RAM 16GB DDR4 (1.8tr), 32GB DDR5 (3.2tr) đang có sẵn nha bạn!";
+
+                return "Bạn muốn xem giá linh kiện gì ạ? Mình có CPU, VGA, RAM, Mainboard đủ hết nè 😄";
             }
 
-            if (userMessage.Contains("tạm biệt") || userMessage.Contains("bye") || userMessage.Contains("goodbye"))
-            {
-                string[] goodbyeResponses = new[]
-                {
-                    "Tạm biệt! Chúc bạn một ngày tốt lành.",
-                    "Hẹn gặp lại bạn! Cần hỗ trợ gì thêm cứ nhắn tin nhé.",
-                    "Tạm biệt! Cảm ơn bạn đã ghé thăm Linh Kiện PC."
-                };
-                return goodbyeResponses[random.Next(goodbyeResponses.Length)];
-            }
+            if (userMessage.Contains("cấu hình") || userMessage.Contains("build") || userMessage.Contains("pc"))
+                return "Bạn muốn build PC tầm giá nào ạ? Mình tư vấn cho! VD: 15tr, 20tr, 30tr... 🔥";
 
-            // Phản hồi mặc định ngẫu nhiên
-            string[] defaultResponses = new[]
-            {
-                "Cảm ơn bạn đã quan tâm! Hiện tại nhân viên đang bận, bạn có thể để lại tin nhắn và họ sẽ phản hồi sớm nhất.",
-                "Dạ, Linh Kiện PC có nhiều sản phẩm phù hợp với nhu cầu của bạn. Bạn có thể xem thêm tại danh mục trên website.",
-                "Hiện tại đang có chương trình giảm giá cho nhiều linh kiện gaming. Bạn quan tâm đến dòng nào?",
-                "Bạn cần tư vấn thêm thông tin gì về sản phẩm không ạ?",
-                "Nếu cần hỗ trợ thêm, bạn có thể chat với nhân viên tư vấn hoặc để lại số điện thoại."
-            };
-
-            return defaultResponses[random.Next(defaultResponses.Length)];
+            return "Dạ, shop mình có đủ linh kiện PC bạn nha! Bạn muốn xem CPU, VGA hay RAM ạ? 😄";
         }
     }
 
-    public class SendMessageRequest { public string Content { get; set; } }
-    public class StaffReplyRequest { public string UserId { get; set; } public string Content { get; set; } }
+    public class SendMessageRequest
+    {
+        public string Content { get; set; }
+    }
+
+    public class StaffReplyRequest
+    {
+        public string UserId { get; set; }
+        public string Content { get; set; }
+    }
 }
