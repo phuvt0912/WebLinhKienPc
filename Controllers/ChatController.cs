@@ -47,20 +47,22 @@ namespace WebLinhKienPc.Controllers
 
         // ===== USER: Gửi tin nhắn =====
         [HttpPost]
+        [IgnoreAntiforgeryToken] // ← fetch JSON không gửi form token
         public async Task<IActionResult> SendMessage([FromBody] SendMessageRequest req)
         {
             if (!User.Identity.IsAuthenticated)
                 return Json(new { success = false, requireLogin = true });
 
+            if (string.IsNullOrWhiteSpace(req?.Content))
+                return Json(new { success = false, message = "Nội dung không được trống." });
+
             var userId = _userManager.GetUserId(User);
-            if (string.IsNullOrWhiteSpace(req.Content))
-                return BadRequest();
 
             // Lưu tin nhắn user
             var userMsg = new ChatMessage
             {
                 UserId = userId,
-                Content = req.Content,
+                Content = req.Content.Trim(),
                 IsFromUser = true,
                 IsFromAI = false
             };
@@ -68,12 +70,12 @@ namespace WebLinhKienPc.Controllers
             await _context.SaveChangesAsync();
 
             // Kiểm tra nhân viên có online không
-            // (đã trả lời trong 10 phút gần đây)
+            // (nhân viên đã trả lời trong 10 phút gần đây)
             var hasStaffOnline = await _context.ChatMessages
                 .AnyAsync(m => m.UserId == userId
-                    && !m.IsFromUser
-                    && !m.IsFromAI
-                    && m.CreatedAt >= DateTime.Now.AddMinutes(-10));
+                            && !m.IsFromUser
+                            && !m.IsFromAI
+                            && m.CreatedAt >= DateTime.Now.AddMinutes(-10));
 
             if (hasStaffOnline)
             {
@@ -112,10 +114,8 @@ namespace WebLinhKienPc.Controllers
                 .GroupBy(m => m.UserId)
                 .Select(g => new {
                     userId = g.Key,
-                    lastMessage = g.OrderByDescending(m => m.CreatedAt)
-                                   .First().Content,
-                    lastTime = g.OrderByDescending(m => m.CreatedAt)
-                                .First().CreatedAt.ToString("HH:mm dd/MM"),
+                    lastMessage = g.OrderByDescending(m => m.CreatedAt).First().Content,
+                    lastTime = g.OrderByDescending(m => m.CreatedAt).First().CreatedAt.ToString("HH:mm dd/MM"),
                     unread = g.Count(m => m.IsFromUser && !m.IsRead)
                 })
                 .ToListAsync();
@@ -157,9 +157,7 @@ namespace WebLinhKienPc.Controllers
 
             // Đánh dấu đã đọc
             var unread = await _context.ChatMessages
-                .Where(m => m.UserId == userId
-                         && m.IsFromUser
-                         && !m.IsRead)
+                .Where(m => m.UserId == userId && m.IsFromUser && !m.IsRead)
                 .ToListAsync();
 
             unread.ForEach(m => m.IsRead = true);
@@ -171,15 +169,19 @@ namespace WebLinhKienPc.Controllers
         // ===== STAFF: Trả lời user =====
         [Authorize(Roles = "Admin,NhanVien")]
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> StaffReply([FromBody] StaffReplyRequest req)
         {
+            if (string.IsNullOrWhiteSpace(req?.Content) || string.IsNullOrWhiteSpace(req?.UserId))
+                return BadRequest();
+
             var staffId = _userManager.GetUserId(User);
 
             var msg = new ChatMessage
             {
                 UserId = req.UserId,
                 StaffId = staffId,
-                Content = req.Content,
+                Content = req.Content.Trim(),
                 IsFromUser = false,
                 IsFromAI = false
             };
@@ -198,6 +200,7 @@ namespace WebLinhKienPc.Controllers
         {
             try
             {
+                // Lấy 10 tin nhắn gần nhất làm context
                 var history = await _context.ChatMessages
                     .Where(m => m.UserId == userId)
                     .OrderByDescending(m => m.CreatedAt)
@@ -215,17 +218,31 @@ namespace WebLinhKienPc.Controllers
                     });
                 }
 
+                // Đảm bảo contents không rỗng và bắt đầu bằng role "user"
+                if (contents.Count == 0)
+                {
+                    contents.Add(new
+                    {
+                        role = "user",
+                        parts = new[] { new { text = userMessage } }
+                    });
+                }
+
                 var apiKey = _config["Gemini:ApiKey"];
+                if (string.IsNullOrEmpty(apiKey))
+                    return "Xin lỗi, hệ thống AI chưa được cấu hình. Vui lòng chờ nhân viên hỗ trợ.";
+
                 var url = $"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={apiKey}";
 
                 using var client = new HttpClient();
+                client.Timeout = TimeSpan.FromSeconds(15);
 
                 var body = new
                 {
                     system_instruction = new
                     {
                         parts = new[] { new {
-                            text = "Bạn là trợ lý hỗ trợ khách hàng của cửa hàng linh kiện máy tính LinhKienPC. Trả lời ngắn gọn, thân thiện bằng tiếng Việt. Chỉ tư vấn về linh kiện máy tính, phần cứng, đơn hàng. Nếu không biết thì nói khách chờ nhân viên."
+                            text = "Bạn là trợ lý hỗ trợ khách hàng của cửa hàng linh kiện máy tính LinhKienPC. Trả lời ngắn gọn, thân thiện bằng tiếng Việt. Chỉ tư vấn về linh kiện máy tính, phần cứng, đơn hàng. Nếu không biết thì nói khách chờ nhân viên hỗ trợ."
                         }}
                     },
                     contents = contents,
@@ -241,6 +258,9 @@ namespace WebLinhKienPc.Controllers
                 var res = await client.PostAsync(url, content);
                 var resJson = await res.Content.ReadAsStringAsync();
 
+                if (!res.IsSuccessStatusCode)
+                    return "Xin lỗi, AI tạm thời không khả dụng. Vui lòng chờ nhân viên hỗ trợ.";
+
                 var parsed = JsonDocument.Parse(resJson);
                 return parsed.RootElement
                     .GetProperty("candidates")[0]
@@ -248,7 +268,11 @@ namespace WebLinhKienPc.Controllers
                     .GetProperty("parts")[0]
                     .GetProperty("text")
                     .GetString()
-                    ?? "Xin lỗi, tôi không hiểu yêu cầu.";
+                    ?? "Xin lỗi, tôi không hiểu yêu cầu của bạn.";
+            }
+            catch (TaskCanceledException)
+            {
+                return "AI phản hồi quá chậm. Vui lòng chờ nhân viên hỗ trợ.";
             }
             catch
             {
