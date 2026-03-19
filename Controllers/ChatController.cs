@@ -87,7 +87,7 @@ namespace WebLinhKienPc.Controllers
             }
 
             // AI trả lời
-            var aiReply = await CallOpenRouterAI(req.Content);
+            var aiReply = await CallGeminiAI(req.Content);
 
             var aiMsg = new ChatMessage
             {
@@ -245,13 +245,13 @@ namespace WebLinhKienPc.Controllers
         [Authorize(Roles = "Admin,NhanVien")]
         public IActionResult StaffChat() => View();
 
-        // ================= AI =================
+        // ================= AI GEMINI =================
 
-        private async Task<string> CallOpenRouterAI(string userMessage)
+        private async Task<string> CallGeminiAI(string userMessage)
         {
             try
             {
-                var apiKey = _config["OpenRouter:ApiKey"];
+                var apiKey = _config["Gemini:ApiKey"];
                 if (string.IsNullOrEmpty(apiKey))
                     return "Shop chưa bật AI nha 😢";
 
@@ -266,33 +266,36 @@ namespace WebLinhKienPc.Controllers
 
                 using var client = new HttpClient();
                 client.Timeout = TimeSpan.FromSeconds(30);
-                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
-                client.DefaultRequestHeaders.Add("HTTP-Referer", "http://localhost:5000");
-                client.DefaultRequestHeaders.Add("X-Title", "WebLinhKienPC");
 
-                // Danh sách models ưu tiên
+                // Danh sách models Gemini theo thứ tự ưu tiên (dựa trên quota của bạn)
                 string[] models = new[]
                 {
-                    "google/gemma-2b-it:free",
-                    "microsoft/phi-3-mini-128k-instruct:free",
-                    "meta-llama/llama-3-8b-instruct:free",
-                    "mistralai/mistral-7b-instruct:free"
+                    "gemini-2.5-flash-lite",     // Model mới nhất, quota cao (15 RPM)
+                    "gemini-2.5-flash",           // Model 2.5 Flash (10 RPM)
+                    "gemini-2.0-flash",           // Model 2.0 Flash ổn định (15 RPM)
+                    "gemini-1.5-flash",           // Model 1.5 Flash dự phòng
+                    "gemini-1.5-pro"              // Model Pro dự phòng
                 };
 
                 foreach (var model in models)
                 {
                     try
                     {
-                        Console.WriteLine($"Đang thử model: {model}");
+                        Console.WriteLine($"Đang thử Gemini model: {model}");
+
+                        var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
 
                         var body = new
                         {
-                            model = model,
-                            messages = new[]
+                            contents = new[]
                             {
-                                new {
-                                    role = "system",
-                                    content = $@"
+                                new
+                                {
+                                    parts = new[]
+                                    {
+                                        new
+                                        {
+                                            text = $@"
 Bạn là nhân viên tư vấn PC của shop Linh Kiện PC.
 
 QUY TẮC:
@@ -305,50 +308,57 @@ QUY TẮC:
 SẢN PHẨM HIỆN CÓ:
 {productInfo}
 
-VÍ DỤ:
-- Hỏi: 'RTX 3060 giá bao nhiêu?'
-- Trả lời: 'RTX 3060 đang có giá từ 6.5 - 7.5tr tùy hãng nha bạn 🔥'
-- Hỏi: 'Build PC 15tr'
-- Trả lời: 'Bạn có thể tham khảo: i5-13400F + RTX 3060 + 16GB RAM, ok luôn 😄'
+Câu hỏi: {userMessage}
 "
-                                },
-                                new { role = "user", content = userMessage }
+                                        }
+                                    }
+                                }
                             },
-                            temperature = 0.7,
-                            max_tokens = 200
+                            generationConfig = new
+                            {
+                                temperature = 0.7,
+                                maxOutputTokens = 200
+                            }
                         };
 
                         var json = JsonSerializer.Serialize(body);
                         var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
 
-                        var response = await client.PostAsync("https://openrouter.ai/api/v1/chat/completions", httpContent);
+                        var response = await client.PostAsync(url, httpContent);
+                        var responseString = await response.Content.ReadAsStringAsync();
+
+                        Console.WriteLine($"Gemini {model} Status: {response.StatusCode}");
 
                         if (response.IsSuccessStatusCode)
                         {
-                            var responseString = await response.Content.ReadAsStringAsync();
                             var doc = JsonDocument.Parse(responseString);
 
                             var reply = doc.RootElement
-                                .GetProperty("choices")[0]
-                                .GetProperty("message")
+                                .GetProperty("candidates")[0]
                                 .GetProperty("content")
+                                .GetProperty("parts")[0]
+                                .GetProperty("text")
                                 .GetString();
 
                             if (!string.IsNullOrWhiteSpace(reply))
                             {
-                                Console.WriteLine($"✅ Model {model} thành công");
+                                Console.WriteLine($"✅ Gemini {model} thành công");
                                 return reply.Trim();
                             }
                         }
+                        else if ((int)response.StatusCode == 429) // Quota exceeded
+                        {
+                            Console.WriteLine($"⚠️ Gemini {model} hết quota, thử model tiếp...");
+                            continue;
+                        }
                         else
                         {
-                            var error = await response.Content.ReadAsStringAsync();
-                            Console.WriteLine($"❌ Model {model} lỗi: {response.StatusCode} - {error}");
+                            Console.WriteLine($"❌ Gemini {model} lỗi: {response.StatusCode} - {responseString}");
                         }
                     }
                     catch (Exception ex)
                     {
-                        Console.WriteLine($"❌ Model {model} exception: {ex.Message}");
+                        Console.WriteLine($"❌ Gemini {model} exception: {ex.Message}");
                         continue;
                     }
                 }
