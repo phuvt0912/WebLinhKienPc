@@ -1,0 +1,38 @@
+﻿@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Hỗ trợ khách hàng";
+}
+
+<link rel="stylesheet" href="~/css/staff-chat.css" />
+
+<div class="sc-wrap">
+
+    <div class="sc-users">
+        <div class="sc-users-hdr">
+            💬 Khách hàng
+            <div style="display:flex;align-items:center;gap:8px">
+                <span id="statusLabel" style="font-size:12px;color:#6a6a9a">Offline</span>
+                <label class="toggle-wrap" title="Bật để nhận chat từ khách">
+                    <input type="checkbox" id="onlineToggle" onchange="setOnlineStatus(this.checked)" />
+                    <span class="toggle-slider"></span>
+                </label>
+                <button class="refresh-btn" onclick="loadUsers()">↻</button>
+            </div>
+        </div>
+        <div class="sc-users-body" id="userListBody">
+            <div class="sc-no-users">Đang tải...</div>
+        </div>
+    </div>
+
+    <div class="sc-chat" id="scChatPanel">
+        <div class="sc-empty">
+            <span class="sc-empty-icon">💬</span>
+            Chọn một khách hàng để bắt đầu hỗ trợ
+        </div>
+    </div>
+
+</div>
+
+@Html.AntiForgeryToken()
+
+<script src="~/js/staff-chat.js"></script>
