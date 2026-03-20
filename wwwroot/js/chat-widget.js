@@ -1,6 +1,7 @@
 ﻿let chatOpen = false;
 let lastMsgCount = 0;
 let userId = null;
+let pendingUserMessages = []; // Mảng lưu tin nhắn user đã gửi để tránh hiển thị lại
 
 function toggleChat() {
     chatOpen = !chatOpen;
@@ -45,11 +46,20 @@ async function sendChat() {
     const msg = input.value.trim();
     if (!msg) return;
 
+    // Lưu tin nhắn user để hiển thị
+    const userMsg = {
+        content: msg,
+        time: now()
+    };
+
+    // Hiển thị tin nhắn user ngay lập tức
+    appendMsg(userMsg.content, 'user', userMsg.time);
+
+    // Xóa input và disable nút
     input.value = '';
     input.disabled = true;
     sendBtn.disabled = true;
 
-    appendMsg(msg, 'user', now());
     showTyping();
 
     try {
@@ -141,18 +151,24 @@ function renderProductCards(products) {
 // Hàm render 1 sản phẩm
 function renderSingleProduct(product, isGrid) {
     const stockClass = product.stock > 10 ? 'in-stock' : (product.stock > 0 ? 'low-stock' : 'out-stock');
-    const stockText = product.stock > 0 ? `Còn ${product.stock} cái` : 'Hết hàng';
+    const stockText = product.stock > 0 ? `Còn ${product.stock}` : 'Hết';
+
+    // Xử lý ảnh mặc định nếu không có
+    const hasImage = product.imageUrl && product.imageUrl !== '/images/products/default.jpg';
+    const imageContainerClass = hasImage ? 'product-image-container' : 'product-image-container no-image';
 
     return `
         <div class="product-card" onclick="window.location.href='${product.url || '#'}'">
-            <img src="${product.imageUrl || '/images/products/default.jpg'}" 
-                 class="product-image" 
-                 alt="${product.name}"
-                 onerror="this.src='/images/products/default.jpg'">
+            <div class="${imageContainerClass}">
+                ${hasImage ? `<img src="${product.imageUrl}" class="product-image" alt="${product.name}">` : ''}
+            </div>
             <div class="product-info">
                 <div class="product-name">${escHtml(product.name)}</div>
-                <div class="product-price">${product.price || 'Liên hệ'}</div>
-                ${!isGrid ? `<div class="product-stock ${stockClass}">${stockText}</div>` : ''}
+                <div class="product-price-row">
+                    <span class="product-price">${product.price || 'Liên hệ'}</span>
+                    ${!isGrid ? `<span class="product-stock ${stockClass}">${stockText}</span>` : ''}
+                </div>
+                ${isGrid ? `<div class="product-stock ${stockClass}">${stockText}</div>` : ''}
             </div>
         </div>
     `;
@@ -205,7 +221,7 @@ function escHtml(s) {
         .replace(/\n/g, '<br>');
 }
 
-// Polling tin mới mỗi 5 giây - CHỈ CẬP NHẬT SỐ LƯỢNG, KHÔNG LOAD LẠI TOÀN BỘ
+// Polling tin mới mỗi 5 giây - CHỈ HIỂN THỊ TIN NHẮN AI/STAFF
 setInterval(async () => {
     try {
         const res = await fetch('/Chat/GetMessages');
@@ -220,19 +236,24 @@ setInterval(async () => {
             return;
         }
 
-        // CHỈ cập nhật nếu có tin nhắn mới
+        // Nếu có tin nhắn mới
         if (msgs.length > lastMsgCount) {
             // Lấy tin nhắn mới nhất
             const newMsgs = msgs.slice(lastMsgCount);
 
-            newMsgs.forEach(m => {
+            // CHỈ hiển thị tin nhắn từ AI và staff (KHÔNG hiển thị tin nhắn user)
+            const aiStaffMsgs = newMsgs.filter(m => !m.isFromUser);
+
+            aiStaffMsgs.forEach(m => {
+                // Kiểm tra nếu tin nhắn có products
                 if (m.products && m.products.length > 0) {
-                    appendMsgWithProducts(m.content, m.products, m.isFromUser ? 'user' : (m.isFromAI ? 'ai' : 'staff'), m.time, true);
+                    appendMsgWithProducts(m.content, m.products, m.isFromAI ? 'ai' : 'staff', m.time, true);
                 } else {
-                    appendMsg(m.content, m.isFromUser ? 'user' : (m.isFromAI ? 'ai' : 'staff'), m.time, true);
+                    appendMsg(m.content, m.isFromAI ? 'ai' : 'staff', m.time, true);
                 }
             });
 
+            // Cập nhật lastMsgCount
             lastMsgCount = msgs.length;
         }
     } catch (error) {

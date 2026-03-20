@@ -10,5 +10,8 @@
         public bool IsFromAI { get; set; }
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public bool IsRead { get; set; } = false;
+
+        // Thêm trường này để lưu products dạng JSON
+        public string? ProductsJson { get; set; }
     }
 }
