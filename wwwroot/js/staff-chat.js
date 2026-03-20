@@ -1,5 +1,8 @@
 ﻿let selectedUserId = null;
 let selectedUserName = '';
+let lastMsgCount = 0;
+let userScrolled = false;
+let lastScrollTop = 0; // Lưu vị trí scroll trước đó
 const csrfToken = document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
 
 async function loadUsers() {
@@ -35,6 +38,8 @@ async function loadUsers() {
 async function selectUser(userId, username) {
     selectedUserId = userId;
     selectedUserName = username;
+    userScrolled = false;
+    lastScrollTop = 0;
     loadUsers();
 
     const panel = document.getElementById('scChatPanel');
@@ -58,6 +63,53 @@ async function selectUser(userId, username) {
     `;
 
     await loadStaffMsgs();
+    setTimeout(setupScrollListener, 500);
+}
+
+// Hàm render card sản phẩm
+function renderProductCards(products) {
+    if (!products || products.length === 0) return '';
+
+    if (products.length === 1) {
+        return renderSingleProduct(products[0], false);
+    } else if (products.length <= 3) {
+        return `
+            <div class="chat-products">
+                ${products.map(p => renderSingleProduct(p, false)).join('')}
+            </div>
+        `;
+    } else {
+        return `
+            <div class="chat-products grid">
+                ${products.map(p => renderSingleProduct(p, true)).join('')}
+            </div>
+        `;
+    }
+}
+
+// Hàm render 1 sản phẩm
+function renderSingleProduct(product, isGrid) {
+    const stockClass = product.stock > 10 ? 'in-stock' : (product.stock > 0 ? 'low-stock' : 'out-stock');
+    const stockText = product.stock > 0 ? `Còn ${product.stock}` : 'Hết';
+
+    const hasImage = product.imageUrl && product.imageUrl !== '/images/products/default.jpg';
+    const imageContainerClass = hasImage ? 'product-image-container' : 'product-image-container no-image';
+
+    return `
+        <div class="product-card" onclick="window.location.href='${product.url || '#'}'">
+            <div class="${imageContainerClass}">
+                ${hasImage ? `<img src="${product.imageUrl}" class="product-image" alt="${product.name}">` : ''}
+            </div>
+            <div class="product-info">
+                <div class="product-name">${escHtml(product.name)}</div>
+                <div class="product-price-row">
+                    <span class="product-price">${product.price || 'Liên hệ'}</span>
+                    ${!isGrid ? `<span class="product-stock ${stockClass}">${stockText}</span>` : ''}
+                </div>
+                ${isGrid ? `<div class="product-stock ${stockClass}">${stockText}</div>` : ''}
+            </div>
+        </div>
+    `;
 }
 
 async function loadStaffMsgs() {
@@ -68,19 +120,48 @@ async function loadStaffMsgs() {
         const container = document.getElementById('scMsgs');
         if (!container) return;
 
+        // Lưu vị trí scroll hiện tại
+        const currentScrollTop = container.scrollTop;
+        const scrollHeight = container.scrollHeight;
+        const clientHeight = container.clientHeight;
+        const isNearBottom = scrollHeight - currentScrollTop - clientHeight < 100;
+
         container.innerHTML = msgs.map(m => {
             const cls = m.isFromUser ? 'from-user' : (m.isFromAI ? 'from-ai' : 'from-staff');
             const label = m.isFromUser ? '👤 Khách' : (m.isFromAI ? '🤖 AI' : '👨‍💼 Bạn');
-            return `
-                <div class="smsg ${cls}">
-                    <div class="smsg-sender">${label}</div>
-                    <div class="sbubble">${escHtml(m.content)}</div>
-                    <div class="smeta">${m.time}</div>
-                </div>
-            `;
+
+            if (m.products && m.products.length > 0) {
+                const productsHtml = renderProductCards(m.products);
+                return `
+                    <div class="smsg ${cls}" data-has-products="true">
+                        <div class="smsg-sender">${label}</div>
+                        <div class="sbubble has-products" style="width: 100%;">
+                            ${escHtml(m.content)}
+                            ${productsHtml}
+                        </div>
+                        <div class="smeta">${m.time}</div>
+                    </div>
+                `;
+            } else {
+                return `
+                    <div class="smsg ${cls}">
+                        <div class="smsg-sender">${label}</div>
+                        <div class="sbubble">${escHtml(m.content)}</div>
+                        <div class="smeta">${m.time}</div>
+                    </div>
+                `;
+            }
         }).join('');
 
-        container.scrollTop = container.scrollHeight;
+        // KHÔNG tự động scroll nếu user đã scroll lên
+        if (msgs.length > lastMsgCount && isNearBottom) {
+            container.scrollTop = container.scrollHeight;
+        } else {
+            // Giữ nguyên vị trí scroll cũ
+            container.scrollTop = currentScrollTop;
+        }
+
+        lastMsgCount = msgs.length;
     } catch (error) {
         console.error('Load messages error:', error);
     }
@@ -94,7 +175,7 @@ async function scSend() {
     input.value = '';
 
     try {
-        await fetch('/Chat/StaffReply', {
+        const res = await fetch('/Chat/StaffReply', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -102,10 +183,50 @@ async function scSend() {
             },
             body: JSON.stringify({ userId: selectedUserId, content: msg })
         });
-        await loadStaffMsgs();
+
+        const data = await res.json();
+
+        // Hiển thị tin nhắn staff vừa gửi
+        const container = document.getElementById('scMsgs');
+        const now = new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+
+        const div = document.createElement('div');
+        div.className = 'smsg from-staff';
+        div.innerHTML = `
+            <div class="smsg-sender">👨‍💼 Bạn</div>
+            <div class="sbubble">${escHtml(msg)}</div>
+            <div class="smeta">${data.time || now}</div>
+        `;
+        container.appendChild(div);
+
+        // Scroll xuống tin nhắn vừa gửi
+        container.scrollTop = container.scrollHeight;
+        lastMsgCount++;
+
+        // Load lại tin nhắn để lấy response từ AI (nếu có)
+        setTimeout(() => loadStaffMsgs(), 500);
+
     } catch (error) {
         console.error('Send error:', error);
     }
+}
+
+// Theo dõi sự kiện scroll
+function setupScrollListener() {
+    const container = document.getElementById('scMsgs');
+    if (container) {
+        container.removeEventListener('scroll', scrollHandler);
+        container.addEventListener('scroll', scrollHandler);
+    }
+}
+
+function scrollHandler() {
+    const container = document.getElementById('scMsgs');
+    if (!container) return;
+
+    const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+    userScrolled = !isNearBottom;
+    lastScrollTop = container.scrollTop;
 }
 
 function escHtml(str) {

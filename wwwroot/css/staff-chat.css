@@ -246,6 +246,11 @@
     border-radius: 12px 12px 12px 3px;
 }
 
+/* Message bubble có chứa sản phẩm */
+.sbubble.has-products {
+    padding: 12px 16px 8px 16px;
+}
+
 .smeta {
     font-size: 11px;
     color: #6a6a9a;
@@ -365,3 +370,549 @@
         transform: translateX(16px);
         background: #4cdf8a;
     }
+
+/* ===== PRODUCT CARDS TRONG STAFF CHAT ===== */
+.chat-products {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin: 8px 0 4px;
+    width: 100%;
+    max-width: 280px;
+}
+
+    .chat-products.grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        max-width: 300px;
+    }
+
+.product-card {
+    display: flex;
+    background: #0d0d1a;
+    border: 1px solid rgba(162, 89, 255, 0.2);
+    border-radius: 10px;
+    overflow: hidden;
+    transition: all 0.2s;
+    cursor: pointer;
+    width: 100%;
+    min-height: 80px;
+}
+
+.chat-products.grid .product-card {
+    flex-direction: column;
+    min-height: 180px;
+}
+
+.product-card:hover {
+    transform: translateY(-2px);
+    border-color: #a259ff;
+    box-shadow: 0 4px 12px rgba(162, 89, 255, 0.3);
+}
+
+/* Container ảnh cố định */
+.product-image-container {
+    width: 70px;
+    height: 70px;
+    flex-shrink: 0;
+    background: #1a1a35;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.chat-products.grid .product-image-container {
+    width: 100%;
+    height: 100px;
+}
+
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+/* Fallback khi không có ảnh */
+.product-image-container.no-image {
+    background: linear-gradient(135deg, #2a2a4a, #1a1a35);
+    position: relative;
+}
+
+    .product-image-container.no-image::after {
+        content: '📷';
+        font-size: 24px;
+        color: #6a6a9a;
+    }
+
+.product-info {
+    flex: 1;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
+    gap: 4px;
+}
+
+.chat-products.grid .product-info {
+    padding: 10px;
+}
+
+.product-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: #e8e8ff;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+    min-height: 32px;
+}
+
+/* Giá và stock căn chỉnh */
+.product-price-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 4px;
+}
+
+.product-price {
+    font-size: 14px;
+    font-weight: 700;
+    color: #00cfff;
+    white-space: nowrap;
+}
+
+.product-stock {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.05);
+    white-space: nowrap;
+}
+
+    .product-stock.in-stock {
+        color: #4cdf8a;
+        background: rgba(76, 223, 138, 0.1);
+    }
+
+    .product-stock.low-stock {
+        color: #ffaa00;
+        background: rgba(255, 170, 0, 0.1);
+    }
+
+    .product-stock.out-stock {
+        color: #ff4f7b;
+        background: rgba(255, 79, 123, 0.1);
+    }
+
+/* Grid layout improvements */
+.chat-products.grid .product-price-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.chat-products.grid .product-stock {
+    align-self: flex-start;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .chat-products {
+        max-width: 240px;
+    }
+
+        .chat-products.grid {
+            max-width: 260px;
+        }
+
+    .product-image-container {
+        width: 60px;
+        height: 60px;
+    }
+
+    .chat-products.grid .product-image-container {
+        height: 80px;
+    }
+
+    .product-name {
+        font-size: 11px;
+        min-height: 28px;
+    }
+
+    .product-price {
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .chat-products.grid {
+        grid-template-columns: 1fr;
+    }
+
+        .chat-products.grid .product-card {
+            min-height: 160px;
+        }
+}
+/* ===== FIX CARD SẢN PHẨM ĐẦY CHIỀU NGANG ===== */
+
+/* Cho phép message chứa sản phẩm rộng hơn */
+.smsg[data-has-products="true"] {
+    max-width: 90% !important;
+    width: auto;
+}
+
+/* Bubble chứa sản phẩm chiếm full width */
+.smsg .sbubble.has-products {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 12px 16px 8px 16px;
+    box-sizing: border-box;
+}
+
+/* Container sản phẩm chiếm full width */
+.smsg .chat-products {
+    max-width: 100% !important;
+    width: 100% !important;
+}
+
+    /* Grid layout cho nhiều sản phẩm */
+    .smsg .chat-products.grid {
+        max-width: 100% !important;
+        width: 100% !important;
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+/* Card sản phẩm trong list view */
+.smsg .product-card:not(.chat-products.grid .product-card) {
+    display: flex;
+    flex-direction: row;
+    width: 100% !important;
+}
+
+/* Card sản phẩm trong grid view */
+.smsg .chat-products.grid .product-card {
+    flex-direction: column;
+    min-height: 180px;
+    width: 100% !important;
+}
+
+/* Container ảnh trong list view */
+.smsg .product-card:not(.chat-products.grid .product-card) .product-image-container {
+    width: 70px;
+    height: 70px;
+    flex-shrink: 0;
+}
+
+/* Container ảnh trong grid view */
+.smsg .chat-products.grid .product-image-container {
+    width: 100%;
+    height: 100px;
+}
+
+/* Thông tin sản phẩm trong list view */
+.smsg .product-card:not(.chat-products.grid .product-card) .product-info {
+    flex: 1;
+    padding: 10px 12px;
+}
+
+/* Thông tin sản phẩm trong grid view */
+.smsg .chat-products.grid .product-info {
+    padding: 10px;
+    width: 100%;
+}
+
+/* Giá và stock trong grid view */
+.smsg .chat-products.grid .product-price-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+/* Stock trong grid view */
+.smsg .chat-products.grid .product-stock {
+    align-self: flex-start;
+    margin-top: 2px;
+}
+
+/* ===== FIX LỖI GIẬT SCROLL ===== */
+
+/* Tắt smooth scroll khi load nhiều tin nhắn */
+.sc-msgs {
+    scroll-behavior: auto;
+    overflow-anchor: auto;
+}
+
+    /* Anchor cho tin nhắn cuối cùng */
+    .sc-msgs > :last-child {
+        scroll-margin-bottom: 20px;
+    }
+
+    /* Giữ vị trí scroll khi cập nhật */
+    .sc-msgs.loading {
+        pointer-events: none;
+    }
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+    .smsg[data-has-products="true"] {
+        max-width: 95% !important;
+    }
+
+    .smsg .chat-products.grid {
+        gap: 6px;
+    }
+
+    .smsg .product-card:not(.chat-products.grid .product-card) .product-image-container {
+        width: 60px;
+        height: 60px;
+    }
+
+    .smsg .chat-products.grid .product-image-container {
+        height: 80px;
+    }
+
+    .smsg .product-name {
+        font-size: 11px;
+    }
+
+    .smsg .product-price {
+        font-size: 12px;
+    }
+}
+
+/* Fix lỗi tràn */
+.product-card {
+    box-sizing: border-box;
+}
+
+.product-info {
+    overflow: hidden;
+    min-width: 0;
+}
+
+.product-name {
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+/* ===== CARD SẢN PHẨM VUÔNG VẮN VÀ CAO HƠN ===== */
+
+/* Container ảnh trong list view - hình vuông to hơn */
+.smsg .product-card:not(.chat-products.grid .product-card) .product-image-container {
+    width: 90px !important;
+    height: 90px !important;
+    min-width: 90px !important;
+    border-radius: 10px;
+    overflow: hidden;
+    margin: 6px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Container ảnh trong grid view - hình vuông */
+.smsg .chat-products.grid .product-image-container {
+    width: 100% !important;
+    height: 130px !important;
+    border-radius: 10px 10px 0 0;
+    overflow: hidden;
+    background: #1a1a35;
+}
+
+/* Ảnh sản phẩm - cover để hiển thị đầy đủ */
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.3s ease;
+}
+
+/* Hover phóng to ảnh nhẹ */
+.product-card:hover .product-image {
+    transform: scale(1.08);
+}
+
+/* Fallback khi không có ảnh - vuông vắn */
+.product-image-container.no-image {
+    background: linear-gradient(135deg, #2a2a4a, #1a1a35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+    .product-image-container.no-image::after {
+        content: '📷';
+        font-size: 36px;
+        color: #a259ff;
+        opacity: 0.8;
+    }
+
+/* Card trong list view - cao hơn */
+.smsg .product-card:not(.chat-products.grid .product-card) {
+    min-height: 110px;
+    height: auto;
+    border-radius: 12px;
+}
+
+/* Card trong grid view - cao hơn */
+.smsg .chat-products.grid .product-card {
+    min-height: 240px;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #0d0d1a;
+    border: 1px solid rgba(162, 89, 255, 0.2);
+}
+
+/* Thông tin sản phẩm trong list view */
+.smsg .product-card:not(.chat-products.grid .product-card) .product-info {
+    padding: 14px 14px 14px 8px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 6px;
+}
+
+/* Thông tin sản phẩm trong grid view */
+.smsg .chat-products.grid .product-info {
+    padding: 12px 10px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: #0d0d1a;
+}
+
+/* Tên sản phẩm - đẹp hơn */
+.smsg .product-name {
+    font-weight: 600;
+    color: #e8e8ff;
+    line-height: 1.5;
+    margin-bottom: 2px;
+    font-size: 13px;
+}
+
+/* Giá sản phẩm - nổi bật */
+.smsg .product-price {
+    font-size: 16px;
+    font-weight: 700;
+    color: #00cfff;
+    background: rgba(0, 207, 255, 0.08);
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    border: 1px solid rgba(0, 207, 255, 0.2);
+}
+
+/* Stock trong list view */
+.smsg .product-card:not(.chat-products.grid .product-card) .product-stock {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    width: fit-content;
+    font-weight: 500;
+}
+
+/* Stock trong grid view */
+.smsg .chat-products.grid .product-stock {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    display: inline-block;
+    width: fit-content;
+    margin-top: 4px;
+    font-weight: 500;
+}
+
+/* Khoảng cách giữa các card trong grid */
+.smsg .chat-products.grid {
+    gap: 12px;
+}
+
+/* Responsive cho tablet */
+@media (max-width: 1024px) {
+    .smsg .product-card:not(.chat-products.grid .product-card) .product-image-container {
+        width: 80px !important;
+        height: 80px !important;
+        min-width: 80px !important;
+    }
+
+    .smsg .chat-products.grid .product-image-container {
+        height: 110px !important;
+    }
+
+    .smsg .chat-products.grid .product-card {
+        min-height: 210px;
+    }
+
+    .smsg .product-price {
+        font-size: 14px;
+    }
+}
+
+/* Responsive cho mobile */
+@media (max-width: 768px) {
+    .smsg .product-card:not(.chat-products.grid .product-card) .product-image-container {
+        width: 70px !important;
+        height: 70px !important;
+        min-width: 70px !important;
+    }
+
+    .smsg .chat-products.grid .product-image-container {
+        height: 100px !important;
+    }
+
+    .smsg .chat-products.grid .product-card {
+        min-height: 190px;
+    }
+
+    .smsg .product-price {
+        font-size: 13px;
+        padding: 3px 8px;
+    }
+
+    .smsg .product-name {
+        font-size: 12px;
+    }
+}
+
+/* Hiệu ứng khi click */
+.product-card:active {
+    transform: scale(0.97);
+    transition: transform 0.1s;
+}
+
+/* Cải thiện hiển thị cho card sản phẩm */
+.chat-products {
+    margin: 10px 0 6px;
+}
+
+.product-price-row {
+    margin-top: 2px;
+}
+
+/* Thêm hiệu ứng glow khi hover */
+.product-card:hover {
+    box-shadow: 0 6px 16px rgba(162, 89, 255, 0.4);
+    border-color: #a259ff;
+}
+
+/* Căn chỉnh lại bubble chứa sản phẩm */
+.smsg .sbubble.has-products {
+    background: #1a1a35;
+    border: 1px solid rgba(162, 89, 255, 0.25);
+}
