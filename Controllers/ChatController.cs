@@ -449,203 +449,70 @@ namespace WebLinhKienPc.Controllers
         {
             var query = _context.Products
                 .Include(p => p.Category)
-                .Where(p => p.Stock > 0) // Chỉ lấy còn hàng
+                .Where(p => p.Stock > 0)
                 .AsQueryable();
 
-            // Lọc theo category nếu có
+            // 1. Lọc theo Category (Nếu user hỏi đích danh VGA, RAM...)
             if (!string.IsNullOrEmpty(intent.Category))
             {
                 if (intent.Category == "PC")
-                {
-                    // Nếu là PC, tìm theo tên có chứa "PC"
-                    query = query.Where(p => p.Name.Contains("PC") || p.Name.Contains("GAMING"));
-                }
+                    query = query.Where(p => p.Name.Contains("PC") || p.Name.Contains("GAMING") || p.Category.Name.Contains("PC"));
                 else
-                {
-                    query = query.Where(p => p.Category.Name == intent.Category);
-                }
+                    query = query.Where(p => p.Category.Name.ToLower().Contains(intent.Category.ToLower()));
             }
 
-            // Lọc theo budget nếu có
+            // 2. Logic Budget & Upsell
             if (intent.Budget.HasValue)
             {
                 decimal budget = intent.Budget.Value;
-                decimal min = budget * 0.7m; // 70% budget
-                decimal max = budget * 1.3m; // 130% budget
+                // Lấy sản phẩm từ 60% budget đến 140% budget (để có hàng Upsell)
+                decimal min = budget * 0.6m;
+                decimal max = budget * 1.4m;
 
-                // Ưu tiên sản phẩm trong khoảng budget
-                var inRangeProducts = await query
+                var products = await query
                     .Where(p => p.Price >= min && p.Price <= max)
+                    .OrderBy(p => p.Price)
                     .ToListAsync();
 
-                if (inRangeProducts.Any())
+                // Nếu quá ít sản phẩm, lấy đại 5 cái gần tầm giá nhất
+                if (products.Count < 3)
                 {
-                    // Sắp xếp theo độ gần với budget
-                    return inRangeProducts
+                    return await query
                         .OrderBy(p => Math.Abs((double)(p.Price - budget)))
-                        .Take(4)
-                        .ToList();
+                        .Take(5)
+                        .ToListAsync();
                 }
-
-                // Nếu không có sản phẩm trong khoảng, lấy sản phẩm gần nhất
-                var allProducts = await query.ToListAsync();
-                return allProducts
-                    .OrderBy(p => Math.Abs((double)(p.Price - budget)))
-                    .Take(4)
-                    .ToList();
+                return products.Take(6).ToList(); // Trả về tối đa 6 sản phẩm để AI lựa chọn
             }
 
-            // Nếu không có budget, lấy sản phẩm nổi bật
-            var products = await query
-                .OrderByDescending(p => p.Price)
-                .Take(4)
-                .ToListAsync();
-
-            // Nếu không tìm thấy, trả về sản phẩm nổi bật chung
-            if (!products.Any())
-            {
-                products = await _context.Products
-                    .Include(p => p.Category)
-                    .Where(p => p.Stock > 0)
-                    .OrderByDescending(p => p.Price)
-                    .Take(4)
-                    .ToListAsync();
-            }
-
-            return products;
+            // Nếu không có budget, lấy các sản phẩm bán chạy hoặc mới nhất của category đó
+            return await query.OrderByDescending(p => p.ProductId).Take(4).ToListAsync();
         }
 
         // ===== TẠO PROMPT THÔNG MINH =====
         private string GenerateSmartPrompt(string userMessage, UserIntent intent, List<Product> products)
         {
-            string productInfo = products.Any()
-                ? string.Join("\n", products.Select(p => $"- {p.Name}: {p.Price:N0}đ (Còn {p.Stock} cái)"))
-                : "";
+            string productData = string.Join("\n", products.Select(p => $"- ID:{p.ProductId} | {p.Name} | Giá: {p.Price:N0}đ | Kho: {p.Stock}"));
 
-            string basePrompt = $@"
-Bạn là nhân viên tư vấn PC chuyên nghiệp của shop Linh Kiện PC.
-Khách hàng đang cần tư vấn. Hãy trả lời một cách tự nhiên, thân thiện.
+            return $@"
+                Bạn là chuyên gia tư vấn phần cứng máy tính tại 'Linh Kiện PC'. 
+                Nhiệm vụ: Phân tích yêu cầu khách hàng và tư vấn sản phẩm từ danh sách bên dưới.
 
-KHÁCH HỎI: {userMessage}
+                DANH SÁCH SẢN PHẨM ĐANG CÓ:
+                {productData}
 
+                YÊU CẦU TỪ KHÁCH: '{userMessage}'
+                NGÂN SÁCH DỰ KIẾN: {(intent.Budget.HasValue ? intent.Budget.Value.ToString("N0") + "đ" : "Chưa rõ")}
+                LOẠI LINH KIỆN QUAN TÂM: {intent.Category ?? "Tất cả"}
+
+                HƯỚNG DẪN TRẢ LỜI:
+                1. Nếu khách có budget: 
+                   - Hãy chọn ra 1-2 sản phẩm sát giá nhất để giới thiệu.
+                   - CHIẾN THUẬT UP-SELL: Nếu có sản phẩm nào đắt hơn budget của khách tầm 10-20% nhưng hiệu năng vượt trội (ví dụ từ card 1 fan lên 2 fan, hoặc từ i3 lên i5), hãy khuyên khách: 'Nếu ráng thêm một chút khoảng... bạn sẽ được... ngon hơn hẳn'.
+                2. Nếu khách hỏi chung chung: Hãy hỏi lại nhu cầu (chơi game gì, làm việc gì) để thu hẹp lựa chọn.
+                3. Phong cách: Thân thiện, chuyên nghiệp, dùng emoji 😄, 🔥.
+                4. Ngôn ngữ: Tiếng Việt. Trả lời ngắn gọn, súc tích (dưới 150 từ).
 ";
-
-            switch (intent.Action)
-            {
-                case "greeting":
-                    return basePrompt + @"
-YÊU CẦU TRẢ LỜI:
-- Chào hỏi thân thiện, vui vẻ
-- Giới thiệu ngắn gọn shop (bán linh kiện PC, build PC)
-- Hỏi khách cần tư vấn gì
-- Dùng emoji 😄
-- KHÔNG gửi sản phẩm
-
-VÍ DỤ: 'Chào bạn! Mình là nhân viên tư vấn của Linh Kiện PC. Bạn cần tìm linh kiện gì hay muốn build PC tầm giá nào ạ? 😄'";
-
-                case "thank":
-                    return basePrompt + @"
-YÊU CẦU TRẢ LỜI:
-- Đáp lại lời cảm ơn một cách thân thiện
-- Mời hỏi thêm nếu cần
-- KHÔNG gửi sản phẩm
-
-VÍ DỤ: 'Không có gì đâu bạn ơi! Rất vui được hỗ trợ bạn. Có gì cần thêm cứ hỏi mình nha 😄'";
-
-                case "goodbye":
-                    return basePrompt + @"
-YÊU CẦU TRẢ LỜI:
-- Chào tạm biệt thân thiện
-- Mời quay lại khi cần
-- KHÔNG gửi sản phẩm
-
-VÍ DỤ: 'Tạm biệt bạn! Nếu cần tư vấn thêm cứ quay lại shop nha 🔥 Chúc bạn một ngày tốt lành!'";
-
-                case "build_pc":
-                    if (intent.Budget.HasValue)
-                    {
-                        decimal budgetM = intent.Budget.Value / 1000000;
-                        return basePrompt + $@"
-YÊU CẦU TRẢ LỜI:
-- Xác nhận lại budget {budgetM:N0}tr của khách
-- Đưa ra 1 gợi ý build PC phù hợp với budget (liệt kê CPU, VGA, RAM, Main)
-- Hỏi khách có muốn xem chi tiết linh kiện không
-- Dùng emoji 🔥
-
-SẢN PHẨM PHÙ HỢP TRONG SHOP:
-{productInfo}
-
-VÍ DỤ: 'Với budget {budgetM:N0}tr, bạn có thể build: i5-13400F + RTX 3060 + 16GB RAM. Mấy em này đang có sẵn trong shop nè bạn xem qua! 🔥'";
-                    }
-                    else
-                    {
-                        return basePrompt + @"
-YÊU CẦU TRẢ LỜI:
-- Hỏi rõ budget của khách
-- Gợi ý các mức giá phổ biến (15tr, 20tr, 25tr, 30tr)
-- KHÔNG gửi sản phẩm
-
-VÍ DỤ: 'Bạn muốn build PC tầm giá nào ạ? Shop có các mức 15tr, 20tr, 25tr, 30tr đều build được nè 😄'";
-                    }
-
-                case "product_inquiry":
-                    if (products.Any())
-                    {
-                        return basePrompt + $@"
-YÊU CẦU TRẢ LỜI:
-- Giới thiệu ngắn gọn các sản phẩm phù hợp
-- Hỏi khách thích sản phẩm nào để tư vấn thêm
-- Dùng emoji 😄
-- CHỈ gửi card sản phẩm bên dưới
-
-SẢN PHẨM TRONG SHOP:
-{productInfo}
-
-VÍ DỤ: 'Đây là các sản phẩm phù hợp với nhu cầu của bạn nè! Bạn thích em nào để mình tư vấn thêm không? 😄'";
-                    }
-                    else
-                    {
-                        return basePrompt + @"
-YÊU CẦU TRẢ LỜI:
-- Thông báo không tìm thấy sản phẩm phù hợp
-- Hỏi khách muốn xem sản phẩm khác không
-- KHÔNG gửi sản phẩm
-
-VÍ DỤ: 'Hiện shop không có sản phẩm phù hợp với yêu cầu của bạn. Bạn muốn xem sản phẩm khác không ạ? 😄'";
-                    }
-
-                case "check_stock":
-                    if (products.Any())
-                    {
-                        return basePrompt + $@"
-YÊU CẦU TRẢ LỜI:
-- Xác nhận sản phẩm còn hàng
-- Giới thiệu sản phẩm
-- Hỏi khách cần tư vấn thêm không
-
-SẢN PHẨM CÒN HÀNG:
-{productInfo}";
-                    }
-                    else
-                    {
-                        return basePrompt + @"
-YÊU CẦU TRẢ LỜI:
-- Thông báo sản phẩm đang hết hàng
-- Xin lỗi khách
-- Hỏi khách muốn xem sản phẩm tương tự không
-
-VÍ DỤ: 'Rất tiếc, sản phẩm bạn hỏi đang hết hàng bạn ơi 😢 Bạn muốn xem sản phẩm tương tự không ạ?'";
-                    }
-
-                default:
-                    return basePrompt + @"
-YÊU CẦU TRẢ LỜI:
-- Trả lời tự nhiên, thân thiện
-- Hỏi khách cần tư vấn gì
-- KHÔNG gửi sản phẩm nếu không cần thiết
-
-VÍ DỤ: 'Dạ, shop mình có đủ linh kiện PC bạn nha! Bạn cần tư vấn gì ạ? 😄'";
-            }
         }
 
         // ===== TRÍCH XUẤT BUDGET CHÍNH XÁC =====
