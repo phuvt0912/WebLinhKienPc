@@ -1,32 +1,28 @@
-﻿@model IEnumerable<WebLinhKienPc.Models.Category>
+﻿@model IEnumerable<WebLinhKienPc.Models.Order>
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="~/css/AdminCategory/Index.css" />
+<link rel="stylesheet" href="~/css/AdminOrder/Index.css" />
 
 <div class="page-wrap">
 
     <div class="page-header">
-        <h2 class="page-title">Quản Lý Danh Mục</h2>
-        <a class="btn-add"
-               asp-controller="AdminCategory"
-               asp-action="CreateCategory">
-            + Thêm danh mục
-        </a>
+        <h2 class="page-title">Quản Lý đơn hàng</h2>
     </div>
 
     <div class="total-count">
-        Tổng cộng <span>@Model.Count()</span> danh mục
+        Tổng cộng <span>@Model.Count()</span> đơn hàng
     </div>
 
-    <table class="cat-table">
+    <table class="ord-table">
         <thead>
             <tr>
                 <th>ID</th>
-                <th>Tên danh mục</th>
-                <th>Mô tả</th>
+                <th>Tên khách hàng</th>
+                <th>Tổng tiền</th>
+                <th>Trạng thái</th>
                 <th>Thao tác</th>
             </tr>
         </thead>
@@ -37,7 +33,7 @@
                     <td colspan="4">
                         <div class="empty-state">
                             <span class="empty-icon">📂</span>
-                            Chưa có danh mục nào
+                            Chưa có đơn hàng nào
                         </div>
                     </td>
                 </tr>
@@ -46,31 +42,51 @@
             {
                 @foreach (var item in Model)
                 {
+                    string statusClass = item.Status switch
+                    {
+                        OrderStatus.Pending => "status-pending",
+                        OrderStatus.Shipping => "status-shipping",
+                        OrderStatus.Completed => "status-completed",
+                        OrderStatus.Cancelled => "status-cancelled",
+                        _ => "status-pending"
+                    };
+
+                    string statusLabel = item.Status switch
+                    {
+                        OrderStatus.Pending => "Chờ xử lý",
+                        OrderStatus.Shipping => "Đang giao",
+                        OrderStatus.Completed => "Hoàn thành",
+                        OrderStatus.Cancelled => "Đã huỷ",
+                        _ => item.Status.ToString()
+                    };
                     <tr>
-                        <td class="cat-id">#@item.CategoryId</td>
-                        <td class="cat-name">@item.Name</td>
-                        <td class="cat-desc">@(item.Description ?? "—")</td>
+                        <td class="ord-id">#@item.OrderId</td>
+                        <td class="ord-name">@item.Name</td>
+                        <td class="ord-totalprice">@String.Format("{0:N0} đ", item.TotalPrice)</td>
+                        <td>
+                            <span class="status-badge @statusClass">@statusLabel</span>
+                        </td>
                         <td>
                             <div class="action-wrap">
                                 <a class="btn-edit"
-                                       asp-controller="AdminCategory"
-                                       asp-action="EditCategory"
-                                       asp-route-id="@item.CategoryId">
-                                    ✏️ Sửa
+                                       asp-controller="AdminOrder"
+                                       asp-action="OrderDetails"
+                                       asp-route-id="@item.OrderId">
+                                    ✏️ Xem chi tiết
                                 </a>
                                 @if (User.IsInRole("Admin"))
                                 {
-                                    <form asp-controller="AdminCategory"
-                                          asp-action="DeleteCategory"
+                                    <form asp-controller="AdminOrder"
+                                          asp-action="CancelOrder"
                                           method="post"
                                           class="delete-form"
-                                          id="form-@item.CategoryId">
+                                          id="form-@item.OrderId">
                                         @Html.AntiForgeryToken()
-                                        <input type="hidden" name="id" value="@item.CategoryId" />
+                                        <input type="hidden" name="id" value="@item.OrderId" />
                                         <button type="button"
                                                 class="btn-delete"
-                                                onclick="confirmDelete(@item.CategoryId, '@item.Name')">
-                                            🗑️ Xoá
+                                                onclick="confirmDelete(@item.OrderId, '@item.Name')">
+                                            🗑️ Hủy đơn
                                         </button>
                                     </form>
                                 }
@@ -101,4 +117,4 @@
     </div>
 </div>
 
-<script src="~/js/admin-category.js"></script>
+<script src="~/js/admin-order.js"></script>

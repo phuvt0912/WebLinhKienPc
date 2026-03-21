@@ -1,0 +1,49 @@
+﻿@using WebLinhKienPc.ViewModels;
+@model CheckoutViewModel
+
+<h2>Thanh toán</h2>
+<div asp-validation-summary="All" class="text-danger"></div>
+<form asp-action="Checkout" method="post">
+    <div>
+        <label>Tên</label>
+        <input asp-for="Name" class="form-control" />
+        <span asp-validation-for="Name" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label>Số điện thoại</label>
+        <input asp-for="Phone" class="form-control" placeholder="VD: 0912345678" />
+        <span asp-validation-for="Phone" class="text-danger"></span>
+    </div>
+
+    <div>
+        <label>Địa chỉ</label>
+        <input asp-for="Address" class="form-control" />
+        <span asp-validation-for="Address" class="text-danger"></span>
+    </div>
+
+    <h3>Giỏ hàng</h3>
+    <table class="table">
+        <tr>
+            <th>Sản phẩm</th>
+            <th>SL</th>
+            <th>Đơn giá</th>
+            <th>Giá</th>
+        </tr>
+
+        @foreach (var item in Model.CartItems)
+        {
+            <tr>
+                <td>@item.Product.Name</td>
+                <td>@item.Quantity</td>
+                <td>@String.Format("{0:N0} đ", item.Product.Price)</td>
+                <td>@String.Format("{0:N0} đ", item.Product.Price * item.Quantity)</td>
+
+            </tr>
+        }
+    </table>
+
+    <button type="submit" class="btn btn-success">
+        Đặt hàng
+    </button>
+</form>

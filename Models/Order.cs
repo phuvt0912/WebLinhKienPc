@@ -1,8 +1,21 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using WebLinhKienPc.Models;
 
 namespace WebLinhKienPc.Models
 {
+	public enum OrderStatus
+	{
+		[Display(Name = "Chờ xử lý")]
+		Pending,
+
+		[Display(Name = "Đang giao")]
+		Shipping,
+
+		[Display(Name = "Hoàn thành")]
+		Completed,
+
+		[Display(Name = "Đã hủy")]
+		Cancelled
+	}
 	public class Order
 	{
 		[Key]
@@ -14,7 +27,7 @@ namespace WebLinhKienPc.Models
 
 		public decimal TotalPrice { get; set; }
 
-		public string Status { get; set; }
+		public OrderStatus Status { get; set; } = OrderStatus.Pending;
 
 		public string Name { get; set; }
 
@@ -22,6 +35,8 @@ namespace WebLinhKienPc.Models
 
 		public string Address { get; set; }
 
-		public ICollection<OrderDetail>? OrderDetails { get; set; }
+		public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 	}
+
+
 }
