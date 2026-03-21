@@ -4,12 +4,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using WebLinhKienPc.AppDbContext;
 using WebLinhKienPc.Models;
 
 namespace WebLinhKienPc.Controllers
 {
-    // Thêm các class mới ở đầu file
     public class AIResponse
     {
         public string Message { get; set; }
@@ -28,14 +28,13 @@ namespace WebLinhKienPc.Controllers
         public string Url { get; set; }
     }
 
-    // Thêm class Intent để phân tích
     public class UserIntent
     {
-        public string Action { get; set; } // greeting, thank, goodbye, product_inquiry, build_pc, check_stock, chat
+        public string Action { get; set; }
         public decimal? Budget { get; set; }
         public bool NeedProducts { get; set; }
         public string Category { get; set; }
-        public string ProductName { get; set; }
+        public List<string> Keywords { get; set; } = new();
     }
 
     public class ChatController : Controller
@@ -89,17 +88,43 @@ namespace WebLinhKienPc.Controllers
 
             var userId = _userManager.GetUserId(User);
 
-            var userMsg = new ChatMessage
+            // ===== TIN NHẮN CHÀO MỪng TỰ ĐỘNG =====
+            if (req.Content == "__welcome__")
+            {
+                var welcomeMsg = "Chào bạn! Mình là Thắng từ LinhKienPC 😄 Shop mình có đầy đủ linh kiện: CPU, VGA, RAM, SSD, Màn hình... Bạn đang cần tư vấn gì hoặc muốn build PC tầm giá nào không ạ?";
+
+                // Lưu tin chào vào DB luôn để lịch sử không bị reset
+                _context.ChatMessages.Add(new ChatMessage
+                {
+                    UserId = userId,
+                    Content = welcomeMsg,
+                    IsFromUser = false,
+                    IsFromAI = true,
+                    CreatedAt = DateTime.Now
+                });
+                await _context.SaveChangesAsync();
+
+                return Json(new
+                {
+                    success = true,
+                    reply = welcomeMsg,
+                    isAI = true,
+                    time = DateTime.Now.ToString("HH:mm")
+                });
+            }
+
+            // ===== TIN NHẮN THƯỜNG =====
+            _context.ChatMessages.Add(new ChatMessage
             {
                 UserId = userId,
                 Content = req.Content.Trim(),
                 IsFromUser = true,
                 IsFromAI = false,
                 CreatedAt = DateTime.Now
-            };
-            _context.ChatMessages.Add(userMsg);
+            });
             await _context.SaveChangesAsync();
 
+            // Check nhân viên online
             var hasStaffOnline = await _context.StaffStatuses.AnyAsync(s => s.IsOnline);
             if (hasStaffOnline)
             {
@@ -113,17 +138,14 @@ namespace WebLinhKienPc.Controllers
                 });
             }
 
-            // AI trả lời KÈM SẢN PHẨM (thông minh hơn)
-            var aiResponse = await CallGeminiAIWithProducts(req.Content);
+            // AI trả lời
+            var aiResponse = await CallGeminiAIWithProducts(req.Content, userId);
 
-            // Lưu products dưới dạng JSON (nếu có)
-            string productsJson = null;
-            if (aiResponse.Products != null && aiResponse.Products.Any())
-            {
-                productsJson = JsonSerializer.Serialize(aiResponse.Products);
-            }
+            string productsJson = aiResponse.Products?.Any() == true
+                ? JsonSerializer.Serialize(aiResponse.Products)
+                : null;
 
-            var aiMsg = new ChatMessage
+            _context.ChatMessages.Add(new ChatMessage
             {
                 UserId = userId,
                 Content = aiResponse.Message,
@@ -131,9 +153,7 @@ namespace WebLinhKienPc.Controllers
                 IsFromUser = false,
                 IsFromAI = true,
                 CreatedAt = DateTime.Now
-            };
-
-            _context.ChatMessages.Add(aiMsg);
+            });
             await _context.SaveChangesAsync();
 
             return Json(new
@@ -156,9 +176,7 @@ namespace WebLinhKienPc.Controllers
             var status = await _context.StaffStatuses.FirstOrDefaultAsync(s => s.StaffId == staffId);
 
             if (status == null)
-            {
                 _context.StaffStatuses.Add(new StaffStatus { StaffId = staffId, IsOnline = isOnline, UpdatedAt = DateTime.Now });
-            }
             else
             {
                 status.IsOnline = isOnline;
@@ -246,7 +264,7 @@ namespace WebLinhKienPc.Controllers
                 return BadRequest();
 
             var staffId = _userManager.GetUserId(User);
-            var msg = new ChatMessage
+            _context.ChatMessages.Add(new ChatMessage
             {
                 UserId = req.UserId,
                 StaffId = staffId,
@@ -254,8 +272,7 @@ namespace WebLinhKienPc.Controllers
                 IsFromUser = false,
                 IsFromAI = false,
                 CreatedAt = DateTime.Now
-            };
-            _context.ChatMessages.Add(msg);
+            });
             await _context.SaveChangesAsync();
             return Json(new { success = true, time = DateTime.Now.ToString("HH:mm") });
         }
@@ -263,51 +280,63 @@ namespace WebLinhKienPc.Controllers
         [Authorize(Roles = "Admin,NhanVien")]
         public IActionResult StaffChat() => View();
 
-        // ================= AI GEMINI - THÔNG MINH HƠN =================
-        private async Task<AIResponse> CallGeminiAIWithProducts(string userMessage)
+        // ================= AI ENGINE =================
+
+        private async Task<AIResponse> CallGeminiAIWithProducts(string userMessage, string userId)
         {
             try
             {
                 var apiKey = _config["Gemini:ApiKey"];
                 if (string.IsNullOrEmpty(apiKey))
-                    return new AIResponse
-                    {
-                        Message = "Shop chưa bật AI nha 😢",
-                        Products = new List<ProductCard>()
-                    };
+                    return new AIResponse { Message = "AI chưa được cấu hình. Vui lòng chờ nhân viên ạ!", Products = new() };
 
-                // Phân tích intent của user
+                // Phân tích intent
                 var intent = AnalyzeUserIntent(userMessage);
 
-                // CHỈ tìm sản phẩm khi user hỏi về sản phẩm
-                List<Product> relevantProducts = new List<Product>();
+                // Lấy lịch sử chat để AI hiểu ngữ cảnh
+                var history = await _context.ChatMessages
+                    .Where(m => m.UserId == userId)
+                    .OrderByDescending(m => m.CreatedAt)
+                    .Take(6)
+                    .OrderBy(m => m.CreatedAt)
+                    .Select(m => new { m.Content, m.IsFromUser })
+                    .ToListAsync();
 
+                // Lấy sản phẩm từ DB
+                List<Product> products = new();
                 if (intent.NeedProducts)
-                {
-                    relevantProducts = await FindRelevantProducts(userMessage, intent);
-                }
+                    products = await FindRelevantProducts(userMessage, intent);
 
-                // Tạo product cards nếu có
-                var productCards = relevantProducts.Select(p => new ProductCard
+                // Lấy TẤT CẢ danh mục và 1 số sản phẩm để AI biết shop có gì
+                var allCategories = await _context.Categories.Select(c => c.Name).ToListAsync();
+                var featuredProducts = await _context.Products
+                    .Include(p => p.Category)
+                    .Where(p => p.Stock > 0)
+                    .OrderByDescending(p => p.ProductId)
+                    .Take(10)
+                    .ToListAsync();
+
+                // Tạo product cards
+                var productCards = products.Select(p => new ProductCard
                 {
                     Id = p.ProductId,
-                    Name = p.Name.Length > 50 ? p.Name.Substring(0, 47) + "..." : p.Name,
+                    Name = p.Name.Length > 60 ? p.Name[..57] + "..." : p.Name,
                     Price = p.Price.ToString("N0") + "đ",
-                    ImageUrl = p.ImageUrl ?? "/images/products/default.jpg",
+                    ImageUrl = p.ImageUrl ?? "",
                     Stock = p.Stock,
-                    Category = p.Category?.Name ?? "Linh kiện",
+                    Category = p.Category?.Name ?? "",
                     Url = $"/Product/Details/{p.ProductId}"
                 }).ToList();
 
-                // Tạo prompt thông minh dựa trên intent
-                var prompt = GenerateSmartPrompt(userMessage, intent, relevantProducts);
+                // Build prompt
+                var prompt = BuildPrompt(userMessage, intent, products, allCategories, featuredProducts, history.Select(h => (h.Content, h.IsFromUser)).ToList());
 
                 // Gọi Gemini
-                var geminiMessage = await CallGeminiWithPrompt(prompt);
+                var message = await CallGemini(prompt);
 
                 return new AIResponse
                 {
-                    Message = geminiMessage ?? GetSmartDefaultResponse(userMessage, intent),
+                    Message = message ?? GetFallbackResponse(intent),
                     Products = productCards
                 };
             }
@@ -316,401 +345,314 @@ namespace WebLinhKienPc.Controllers
                 Console.WriteLine($"AI Error: {ex.Message}");
                 return new AIResponse
                 {
-                    Message = "Xin lỗi, AI đang bận. Bạn có thể chat trực tiếp với nhân viên ạ! 😊",
-                    Products = new List<ProductCard>()
+                    Message = "AI đang bận xíu, bạn thử lại hoặc chờ nhân viên hỗ trợ nha! 😊",
+                    Products = new()
                 };
             }
         }
 
-        // Giữ lại hàm CallGeminiAI cũ để tương thích
-        private async Task<string> CallGeminiAI(string userMessage)
+        private string BuildPrompt(
+    string userMessage,
+    UserIntent intent,
+    List<Product> relevantProducts,
+    List<string> allCategories,
+    List<Product> featuredProducts,
+    List<(string Content, bool IsFromUser)> history)
         {
-            var response = await CallGeminiAIWithProducts(userMessage);
-            return response.Message;
+            var historyText = history.Count > 0
+                ? string.Join("\n", history.Select(h => $"{(h.IsFromUser ? "Khách" : "Bạn")}: {h.Content}"))
+                : "";
+
+            var categoriesText = string.Join(", ", allCategories);
+
+            var featuredText = string.Join("\n", featuredProducts.Select(p =>
+                $"- [{p.Category?.Name}] {p.Name} | {p.Price:N0}đ | Còn: {p.Stock}"));
+
+            var relevantText = relevantProducts.Any()
+                ? string.Join("\n", relevantProducts.Select(p =>
+                    $"- ID:{p.ProductId} | [{p.Category?.Name}] {p.Name} | {p.Price:N0}đ | Còn: {p.Stock}"))
+                : "KHÔNG CÓ sản phẩm phù hợp trong kho hiện tại.";
+
+            var budgetText = intent.Budget.HasValue
+                ? $"{intent.Budget.Value:N0}đ (~{intent.Budget.Value / 1_000_000:N0} triệu)"
+                : "Chưa rõ";
+
+            return $@"
+Bạn là **Thắng** - nhân viên tư vấn sale của shop linh kiện máy tính **LinhKienPC**.
+Phong cách: Thân thiện như bạn bè, nhiệt tình, am hiểu kỹ thuật, biết cách thuyết phục khách mua hàng.
+
+━━━ THÔNG TIN SHOP ━━━
+Danh mục: {categoriesText}
+
+━━━ HÀNG TRONG KHO (tham khảo) ━━━
+{featuredText}
+
+━━━ SẢN PHẨM GẦN NHẤT VỚI YÊU CẦU KHÁCH ━━━
+{relevantText}
+
+━━━ LỊCH SỬ HỘI THOẠI ━━━
+{(string.IsNullOrEmpty(historyText) ? "(Tin nhắn đầu tiên)" : historyText)}
+
+━━━ TIN NHẮN HIỆN TẠI ━━━
+Khách: {userMessage}
+Budget: {budgetText}
+Loại linh kiện: {intent.Category ?? "Chưa xác định"}
+
+━━━ HƯỚNG DẪN TRẢ LỜI ━━━
+
+1. KHI KHÁCH CÓ BUDGET:
+   - CHỈ giới thiệu sản phẩm từ danh sách SẢN PHẨM GẦN NHẤT VỚI YÊU CẦU
+   - Nếu sản phẩm RẺ HƠN budget: nói rõ ""Với [budget] bạn dư thêm [X], có thể mua thêm phụ kiện hoặc nâng cấp RAM/SSD""
+   - Nếu sản phẩm ĐẮT HƠN budget: nói rõ chênh lệch cụ thể ""Con này [giá], chỉ cần thêm [chênh lệch] nữa là lấy được, xịn hơn hẳn đó bạn""
+   - Nếu không có sản phẩm phù hợp: thành thật nói và gợi ý tăng/giảm budget bao nhiêu để có đồ
+
+2. KHI KHÁCH CHƯA RÕ NHU CẦU:
+   - Hỏi mục đích: gaming, làm việc, đồ họa
+   - Hỏi budget
+   - Hỏi 1 câu để thu hẹp thêm
+
+3. KHI BUILD PC:
+   - Hỏi mục đích và budget nếu chưa rõ
+   - Gợi ý combo từ danh sách, giải thích ngắn gọn tại sao
+
+4. KHI SO SÁNH / DO DỰ:
+   - Phân tích ngắn ưu/nhược
+   - Đưa ra lời khuyên rõ ràng: ""Theo mình bạn nên chọn A vì...""
+   - Tạo urgency nếu hàng ít: ""Con này chỉ còn [X] bộ thôi đó""
+
+5. TUYỆT ĐỐI KHÔNG:
+   - Bịa sản phẩm không có trong danh sách
+   - Nói sai giá
+   - Show sản phẩm lệch quá xa so với budget (>20%)
+   - Trả lời quá dài (tối đa 100 từ)
+   - Bullet point nhiều quá - nói tự nhiên như chat
+
+6. PHONG CÁCH:
+   - Xưng ""mình"", gọi ""bạn""
+   - Emoji vừa phải 😄 🔥 ✅
+   - Cuối tin luôn có 1 câu hỏi để duy trì hội thoại
+   - Tiếng Việt tự nhiên, thân thiện
+
+Trả lời NGAY, không nhắc lại câu hỏi, vào thẳng vấn đề:
+";
         }
 
-        // ===== PHÂN TÍCH INTENT =====
+        // ================= PHÂN TÍCH INTENT =================
+
         private UserIntent AnalyzeUserIntent(string message)
         {
-            message = message.ToLower().Trim();
-            var intent = new UserIntent
-            {
-                Action = "chat",
-                NeedProducts = false
-            };
+            var msg = message.ToLower().Trim();
+            var intent = new UserIntent { Action = "chat", NeedProducts = false };
 
-            // 1. Kiểm tra chào hỏi
-            if (message.Contains("xin chào") || message.Contains("hello") || message.Contains("hi") ||
-                message.Contains("chào") || message.Contains("helo") || message.Contains("chao"))
+            // Chào hỏi - nhưng vẫn có thể kèm câu hỏi
+            if (Regex.IsMatch(msg, @"^(xin chào|hello|hi|chào|helo|chao|hey)\s*[!.]*$"))
             {
                 intent.Action = "greeting";
-                intent.NeedProducts = false;
                 return intent;
             }
 
-            // 2. Kiểm tra cảm ơn
-            if (message.Contains("cảm ơn") || message.Contains("thank") || message.Contains("thanks") ||
-                message.Contains("cam on"))
+            // Cảm ơn
+            if (Regex.IsMatch(msg, @"\b(cảm ơn|thank|thanks|cam on|tks)\b") && msg.Length < 30)
             {
                 intent.Action = "thank";
-                intent.NeedProducts = false;
                 return intent;
             }
 
-            // 3. Kiểm tra tạm biệt
-            if (message.Contains("tạm biệt") || message.Contains("bye") || message.Contains("goodbye") ||
-                message.Contains("tam biet"))
+            // Tạm biệt
+            if (Regex.IsMatch(msg, @"\b(tạm biệt|bye|goodbye|tam biet)\b") && msg.Length < 20)
             {
                 intent.Action = "goodbye";
-                intent.NeedProducts = false;
                 return intent;
             }
 
-            // 4. Kiểm tra hỏi về build PC
-            if (message.Contains("build") || message.Contains("cấu hình") || message.Contains(" ráp") ||
-                message.Contains("cau hinh") || message.Contains("bo may") || message.Contains("bộ máy"))
+            // Budget
+            intent.Budget = ExtractBudget(msg);
+
+            // So sánh
+            if (Regex.IsMatch(msg, @"\b(so sánh|khác nhau|tốt hơn|nên chọn|hay là|hoặc|vs)\b"))
             {
-                intent.Action = "build_pc";
+                intent.Action = "compare";
                 intent.NeedProducts = true;
-                intent.Budget = ExtractBudget(message);
-
-                // Xác định category là PC
-                intent.Category = "PC";
-
-                return intent;
             }
 
-            // 5. Kiểm tra hỏi về sản phẩm cụ thể
-            if (message.Contains("giá") || message.Contains("bao nhiêu") || message.Contains("còn hàng") ||
-                message.Contains("mua") || message.Contains("bán") || message.Contains("có") ||
-                message.Contains("sản phẩm") || message.Contains("linh kiện"))
+            // Category map - giữ nguyên như cũ
+            var categoryMap = new Dictionary<string, string>
             {
-                intent.Action = "product_inquiry";
-                intent.NeedProducts = true;
+                ["vga"] = "VGA",
+                ["card màn hình"] = "VGA",
+                ["card đồ họa"] = "VGA",
+                ["card do hoa"] = "VGA",
+                ["rtx"] = "VGA",
+                ["gtx"] = "VGA",
+                ["rx "] = "VGA",
+                ["radeon"] = "VGA",
+                ["nvidia"] = "VGA",
+                ["cpu"] = "CPU",
+                ["vi xử lý"] = "CPU",
+                ["bộ xử lý"] = "CPU",
+                ["intel"] = "CPU",
+                ["amd"] = "CPU",
+                ["ryzen"] = "CPU",
+                ["core i"] = "CPU",
+                ["chip"] = "CPU",
+                ["ram"] = "RAM",
+                ["bộ nhớ"] = "RAM",
+                ["ddr"] = "RAM",
+                ["main"] = "Mainboard",
+                ["mainboard"] = "Mainboard",
+                ["bo mạch"] = "Mainboard",
+                ["motherboard"] = "Mainboard",
+                ["ssd"] = "SSD",
+                ["ổ cứng ssd"] = "SSD",
+                ["nvme"] = "SSD",
+                ["hdd"] = "HDD",
+                ["ổ cứng hdd"] = "HDD",
+                ["ổ cứng"] = "SSD",
+                ["nguồn"] = "PSU",
+                ["psu"] = "PSU",
+                ["power"] = "PSU",
+                ["case"] = "Case",
+                ["vỏ case"] = "Case",
+                ["thùng máy"] = "Case",
+                ["tản nhiệt"] = "Tản nhiệt",
+                ["tan nhiet"] = "Tản nhiệt",
+                ["cooler"] = "Tản nhiệt",
+                ["aio"] = "Tản nhiệt",
+                ["màn hình"] = "Màn hình",
+                ["monitor"] = "Màn hình",
+                ["bàn phím"] = "Bàn phím",
+                ["keyboard"] = "Bàn phím",
+                ["chuột"] = "Chuột",
+                ["mouse"] = "Chuột",
+                ["tai nghe"] = "Tai nghe",
+                ["headset"] = "Tai nghe",
+                ["build"] = "PC",
+                ["cấu hình"] = "PC",
+                ["bộ máy"] = "PC",
+                ["ráp máy"] = "PC",
+                ["máy tính"] = "PC",
+                ["dàn máy"] = "PC"
+            };
 
-                // Xác định category từ keywords
-                var categoryMap = new Dictionary<string, string>
+            foreach (var kv in categoryMap)
+            {
+                if (msg.Contains(kv.Key))
                 {
-                    ["vga"] = "VGA",
-                    ["card"] = "VGA",
-                    ["đồ họa"] = "VGA",
-                    ["do hoa"] = "VGA",
-                    ["cpu"] = "CPU",
-                    ["vi xử lý"] = "CPU",
-                    ["vi xu ly"] = "CPU",
-                    ["chip"] = "CPU",
-                    ["ram"] = "RAM",
-                    ["bộ nhớ"] = "RAM",
-                    ["bo nho"] = "RAM",
-                    ["main"] = "Mainboard",
-                    ["bo mạch"] = "Mainboard",
-                    ["bo mach"] = "Mainboard",
-                    ["ssd"] = "SSD",
-                    ["hdd"] = "HDD",
-                    ["ổ cứng"] = "SSD",
-                    ["o cung"] = "SSD",
-                    ["nguồn"] = "PSU",
-                    ["nguon"] = "PSU",
-                    ["psu"] = "PSU",
-                    ["case"] = "Case",
-                    ["vỏ"] = "Case",
-                    ["vo"] = "Case"
-                };
-
-                foreach (var kv in categoryMap)
-                {
-                    if (message.Contains(kv.Key))
-                    {
-                        intent.Category = kv.Value;
-                        break;
-                    }
+                    intent.Category = kv.Value;
+                    break;
                 }
-
-                // Trích xuất budget
-                intent.Budget = ExtractBudget(message);
-
-                return intent;
             }
 
-            // 6. Kiểm tra hỏi về tình trạng kho
-            if (message.Contains("còn") || message.Contains("hết") || message.Contains("con") ||
-                message.Contains("het") || message.Contains("stock"))
+            // Xác định action và NeedProducts
+            bool isProductQuery = Regex.IsMatch(msg,
+                @"(giá|bao nhiêu|còn hàng|mua|bán|có không|sản phẩm|linh kiện|tư vấn|gợi ý|nên mua|chọn|loại nào|nâng cấp|upgrade|combo)");
+
+            if (intent.Category != null || isProductQuery || intent.Budget.HasValue)
             {
-                intent.Action = "check_stock";
+                if (intent.Action == "chat") // không ghi đè "compare"
+                    intent.Action = intent.Category == "PC" ? "build_pc" : "product_inquiry";
                 intent.NeedProducts = true;
-                return intent;
             }
 
             return intent;
         }
 
-        // ===== TÌM SẢN PHẨM LIÊN QUAN THÔNG MINH =====
+        // ================= TÌM SẢN PHẨM =================
+
         private async Task<List<Product>> FindRelevantProducts(string userMessage, UserIntent intent)
         {
             var query = _context.Products
                 .Include(p => p.Category)
-                .Where(p => p.Stock > 0) // Chỉ lấy còn hàng
+                .Where(p => p.Stock > 0)
                 .AsQueryable();
 
-            // Lọc theo category nếu có
-            if (!string.IsNullOrEmpty(intent.Category))
+            // Lọc theo category
+            if (!string.IsNullOrEmpty(intent.Category) && intent.Category != "PC")
             {
-                if (intent.Category == "PC")
+                query = query.Where(p =>
+                    p.Category.Name.ToLower().Contains(intent.Category.ToLower()) ||
+                    p.Name.ToLower().Contains(intent.Category.ToLower()));
+            }
+
+            // Lọc theo từ khóa model số
+            var keywords = ExtractProductKeywords(userMessage);
+            if (keywords.Any())
+            {
+                foreach (var kw in keywords)
                 {
-                    // Nếu là PC, tìm theo tên có chứa "PC"
-                    query = query.Where(p => p.Name.Contains("PC") || p.Name.Contains("GAMING"));
-                }
-                else
-                {
-                    query = query.Where(p => p.Category.Name == intent.Category);
+                    var kw2 = kw;
+                    query = query.Where(p => p.Name.ToLower().Contains(kw2));
                 }
             }
 
-            // Lọc theo budget nếu có
+            // Lọc theo budget - CHỈ LẤY SẢN PHẨM GẦN VỚI BUDGET
             if (intent.Budget.HasValue)
             {
                 decimal budget = intent.Budget.Value;
-                decimal min = budget * 0.7m; // 70% budget
-                decimal max = budget * 1.3m; // 130% budget
 
-                // Ưu tiên sản phẩm trong khoảng budget
-                var inRangeProducts = await query
+                // Lấy sản phẩm trong 80%-110% budget
+                decimal min = budget * 0.80m;
+                decimal max = budget * 1.10m;
+
+                var inBudget = await query
                     .Where(p => p.Price >= min && p.Price <= max)
+                    .OrderBy(p => p.Price)
+                    .Take(3)
                     .ToListAsync();
 
-                if (inRangeProducts.Any())
-                {
-                    // Sắp xếp theo độ gần với budget
-                    return inRangeProducts
-                        .OrderBy(p => Math.Abs((double)(p.Price - budget)))
-                        .Take(4)
-                        .ToList();
-                }
+                if (inBudget.Any()) return inBudget;
 
-                // Nếu không có sản phẩm trong khoảng, lấy sản phẩm gần nhất
-                var allProducts = await query.ToListAsync();
-                return allProducts
-                    .OrderBy(p => Math.Abs((double)(p.Price - budget)))
-                    .Take(4)
-                    .ToList();
+                // Không có → lấy 1 rẻ hơn gần nhất + 2 đắt hơn gần nhất
+                var cheaper = await query
+                    .Where(p => p.Price < budget)
+                    .OrderByDescending(p => p.Price)
+                    .Take(1)
+                    .ToListAsync();
+
+                var pricier = await query
+                    .Where(p => p.Price > budget)
+                    .OrderBy(p => p.Price)
+                    .Take(2)
+                    .ToListAsync();
+
+                return cheaper.Concat(pricier).ToList();
             }
 
-            // Nếu không có budget, lấy sản phẩm nổi bật
-            var products = await query
-                .OrderByDescending(p => p.Price)
+            return await query
+                .OrderByDescending(p => p.ProductId)
                 .Take(4)
                 .ToListAsync();
-
-            // Nếu không tìm thấy, trả về sản phẩm nổi bật chung
-            if (!products.Any())
-            {
-                products = await _context.Products
-                    .Include(p => p.Category)
-                    .Where(p => p.Stock > 0)
-                    .OrderByDescending(p => p.Price)
-                    .Take(4)
-                    .ToListAsync();
-            }
-
-            return products;
         }
 
-        // ===== TẠO PROMPT THÔNG MINH =====
-        private string GenerateSmartPrompt(string userMessage, UserIntent intent, List<Product> products)
-        {
-            string productInfo = products.Any()
-                ? string.Join("\n", products.Select(p => $"- {p.Name}: {p.Price:N0}đ (Còn {p.Stock} cái)"))
-                : "";
+        // ================= GỌI GEMINI =================
 
-            string basePrompt = $@"
-Bạn là nhân viên tư vấn PC chuyên nghiệp của shop Linh Kiện PC.
-Khách hàng đang cần tư vấn. Hãy trả lời một cách tự nhiên, thân thiện.
-
-KHÁCH HỎI: {userMessage}
-
-";
-
-            switch (intent.Action)
-            {
-                case "greeting":
-                    return basePrompt + @"
-YÊU CẦU TRẢ LỜI:
-- Chào hỏi thân thiện, vui vẻ
-- Giới thiệu ngắn gọn shop (bán linh kiện PC, build PC)
-- Hỏi khách cần tư vấn gì
-- Dùng emoji 😄
-- KHÔNG gửi sản phẩm
-
-VÍ DỤ: 'Chào bạn! Mình là nhân viên tư vấn của Linh Kiện PC. Bạn cần tìm linh kiện gì hay muốn build PC tầm giá nào ạ? 😄'";
-
-                case "thank":
-                    return basePrompt + @"
-YÊU CẦU TRẢ LỜI:
-- Đáp lại lời cảm ơn một cách thân thiện
-- Mời hỏi thêm nếu cần
-- KHÔNG gửi sản phẩm
-
-VÍ DỤ: 'Không có gì đâu bạn ơi! Rất vui được hỗ trợ bạn. Có gì cần thêm cứ hỏi mình nha 😄'";
-
-                case "goodbye":
-                    return basePrompt + @"
-YÊU CẦU TRẢ LỜI:
-- Chào tạm biệt thân thiện
-- Mời quay lại khi cần
-- KHÔNG gửi sản phẩm
-
-VÍ DỤ: 'Tạm biệt bạn! Nếu cần tư vấn thêm cứ quay lại shop nha 🔥 Chúc bạn một ngày tốt lành!'";
-
-                case "build_pc":
-                    if (intent.Budget.HasValue)
-                    {
-                        decimal budgetM = intent.Budget.Value / 1000000;
-                        return basePrompt + $@"
-YÊU CẦU TRẢ LỜI:
-- Xác nhận lại budget {budgetM:N0}tr của khách
-- Đưa ra 1 gợi ý build PC phù hợp với budget (liệt kê CPU, VGA, RAM, Main)
-- Hỏi khách có muốn xem chi tiết linh kiện không
-- Dùng emoji 🔥
-
-SẢN PHẨM PHÙ HỢP TRONG SHOP:
-{productInfo}
-
-VÍ DỤ: 'Với budget {budgetM:N0}tr, bạn có thể build: i5-13400F + RTX 3060 + 16GB RAM. Mấy em này đang có sẵn trong shop nè bạn xem qua! 🔥'";
-                    }
-                    else
-                    {
-                        return basePrompt + @"
-YÊU CẦU TRẢ LỜI:
-- Hỏi rõ budget của khách
-- Gợi ý các mức giá phổ biến (15tr, 20tr, 25tr, 30tr)
-- KHÔNG gửi sản phẩm
-
-VÍ DỤ: 'Bạn muốn build PC tầm giá nào ạ? Shop có các mức 15tr, 20tr, 25tr, 30tr đều build được nè 😄'";
-                    }
-
-                case "product_inquiry":
-                    if (products.Any())
-                    {
-                        return basePrompt + $@"
-YÊU CẦU TRẢ LỜI:
-- Giới thiệu ngắn gọn các sản phẩm phù hợp
-- Hỏi khách thích sản phẩm nào để tư vấn thêm
-- Dùng emoji 😄
-- CHỈ gửi card sản phẩm bên dưới
-
-SẢN PHẨM TRONG SHOP:
-{productInfo}
-
-VÍ DỤ: 'Đây là các sản phẩm phù hợp với nhu cầu của bạn nè! Bạn thích em nào để mình tư vấn thêm không? 😄'";
-                    }
-                    else
-                    {
-                        return basePrompt + @"
-YÊU CẦU TRẢ LỜI:
-- Thông báo không tìm thấy sản phẩm phù hợp
-- Hỏi khách muốn xem sản phẩm khác không
-- KHÔNG gửi sản phẩm
-
-VÍ DỤ: 'Hiện shop không có sản phẩm phù hợp với yêu cầu của bạn. Bạn muốn xem sản phẩm khác không ạ? 😄'";
-                    }
-
-                case "check_stock":
-                    if (products.Any())
-                    {
-                        return basePrompt + $@"
-YÊU CẦU TRẢ LỜI:
-- Xác nhận sản phẩm còn hàng
-- Giới thiệu sản phẩm
-- Hỏi khách cần tư vấn thêm không
-
-SẢN PHẨM CÒN HÀNG:
-{productInfo}";
-                    }
-                    else
-                    {
-                        return basePrompt + @"
-YÊU CẦU TRẢ LỜI:
-- Thông báo sản phẩm đang hết hàng
-- Xin lỗi khách
-- Hỏi khách muốn xem sản phẩm tương tự không
-
-VÍ DỤ: 'Rất tiếc, sản phẩm bạn hỏi đang hết hàng bạn ơi 😢 Bạn muốn xem sản phẩm tương tự không ạ?'";
-                    }
-
-                default:
-                    return basePrompt + @"
-YÊU CẦU TRẢ LỜI:
-- Trả lời tự nhiên, thân thiện
-- Hỏi khách cần tư vấn gì
-- KHÔNG gửi sản phẩm nếu không cần thiết
-
-VÍ DỤ: 'Dạ, shop mình có đủ linh kiện PC bạn nha! Bạn cần tư vấn gì ạ? 😄'";
-            }
-        }
-
-        // ===== TRÍCH XUẤT BUDGET CHÍNH XÁC =====
-        private decimal? ExtractBudget(string message)
-        {
-            // Pattern: 15tr, 20 triệu, 15-20tr, khoảng 15tr, dưới 15tr, trên 15tr
-            var match = System.Text.RegularExpressions.Regex.Match(message, @"(\d+(?:\.?\d*)?)\s*(tr|triệu|trieu)");
-            if (match.Success && decimal.TryParse(match.Groups[1].Value, out decimal budget))
-            {
-                return budget * 1000000;
-            }
-
-            // Pattern: 15000000, 20.000.000
-            match = System.Text.RegularExpressions.Regex.Match(message, @"(\d{1,2}(?:\.?\d{3})*)");
-            if (match.Success)
-            {
-                string numStr = match.Groups[1].Value.Replace(".", "");
-                if (decimal.TryParse(numStr, out decimal num) && num > 1000000)
-                {
-                    return num;
-                }
-            }
-
-            return null;
-        }
-
-        // ===== CÁC HÀM TIỆN ÍCH =====
-        private List<string> ExtractKeywords(string message)
-        {
-            var stopWords = new[] { "cho", "tôi", "mình", "xin", "giá", "bao", "nhiêu", "có", "không",
-                                     "muốn", "mua", "tư", "vấn", "giúp", "với", "ạ", "à", "nha", "nhe" };
-
-            return message.Split(' ', StringSplitOptions.RemoveEmptyEntries)
-                .Where(w => w.Length > 2 && !stopWords.Contains(w))
-                .Select(w => w.ToLower())
-                .Distinct()
-                .ToList();
-        }
-
-        private async Task<string> CallGeminiWithPrompt(string prompt)
+        private async Task<string> CallGemini(string prompt)
         {
             var apiKey = _config["Gemini:ApiKey"];
-            string[] models = { "gemini-2.5-flash-lite", "gemini-2.5-flash", "gemini-2.0-flash" };
+            var models = new[] { "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash" };
 
             using var client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(30);
+            client.Timeout = TimeSpan.FromSeconds(20);
 
             foreach (var model in models)
             {
                 try
                 {
                     var url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
-
                     var body = new
                     {
                         contents = new[] { new { parts = new[] { new { text = prompt } } } },
-                        generationConfig = new { temperature = 0.7, maxOutputTokens = 500 }
+                        generationConfig = new { temperature = 0.7, maxOutputTokens = 1024 }
                     };
 
-                    var response = await client.PostAsync(url,
+                    var res = await client.PostAsync(url,
                         new StringContent(JsonSerializer.Serialize(body), Encoding.UTF8, "application/json"));
 
-                    if (response.IsSuccessStatusCode)
+                    Console.WriteLine($"Gemini [{model}]: {res.StatusCode}");
+
+                    if (res.IsSuccessStatusCode)
                     {
-                        var json = await response.Content.ReadAsStringAsync();
+                        var json = await res.Content.ReadAsStringAsync();
                         var doc = JsonDocument.Parse(json);
                         return doc.RootElement
                             .GetProperty("candidates")[0]
@@ -719,46 +661,76 @@ VÍ DỤ: 'Dạ, shop mình có đủ linh kiện PC bạn nha! Bạn cần tư 
                             .GetProperty("text")
                             .GetString();
                     }
+
+                    var err = await res.Content.ReadAsStringAsync();
+                    Console.WriteLine($"Gemini error: {err}");
                 }
-                catch { continue; }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Gemini [{model}] exception: {ex.Message}");
+                }
             }
+
             return null;
         }
 
-        private string GetSmartDefaultResponse(string userMessage, UserIntent intent)
+        // ================= TIỆN ÍCH =================
+
+        private decimal? ExtractBudget(string message)
         {
-            switch (intent.Action)
+            // 15tr, 20 triệu, 15.5tr
+            var m = Regex.Match(message, @"(\d+(?:[.,]\d+)?)\s*(tr|triệu|trieu|m)");
+            if (m.Success && decimal.TryParse(
+                m.Groups[1].Value.Replace(",", "."),
+                System.Globalization.NumberStyles.Any,
+                System.Globalization.CultureInfo.InvariantCulture,
+                out decimal val))
             {
-                case "greeting":
-                    return "Chào bạn! Mình là nhân viên tư vấn của Linh Kiện PC. Bạn cần tìm linh kiện gì hay muốn build PC tầm giá nào ạ? 😄";
-
-                case "thank":
-                    return "Không có gì đâu ạ! Cần tư vấn thêm gì bạn cứ hỏi nha 😄";
-
-                case "goodbye":
-                    return "Tạm biệt bạn! Nếu cần gì cứ quay lại shop nha 🔥";
-
-                case "build_pc":
-                    if (intent.Budget.HasValue)
-                    {
-                        decimal budget = intent.Budget.Value / 1000000;
-                        return $"PC tầm {budget:N0}tr thì đây là các linh kiện phù hợp nè bạn! Bạn muốn xem chi tiết build nào không ạ? 😄";
-                    }
-                    else
-                    {
-                        return "Bạn muốn build PC tầm giá nào ạ? Shop có các mức 15tr, 20tr, 25tr, 30tr đều build được nè 😄";
-                    }
-
-                case "product_inquiry":
-                    return "Đây là các sản phẩm phù hợp với nhu cầu của bạn nè! Bạn thích em nào để mình tư vấn thêm không? 😄";
-
-                case "check_stock":
-                    return "Để mình kiểm tra tồn kho giúp bạn nha! Bạn quan tâm sản phẩm cụ thể nào ạ? 😊";
-
-                default:
-                    return "Shop mình có đủ linh kiện PC: CPU, VGA, RAM, Mainboard... Bạn cần tư vấn gì ạ? 😄";
+                return val * 1_000_000;
             }
+
+            // 15000000
+            m = Regex.Match(message, @"(\d{7,9})");
+            if (m.Success && decimal.TryParse(m.Groups[1].Value, out decimal raw))
+                return raw;
+
+            return null;
         }
+
+        private List<string> ExtractProductKeywords(string message)
+        {
+            // Trích model number: RTX 4070, RX 7600, i5-14600K, B650, DDR5...
+            var patterns = new[]
+            {
+                @"\b(rtx|gtx|rx)\s*\d{3,4}\b",
+                @"\bi[3579]-\d{4,5}\w*\b",
+                @"\bryzen\s*[3579]\s*\d{4}\w*\b",
+                @"\b(b|x|z)\d{3}\b",
+                @"\bddr[45]\b",
+                @"\b\d{3,4}[gm]\b"
+            };
+
+            var keywords = new List<string>();
+            foreach (var p in patterns)
+            {
+                var m = Regex.Match(message.ToLower(), p, RegexOptions.IgnoreCase);
+                if (m.Success)
+                    keywords.Add(m.Value.Trim().ToLower());
+            }
+
+            return keywords;
+        }
+
+        private string GetFallbackResponse(UserIntent intent) => intent.Action switch
+        {
+            "greeting" => "Chào bạn! Mình là Thắng từ LinhKienPC 😄 Bạn cần tư vấn linh kiện hay build PC không ạ?",
+            "thank" => "Không có gì bạn ơi! Cần gì cứ hỏi mình nha 😄",
+            "goodbye" => "Tạm biệt bạn! Ghé shop lần sau nha 🔥 Nếu cần tư vấn thêm cứ nhắn mình!",
+            "build_pc" => "Bạn muốn build PC để làm gì ạ? Gaming, làm việc hay đồ họa? Và budget tầm bao nhiêu để mình tư vấn combo phù hợp nha! 😄",
+            "compare" => "Bạn đang so sánh sản phẩm nào ạ? Cho mình biết thêm để tư vấn chính xác hơn 😄",
+            "product_inquiry" => "Đây là các sản phẩm phù hợp nè bạn! Bạn muốn mình tư vấn thêm về sản phẩm nào không? 😄",
+            _ => "Shop LinhKienPC có đầy đủ linh kiện: CPU, VGA, RAM, SSD, Màn hình... Bạn cần tư vấn gì ạ? 😄"
+        };
     }
 
     public class SendMessageRequest { public string Content { get; set; } }
