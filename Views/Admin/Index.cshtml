@@ -93,38 +93,38 @@
                 {
                     string statusClass = order.Status switch
                     {
-                        "Pending" => "status-pending",
-                        "Shipping" => "status-shipping",
-                        "Completed" => "status-completed",
-                        "Cancelled" => "status-cancelled",
+                        OrderStatus.Pending => "status-pending",
+                        OrderStatus.Shipping => "status-shipping",
+                        OrderStatus.Completed => "status-completed",
+                        OrderStatus.Cancelled => "status-cancelled",
                         _ => "status-pending"
                     };
 
                     string statusLabel = order.Status switch
                     {
-                        "Pending" => "Chờ xử lý",
-                        "Shipping" => "Đang giao",
-                        "Completed" => "Hoàn thành",
-                        "Cancelled" => "Đã huỷ",
-                        _ => order.Status
+                        OrderStatus.Pending => "Chờ xử lý",
+                        OrderStatus.Shipping => "Đang giao",
+                        OrderStatus.Completed => "Hoàn thành",
+                        OrderStatus.Cancelled => "Đã huỷ",
+                        _ => order.Status.ToString()
                     };
 
                     <tr>
-                        <td class="order-id">#@order.Id</td>
-                        <td class="order-customer">@order.CustomerName</td>
+                        <td class="order-id">#@order.OrderId</td>
+                        <td class="order-customer">@order.Name</td>
                         <td class="order-total">
-                            @((order.Total as decimal?)?.ToString("N0") ?? "0") ₫
+                            @((order.TotalPrice as decimal?)?.ToString("N0") ?? "0") ₫
                         </td>
                         <td>
                             <span class="status-badge @statusClass">@statusLabel</span>
                         </td>
                         <td style="color:#8888aa;font-size:13px">
-                            @order.CreatedDate.ToString("dd/MM/yyyy HH:mm")
+                            @order.OrderDate.ToString("dd/MM/yyyy HH:mm")
                         </td>
                         <td>
                             <a class="btn-detail"
                                asp-action="OrderDetail"
-                               asp-route-id="@order.Id">
+                               asp-route-id="@order.OrderId">
                                 Chi tiết
                             </a>
                         </td>

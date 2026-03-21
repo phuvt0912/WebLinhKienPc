@@ -18,20 +18,17 @@ namespace WebLinhKienPc.Controllers
 			_userManager = userManager;
 		}
 
-		public IActionResult Index(string status)
+		public IActionResult Index(OrderStatus? status)
 		{
-			// Query đơn hàng
 			var orders = _context.Orders.AsQueryable();
 
-			// Lọc theo trạng thái
-			if (!string.IsNullOrEmpty(status))
+			if (status.HasValue)
 			{
-				orders = orders.Where(o => o.Status == status);
+				orders = orders.Where(o => o.Status == status.Value);
 			}
 
-			// Thống kê dashboard
 			ViewBag.TotalRevenue = _context.Orders
-				.Where(o => o.Status == "Completed")
+				.Where(o => o.Status == OrderStatus.Completed)
 				.Sum(o => (decimal?)o.TotalPrice) ?? 0;
 
 			ViewBag.ProductCount = _context.Products.Count();
@@ -40,7 +37,6 @@ namespace WebLinhKienPc.Controllers
 
 			ViewBag.UserCount = _userManager.Users.Count();
 
-			// Lấy danh sách đơn hàng mới nhất
 			var orderList = orders
 				.OrderByDescending(o => o.OrderDate)
 				.Take(10)
