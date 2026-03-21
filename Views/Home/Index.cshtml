@@ -1,8 +1,874 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Trang chủ";
 }
+@model List<Product>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="/js/site.js"></script>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container mt-4">
+
+    <!-- KHỐI SẢN PHẨM HOT -->
+    <div class="hot-section p-3 rounded-3">
+
+        <!-- TITLE -->
+        <div class="hot-header d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">🔥 Sản phẩm hot</h5>
+            <a href="#" class="view-all">Xem tất cả</a>
+        </div>
+
+        <!-- LIST PRODUCT -->
+        <div class="row">
+            <div class="row">
+
+                <!-- PRODUCT 1 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <!-- POPUP -->
+                        <div class="product-popup">
+                            <div class="popup-header">
+                                PC GAMING i5 12400F - 16GB DDR4 - RTX 3060
+                            </div>
+
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">15.000.000 VNĐ</span></p>
+                                <p><b>Bảo hành:</b> 36 tháng</p>
+
+                                <div class="popup-section">
+                                    <b>Mô tả tóm tắt:</b>
+                                    <ul>
+                                        <li>CPU Intel Core i5 12400F</li>
+                                        <li>Mainboard ASUS B760M</li>
+                                        <li>RAM 16GB DDR4</li>
+                                        <li>SSD NVMe 512GB</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">PC Gaming RTX 3060</div>
+                            <div class="price">
+                                <span class="discount">15.000.000đ</span>
+                                <span class="original">20.000.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 2 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <!-- POPUP -->
+                        <div class="product-popup">
+                            <div class="popup-header">Laptop Gaming i7</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">18.500.000 VNĐ</span></p>
+                                <p><b>Bảo hành:</b> 24 tháng</p>
+
+                                <ul>
+                                    <li>CPU i7 Gen 12</li>
+                                    <li>RAM 16GB</li>
+                                    <li>SSD 512GB</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Laptop Gaming i7</div>
+                            <div class="price">
+                                <span class="discount">18.500.000đ</span>
+                                <span class="original">25.000.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 3 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <!-- POPUP -->
+                        <div class="product-popup">
+                            <div class="popup-header">Màn hình 144Hz</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">3.200.000đ</span></p>
+                                <p><b>Bảo hành:</b> 24 tháng</p>
+
+                                <ul>
+                                    <li>144 hz</li>
+                                    <li>2k</li>
+                                    <li>Oled</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Màn hình 144hz</div>
+                            <div class="price">
+                                <span class="discount">3.200.000</span>
+                                <span class="original">4.500.000</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 4 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <div class="product-popup">
+                            <div class="popup-header">Bàn phím cơ RGB</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">1.200.000đ</span></p>
+                                <p><b>Bảo hành:</b> 12 tháng</p>
+
+                                <ul>
+                                    <li>Switch Red</li>
+                                    <li>LED RGB</li>
+                                    <li>Full size</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Bàn phím cơ RGB</div>
+                            <div class="price">
+                                <span class="discount">1.200.000đ</span>
+                                <span class="original">1.800.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 5 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <div class="product-popup">
+                            <div class="popup-header">Chuột Gaming</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">500.000đ</span></p>
+                                <p><b>Bảo hành:</b> 12 tháng</p>
+
+                                <ul>
+                                    <li>DPI 16000</li>
+                                    <li>LED RGB</li>
+                                    <li>Siêu nhẹ</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Chuột Gaming</div>
+                            <div class="price">
+                                <span class="discount">500.000đ</span>
+                                <span class="original">900.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 6-->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <div class="product-popup">
+                            <div class="popup-header">Tai nghe Gaming</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">850.000đ</span></p>
+                                <p><b>Bảo hành:</b> 12 tháng</p>
+
+                                <ul>
+                                    <li>Âm thanh 7.1</li>
+                                    <li>Có mic</li>
+                                    <li>LED RGB</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Tai nghe Gaming</div>
+                            <div class="price">
+                                <span class="discount">850.000đ</span>
+                                <span class="original">1.200.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+    </div>
+    <!-- KHỐI SẢN PHẨM HOT -->
+    <div class="hot-section p-3 rounded-3">
+
+        <!-- TITLE -->
+        <div class="hot-header d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">🔥 Sản phẩm hot</h5>
+            <a href="#" class="view-all">Xem tất cả</a>
+        </div>
+
+        <!-- LIST PRODUCT -->
+        <div class="row">
+            <div class="row">
+
+                <!-- PRODUCT 1 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <!-- POPUP -->
+                        <div class="product-popup">
+                            <div class="popup-header">
+                                PC GAMING i5 12400F - 16GB DDR4 - RTX 3060
+                            </div>
+
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">15.000.000 VNĐ</span></p>
+                                <p><b>Bảo hành:</b> 36 tháng</p>
+
+                                <div class="popup-section">
+                                    <b>Mô tả tóm tắt:</b>
+                                    <ul>
+                                        <li>CPU Intel Core i5 12400F</li>
+                                        <li>Mainboard ASUS B760M</li>
+                                        <li>RAM 16GB DDR4</li>
+                                        <li>SSD NVMe 512GB</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">PC Gaming RTX 3060</div>
+                            <div class="price">
+                                <span class="discount">15.000.000đ</span>
+                                <span class="original">20.000.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 2 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <!-- POPUP -->
+                        <div class="product-popup">
+                            <div class="popup-header">Laptop Gaming i7</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">18.500.000 VNĐ</span></p>
+                                <p><b>Bảo hành:</b> 24 tháng</p>
+
+                                <ul>
+                                    <li>CPU i7 Gen 12</li>
+                                    <li>RAM 16GB</li>
+                                    <li>SSD 512GB</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Laptop Gaming i7</div>
+                            <div class="price">
+                                <span class="discount">18.500.000đ</span>
+                                <span class="original">25.000.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 3 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <!-- POPUP -->
+                        <div class="product-popup">
+                            <div class="popup-header">Màn hình 144Hz</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">3.200.000đ</span></p>
+                                <p><b>Bảo hành:</b> 24 tháng</p>
+
+                                <ul>
+                                    <li>144 hz</li>
+                                    <li>2k</li>
+                                    <li>Oled</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Màn hình 144hz</div>
+                            <div class="price">
+                                <span class="discount">3.200.000</span>
+                                <span class="original">4.500.000</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 4 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <div class="product-popup">
+                            <div class="popup-header">Bàn phím cơ RGB</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">1.200.000đ</span></p>
+                                <p><b>Bảo hành:</b> 12 tháng</p>
+
+                                <ul>
+                                    <li>Switch Red</li>
+                                    <li>LED RGB</li>
+                                    <li>Full size</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Bàn phím cơ RGB</div>
+                            <div class="price">
+                                <span class="discount">1.200.000đ</span>
+                                <span class="original">1.800.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 5 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <div class="product-popup">
+                            <div class="popup-header">Chuột Gaming</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">500.000đ</span></p>
+                                <p><b>Bảo hành:</b> 12 tháng</p>
+
+                                <ul>
+                                    <li>DPI 16000</li>
+                                    <li>LED RGB</li>
+                                    <li>Siêu nhẹ</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Chuột Gaming</div>
+                            <div class="price">
+                                <span class="discount">500.000đ</span>
+                                <span class="original">900.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 6-->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <div class="product-popup">
+                            <div class="popup-header">Tai nghe Gaming</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">850.000đ</span></p>
+                                <p><b>Bảo hành:</b> 12 tháng</p>
+
+                                <ul>
+                                    <li>Âm thanh 7.1</li>
+                                    <li>Có mic</li>
+                                    <li>LED RGB</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Tai nghe Gaming</div>
+                            <div class="price">
+                                <span class="discount">850.000đ</span>
+                                <span class="original">1.200.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+    </div>
+    <!-- KHỐI SẢN PHẨM HOT -->
+    <div class="hot-section p-3 rounded-3">
+
+        <!-- TITLE -->
+        <div class="hot-header d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">🔥 Sản phẩm hot</h5>
+            <a href="#" class="view-all">Xem tất cả</a>
+        </div>
+
+        <!-- LIST PRODUCT -->
+        <div class="row">
+            <div class="row">
+
+                <!-- PRODUCT 1 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <!-- POPUP -->
+                        <div class="product-popup">
+                            <div class="popup-header">
+                                PC GAMING i5 12400F - 16GB DDR4 - RTX 3060
+                            </div>
+
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">15.000.000 VNĐ</span></p>
+                                <p><b>Bảo hành:</b> 36 tháng</p>
+
+                                <div class="popup-section">
+                                    <b>Mô tả tóm tắt:</b>
+                                    <ul>
+                                        <li>CPU Intel Core i5 12400F</li>
+                                        <li>Mainboard ASUS B760M</li>
+                                        <li>RAM 16GB DDR4</li>
+                                        <li>SSD NVMe 512GB</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">PC Gaming RTX 3060</div>
+                            <div class="price">
+                                <span class="discount">15.000.000đ</span>
+                                <span class="original">20.000.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 2 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <!-- POPUP -->
+                        <div class="product-popup">
+                            <div class="popup-header">Laptop Gaming i7</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">18.500.000 VNĐ</span></p>
+                                <p><b>Bảo hành:</b> 24 tháng</p>
+
+                                <ul>
+                                    <li>CPU i7 Gen 12</li>
+                                    <li>RAM 16GB</li>
+                                    <li>SSD 512GB</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Laptop Gaming i7</div>
+                            <div class="price">
+                                <span class="discount">18.500.000đ</span>
+                                <span class="original">25.000.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 3 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <!-- POPUP -->
+                        <div class="product-popup">
+                            <div class="popup-header">Màn hình 144Hz</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">3.200.000đ</span></p>
+                                <p><b>Bảo hành:</b> 24 tháng</p>
+
+                                <ul>
+                                    <li>144 hz</li>
+                                    <li>2k</li>
+                                    <li>Oled</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Màn hình 144hz</div>
+                            <div class="price">
+                                <span class="discount">3.200.000</span>
+                                <span class="original">4.500.000</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 4 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <div class="product-popup">
+                            <div class="popup-header">Bàn phím cơ RGB</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">1.200.000đ</span></p>
+                                <p><b>Bảo hành:</b> 12 tháng</p>
+
+                                <ul>
+                                    <li>Switch Red</li>
+                                    <li>LED RGB</li>
+                                    <li>Full size</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Bàn phím cơ RGB</div>
+                            <div class="price">
+                                <span class="discount">1.200.000đ</span>
+                                <span class="original">1.800.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 5 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <div class="product-popup">
+                            <div class="popup-header">Chuột Gaming</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">500.000đ</span></p>
+                                <p><b>Bảo hành:</b> 12 tháng</p>
+
+                                <ul>
+                                    <li>DPI 16000</li>
+                                    <li>LED RGB</li>
+                                    <li>Siêu nhẹ</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Chuột Gaming</div>
+                            <div class="price">
+                                <span class="discount">500.000đ</span>
+                                <span class="original">900.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 6-->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <div class="product-popup">
+                            <div class="popup-header">Tai nghe Gaming</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">850.000đ</span></p>
+                                <p><b>Bảo hành:</b> 12 tháng</p>
+
+                                <ul>
+                                    <li>Âm thanh 7.1</li>
+                                    <li>Có mic</li>
+                                    <li>LED RGB</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Tai nghe Gaming</div>
+                            <div class="price">
+                                <span class="discount">850.000đ</span>
+                                <span class="original">1.200.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+    </div>
+    <!-- KHỐI SẢN PHẨM HOT -->
+    <div class="hot-section p-3 rounded-3">
+
+        <!-- TITLE -->
+        <div class="hot-header d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0">🔥 Sản phẩm hot</h5>
+            <a href="#" class="view-all">Xem tất cả</a>
+        </div>
+
+        <!-- LIST PRODUCT -->
+        <div class="row">
+            <div class="row">
+
+                <!-- PRODUCT 1 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <!-- POPUP -->
+                        <div class="product-popup">
+                            <div class="popup-header">
+                                PC GAMING i5 12400F - 16GB DDR4 - RTX 3060
+                            </div>
+
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">15.000.000 VNĐ</span></p>
+                                <p><b>Bảo hành:</b> 36 tháng</p>
+
+                                <div class="popup-section">
+                                    <b>Mô tả tóm tắt:</b>
+                                    <ul>
+                                        <li>CPU Intel Core i5 12400F</li>
+                                        <li>Mainboard ASUS B760M</li>
+                                        <li>RAM 16GB DDR4</li>
+                                        <li>SSD NVMe 512GB</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">PC Gaming RTX 3060</div>
+                            <div class="price">
+                                <span class="discount">15.000.000đ</span>
+                                <span class="original">20.000.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 2 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <!-- POPUP -->
+                        <div class="product-popup">
+                            <div class="popup-header">Laptop Gaming i7</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">18.500.000 VNĐ</span></p>
+                                <p><b>Bảo hành:</b> 24 tháng</p>
+
+                                <ul>
+                                    <li>CPU i7 Gen 12</li>
+                                    <li>RAM 16GB</li>
+                                    <li>SSD 512GB</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Laptop Gaming i7</div>
+                            <div class="price">
+                                <span class="discount">18.500.000đ</span>
+                                <span class="original">25.000.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 3 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <!-- POPUP -->
+                        <div class="product-popup">
+                            <div class="popup-header">Màn hình 144Hz</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">3.200.000đ</span></p>
+                                <p><b>Bảo hành:</b> 24 tháng</p>
+
+                                <ul>
+                                    <li>144 hz</li>
+                                    <li>2k</li>
+                                    <li>Oled</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Màn hình 144hz</div>
+                            <div class="price">
+                                <span class="discount">3.200.000</span>
+                                <span class="original">4.500.000</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 4 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <div class="product-popup">
+                            <div class="popup-header">Bàn phím cơ RGB</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">1.200.000đ</span></p>
+                                <p><b>Bảo hành:</b> 12 tháng</p>
+
+                                <ul>
+                                    <li>Switch Red</li>
+                                    <li>LED RGB</li>
+                                    <li>Full size</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Bàn phím cơ RGB</div>
+                            <div class="price">
+                                <span class="discount">1.200.000đ</span>
+                                <span class="original">1.800.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 5 -->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <div class="product-popup">
+                            <div class="popup-header">Chuột Gaming</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">500.000đ</span></p>
+                                <p><b>Bảo hành:</b> 12 tháng</p>
+
+                                <ul>
+                                    <li>DPI 16000</li>
+                                    <li>LED RGB</li>
+                                    <li>Siêu nhẹ</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Chuột Gaming</div>
+                            <div class="price">
+                                <span class="discount">500.000đ</span>
+                                <span class="original">900.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+                <!-- PRODUCT 6-->
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="product-card position-relative">
+
+                        <img src="https://via.placeholder.com/300x200" class="product-img" />
+
+                        <div class="product-popup">
+                            <div class="popup-header">Tai nghe Gaming</div>
+                            <div class="popup-body">
+                                <p><b>Giá bán:</b> <span class="price">850.000đ</span></p>
+                                <p><b>Bảo hành:</b> 12 tháng</p>
+
+                                <ul>
+                                    <li>Âm thanh 7.1</li>
+                                    <li>Có mic</li>
+                                    <li>LED RGB</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="product-info">
+                            <div class="product-name">Tai nghe Gaming</div>
+                            <div class="price">
+                                <span class="discount">850.000đ</span>
+                                <span class="original">1.200.000đ</span>
+                            </div>
+                            <button class="btn btn-sm btn-primary w-100 mt-2">Mua ngay</button>
+                        </div>
+
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+
+    </div>
+
+
+   
 </div>

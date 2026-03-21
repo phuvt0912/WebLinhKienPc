@@ -1,0 +1,83 @@
+﻿@{
+    ViewData["Title"] = "Liên hệ";
+}
+
+<div class="container py-5 text-light">
+
+    <!-- Title -->
+    <div class="text-center mb-5">
+        <h2 class="fw-bold">Liên hệ với chúng tôi</h2>
+        <p class="text-secondary">
+            Hỗ trợ nhanh chóng – tư vấn tận tâm – phản hồi trong thời gian sớm nhất
+        </p>
+    </div>
+
+    <div class="row g-4">
+
+        <div class="col-md-6">
+
+            <div class="p-4 rounded-4 shadow-sm bg-dark border border-secondary h-100">
+
+                <h4 class="mb-4 text-info">Thông tin liên hệ</h4>
+
+                <p>
+                    Web Linh Kiện PC chuyên cung cấp linh kiện máy tính chính hãng.
+                    Nếu bạn cần tư vấn hoặc hỗ trợ, hãy liên hệ với chúng tôi qua các thông tin bên dưới.
+                </p>
+
+                <hr class="border-secondary" />
+
+                <p>📍 <strong>Địa chỉ:</strong> 123 Đường ABC, TP Vũng Tàu</p>
+                <p>📞 <strong>Điện thoại:</strong> 0123 456 789</p>
+                <p>📧 <strong>Email:</strong> support@linhkienpc.com</p>
+                <p>🕒 <strong>Giờ làm việc:</strong> 8:00 - 21:00 (Thứ 2 - CN)</p>
+
+                <hr class="border-secondary" />
+
+                <p class="text-secondary small">
+                    Chúng tôi cam kết bảo mật thông tin khách hàng.
+                </p>
+
+            </div>
+        </div>
+
+        <div class="col-md-6">
+
+            <div class="p-4 rounded-4 shadow-sm bg-dark border border-secondary">
+
+                <h4 class="mb-4 text-info">Gửi tin nhắn</h4>
+
+                <form method="post" asp-controller="Home" asp-action="Contact">
+
+                    <div class="mb-3">
+                        <label class="form-label">Họ và tên</label>
+                        <input name=" name" type="text" class="form-control bg-black text-light border-secondary" placeholder="Nhập tên của bạn" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input name=" email" type="email" class="form-control bg-black text-light border-secondary" placeholder="example@email.com" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Số điện thoại</label>
+                        <input name=" phone" type="text" class="form-control bg-black text-light border-secondary" placeholder="0123 456 789" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nội dung</label>
+                        <textarea name="message" class="form-control bg-black text-light border-secondary" rows="5" placeholder="Nhập nội dung..." required></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-outline-info w-100">
+                        🚀 Gửi liên hệ
+                    </button>
+
+                </form>
+
+            </div>
+        </div>
+
+    </div>
+
+</div>

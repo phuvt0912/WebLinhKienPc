@@ -109,3 +109,144 @@ body {
 .border-bottom {
     border-bottom-color: rgba(162, 89, 255, 0.2) !important;
 }
+
+.row {
+    overflow: visible !important;
+}
+
+.product-card {
+    border: 1px solid #eee;
+    border-radius: 12px;
+    padding: 10px;
+    background: #6022C9;
+    transition: 0.3s;
+    height: 100%;
+}
+
+    .product-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        z-index: 1000;
+    }
+
+.product-img {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 8px;
+}
+
+.product-name {
+    font-weight: 600;
+    font-size: 14px;
+    height: 40px;
+    overflow: hidden;
+}
+
+.price {
+    margin-top: 5px;
+}
+
+.discount {
+    color: red;
+    font-weight: bold;
+    display: block;
+}
+
+.original {
+    text-decoration: line-through;
+    color: gray;
+    font-size: 13px;
+}
+/* Card cha */
+.product-card {
+    position: relative;
+    overflow: visible !important; /* 🔥 cho popup tràn ra */
+}
+    
+
+/* POPUP */
+.product-popup {
+    opacity: 0 !important;
+    visibility: hidden;
+    position: absolute;
+    top: 0;
+    left: 105%;
+    width: 320px;
+    opacity: 0;
+    transform: translateX(10px);
+    transition: 0.25s ease;
+    z-index: 9999; /* 🔥 FIX bị che */
+    border: 5px solid rgba(162, 89, 255, 0.15);
+    border-radius: 10px;
+    backdrop-filter: blur(20px);
+}
+
+/* Header cam */
+.popup-header {
+    background: #ee4d2d;
+    color: white;
+    padding: 10px;
+    font-weight: bold;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+/* Body */
+.popup-body {
+    padding: 10px;
+    font-size: 14px;
+}
+
+    .popup-body .price {
+        color: #d0011b;
+        font-weight: bold;
+    }
+
+/* Section */
+.popup-section {
+    margin-top: 8px;
+}
+
+/* Hover hiện popup */
+.product-card:hover .product-popup {
+    opacity: 1 !important;
+    visibility: visible ;
+    transform: translateX(0);
+}
+
+/* Fix bị che */
+.product-card {
+    overflow: visible !important;
+}
+
+    .product-card:nth-child(5) .product-popup {
+        left: auto;
+        right: 105%;
+    }
+
+
+/* Khối sản phẩm hot */
+.hot-section {
+    background: #12122a;
+    border: 1px solid rgba(162, 89, 255, 0.2);
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+/* header */
+.hot-header h5 {
+    color: #fff;
+    font-weight: 600;
+}
+
+/* link xem tất cả */
+.view-all {
+    color: #a259ff;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+    .view-all:hover {
+        color: #00cfff;
+    }
