@@ -15,10 +15,21 @@
         Đang sửa: <span>@Model.Email</span>
     </div>
 
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert-success">✅ @TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert-error">❌ @TempData["Error"]</div>
+    }
+
     <form asp-action="EditAccount" asp-route-id="@Model.Id" method="post" id="editForm">
         @Html.AntiForgeryToken()
 
-        <!-- Email -->
+        <!-- ===== THÔNG TIN CƠ BẢN ===== -->
+        <div class="section-hdr">Thông tin tài khoản</div>
+
         <div class="field">
             <label>Email <span style="color:#ff4f7b">*</span></label>
             <input type="email"
@@ -28,9 +39,6 @@
                    autocomplete="off" />
         </div>
 
-        <div class="divider"></div>
-
-        <!-- Username -->
         <div class="field">
             <label>Username <span style="color:#ff4f7b">*</span></label>
             <input type="text"
@@ -39,6 +47,47 @@
                    placeholder="Nhập username hiển thị..."
                    autocomplete="off" />
             <span class="field-note">Username sẽ hiển thị trên giao diện thay vì email.</span>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- ===== ĐỔI MẬT KHẨU ===== -->
+        <div class="section-hdr">Đổi mật khẩu</div>
+
+        <div class="field">
+            <label>Mật khẩu mới</label>
+            <div class="pwd-wrap">
+                <input type="password"
+                       name="newPassword"
+                       id="newPassword"
+                       placeholder="Để trống nếu không đổi"
+                       autocomplete="new-password"
+                       oninput="checkStrength(this.value)" />
+                <button type="button" class="pwd-eye" onclick="togglePwd('newPassword', this)">👁</button>
+            </div>
+            <div class="pwd-strength" id="pwdStrength">
+                <div class="pwd-bar" id="bar1"></div>
+                <div class="pwd-bar" id="bar2"></div>
+                <div class="pwd-bar" id="bar3"></div>
+                <div class="pwd-bar" id="bar4"></div>
+            </div>
+            <div class="pwd-strength-label" id="pwdStrengthLabel"></div>
+        </div>
+
+        <div class="field">
+            <label>Xác nhận mật khẩu mới</label>
+            <div class="pwd-wrap">
+                <input type="password"
+                       name="confirmPassword"
+                       id="confirmPassword"
+                       placeholder="Nhập lại mật khẩu mới"
+                       autocomplete="new-password"
+                       oninput="checkMatch()" />
+                <button type="button" class="pwd-eye" onclick="togglePwd('confirmPassword', this)">👁</button>
+            </div>
+            <div class="pwd-note">
+                ℹ️ Để trống cả 2 ô nếu không muốn đổi mật khẩu. Mật khẩu phải có ít nhất 6 ký tự, 1 chữ hoa, 1 ký tự đặc biệt.
+            </div>
         </div>
 
         <div class="form-actions">
@@ -51,9 +100,70 @@
 </div>
 
 <script>
-    document.getElementById('editForm').addEventListener('submit', function () {
+    // Toggle hiện/ẩn mật khẩu
+    function togglePwd(id, btn) {
+        const input = document.getElementById(id);
+        const isHidden = input.type === 'password';
+        input.type = isHidden ? 'text' : 'password';
+        btn.textContent = isHidden ? '🙈' : '👁';
+    }
+
+    // Kiểm tra độ mạnh mật khẩu
+    function checkStrength(val) {
+        const bars   = [1,2,3,4].map(i => document.getElementById('bar' + i));
+        const label  = document.getElementById('pwdStrengthLabel');
+        const colors = ['#ff4f7b', '#ffaa00', '#00cfff', '#4cdf8a'];
+        const labels = ['Yếu', 'Trung bình', 'Khá', 'Mạnh'];
+
+        let score = 0;
+        if (val.length >= 6)  score++;
+        if (val.length >= 10) score++;
+        if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score++;
+        if (/[^A-Za-z0-9]/.test(val)) score++;
+
+        bars.forEach((b, i) => {
+            b.style.background = i < score ? colors[score - 1] : 'rgba(255,255,255,0.08)';
+        });
+
+        label.textContent   = val.length > 0 ? labels[score - 1] || '' : '';
+        label.style.color   = val.length > 0 ? colors[score - 1] : '#6a6a9a';
+
+        checkMatch();
+    }
+
+    // Kiểm tra khớp mật khẩu
+    function checkMatch() {
+        const newPwd     = document.getElementById('newPassword').value;
+        const confirmPwd = document.getElementById('confirmPassword');
+
+        if (confirmPwd.value.length === 0) {
+            confirmPwd.style.borderColor = 'rgba(162,89,255,0.2)';
+            return;
+        }
+
+        if (newPwd === confirmPwd.value) {
+            confirmPwd.style.borderColor = '#4cdf8a';
+            confirmPwd.style.boxShadow   = '0 0 0 3px rgba(76,223,138,0.1)';
+        } else {
+            confirmPwd.style.borderColor = '#ff4f7b';
+            confirmPwd.style.boxShadow   = '0 0 0 3px rgba(255,79,123,0.1)';
+        }
+    }
+
+    // Submit form
+    document.getElementById('editForm').addEventListener('submit', function (e) {
+        const newPwd     = document.getElementById('newPassword').value;
+        const confirmPwd = document.getElementById('confirmPassword').value;
+
+        // Nếu nhập mật khẩu mới → phải khớp
+        if (newPwd && newPwd !== confirmPwd) {
+            e.preventDefault();
+            alert('Mật khẩu xác nhận không khớp!');
+            return;
+        }
+
         const btn = document.getElementById('submitBtn');
         btn.textContent = 'Đang lưu...';
-        btn.disabled = true;
+        btn.disabled    = true;
     });
 </script>
