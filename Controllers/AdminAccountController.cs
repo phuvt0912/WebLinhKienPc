@@ -110,18 +110,39 @@ namespace WebLinhKienPc.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditAccount(string id, string email, string username)
+        public async Task<IActionResult> EditAccount(string id, string email, string username, string newPassword, string confirmPassword)
         {
             var user = await _userManager.FindByIdAsync(id);
             if (user == null) return NotFound();
 
+            // Cập nhật email + username
             user.Email = email;
-            user.UserName = username; // username riêng, không bắt buộc = email
-
-            await _userManager.UpdateSecurityStampAsync(user);
+            user.UserName = username;
             await _userManager.UpdateAsync(user);
+            await _userManager.UpdateSecurityStampAsync(user);
 
+            // Đổi mật khẩu nếu có nhập
+            if (!string.IsNullOrWhiteSpace(newPassword))
+            {
+                if (newPassword != confirmPassword)
+                {
+                    TempData["Error"] = "Mật khẩu xác nhận không khớp.";
+                    return View(user);
+                }
+
+                var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+                var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+
+                if (!result.Succeeded)
+                {
+                    TempData["Error"] = string.Join(" ", result.Errors.Select(e => e.Description));
+                    return View(user);
+                }
+            }
+
+            TempData["Success"] = "Cập nhật tài khoản thành công!";
             return RedirectToAction("Index");
         }
 
