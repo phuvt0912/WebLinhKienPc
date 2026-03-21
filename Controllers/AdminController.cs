@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebLinhKienPc.AppDbContext;
+using WebLinhKienPc.Models;
 namespace WebLinhKienPc.Controllers
 {
 	[Authorize(Roles = "Admin")]

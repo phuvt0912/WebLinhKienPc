@@ -1,39 +1,42 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using WebLinhKienPc.Models;
 
-public class Order
+namespace WebLinhKienPc.Models
 {
-	[Key]
-	public int OrderId { get; set; }
+	public enum OrderStatus
+	{
+		[Display(Name = "Chờ xử lý")]
+		Pending,
 
-	public string UserId { get; set; }
+		[Display(Name = "Đang giao")]
+		Shipping,
 
-	public DateTime OrderDate { get; set; } = DateTime.Now;
+		[Display(Name = "Hoàn thành")]
+		Completed,
 
-	public decimal TotalPrice { get; set; }
+		[Display(Name = "Đã hủy")]
+		Cancelled
+	}
+	public class Order
+	{
+		[Key]
+		public int OrderId { get; set; }
 
-	public OrderStatus Status { get; set; } = OrderStatus.Pending;
+		public string UserId { get; set; }
 
-	public string Name { get; set; }
+		public DateTime OrderDate { get; set; } = DateTime.Now;
 
-	public string Phone { get; set; }
+		public decimal TotalPrice { get; set; }
 
-	public string Address { get; set; }
+		public OrderStatus Status { get; set; } = OrderStatus.Pending;
 
-	public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
-}
+		public string Name { get; set; }
 
-public enum OrderStatus
-{
-	[Display(Name = "Chờ xử lý")]
-	Pending,
+		public string Phone { get; set; }
 
-	[Display(Name = "Đang giao")]
-	Shipping,
+		public string Address { get; set; }
 
-	[Display(Name = "Hoàn thành")]
-	Completed,
+		public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+	}
 
-	[Display(Name = "Đã hủy")]
-	Cancelled
+
 }

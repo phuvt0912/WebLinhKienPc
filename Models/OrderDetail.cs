@@ -1,5 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using WebLinhKienPc.Models;
+
 
 namespace WebLinhKienPc.Models
 {
