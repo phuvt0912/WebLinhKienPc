@@ -20,8 +20,9 @@ namespace WebLinhKienPc.Models
 		public string? Description { get; set; }
 
 		public string? ImageUrl { get; set; }
+		public int Sold { get; set; } = 0;
 
-		public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
 
 		// Foreign Key
 		public int CategoryId { get; set; }

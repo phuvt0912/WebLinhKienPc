@@ -3,7 +3,6 @@
 }
 
 @model WebLinhKienPc.ViewModels.HomeViewModel
-@model List<Product>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script src="/js/site.js"></script>
@@ -12,20 +11,101 @@
 
     <div class="hot-section p-3 rounded-3">
 
-        <!-- HEADER -->
+            <!-- HEADER -->
+            <div class="hot-header d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0"> Sản phẩm hot</h5>
+                <a href="#" class="view-all">Xem tất cả</a>
+            </div>
+
+            <!-- PRODUCT LIST -->
+            <div class="slider-wrap">
+
+        <button class="slider-btn prev">‹</button>
+
+            <div class="slider-viewport">
+
+                <div class="slider-track">
+                    @foreach (var product in Model.HotProducts)
+                    {
+                        <div class="slider-item">
+                            <partial name="_ProductCard" model="product" />
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <button class="slider-btn next">›</button>
+
+        </div>
+
+    </div>
+
+    <div class="hot-section p-3 rounded-3 mt-4">
+
         <div class="hot-header d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0">🔥 Sản phẩm hot</h5>
+            <h5 class="mb-0"> Sản phẩm mới</h5>
             <a href="#" class="view-all">Xem tất cả</a>
         </div>
 
-        <!-- PRODUCT LIST -->
         <div class="product-list">
-            @foreach (var product in Model)
+            @foreach (var product in Model.NewProducts)
             {
                 <partial name="_ProductCard" model="product" />
             }
         </div>
 
     </div>
+    <div class="hot-section p-3 rounded-3 mt-4">
+
+        <div class="hot-header d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0"> Laptop</h5>
+            <a href="#" class="view-all">Xem tất cả</a>
+        </div>
+
+        <div class="product-list">
+            @foreach (var product in Model.LapsProducts)
+            {
+                <partial name="_ProductCard" model="product" />
+            }
+        </div>
+
+    </div>
+
+
+    <div class="hot-section p-3 rounded-3 mt-4">
+
+        <div class="hot-header d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0"> Điện thoại</h5>
+            <a href="#" class="view-all">Xem tất cả</a>
+        </div>
+
+        <div class="product-list">
+            @foreach (var product in Model.Phones)
+            {
+                <partial name="_ProductCard" model="product" />
+            }
+        </div>
+
+    </div>
+
+
+    <div class="hot-section p-3 rounded-3 mt-4">
+
+        <div class="hot-header d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0"> Phụ kiện</h5>
+            <a href="#" class="view-all">Xem tất cả</a>
+        </div>
+
+        <div class="product-list">
+            @foreach (var product in Model.Accsessories)
+            {
+                <partial name="_ProductCard" model="product" />
+            }
+        </div>
+
+    </div>
+
+
+
 
 </div>
