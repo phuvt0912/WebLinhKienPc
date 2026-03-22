@@ -1,15 +1,11 @@
 ﻿@model WebLinhKienPc.Models.Order
 
-@{
-    ViewData["Title"] = "Chi tiết đơn hàng";
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-}
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">                
+
 <div class="container mt-4">
 
     <!-- HEADER -->
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Đơn hàng #@Model.OrderCode</h3>
+        <h3>Đơn hàng #@Model.OrderId</h3>
 
         @{
             string statusClass = Model.Status switch
@@ -93,7 +89,7 @@
     <!-- TOTAL -->
     <div class="card shadow-sm p-3 text-end">
         <h4 class="text-success">
-            Tổng thanh toán: @String.Format("{0:N0} đ", Model.TotalPrice)
+            Tổng thanh toán: @Model.TotalPrice.ToString("N0") ₫
         </h4>
     </div>
 
