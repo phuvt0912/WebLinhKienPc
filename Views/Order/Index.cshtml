@@ -1,7 +1,5 @@
 ﻿@model IEnumerable<WebLinhKienPc.Models.Order>
-@{
-    Layout = "~/Views/Shared/_AdminLayout.cshtml";
-}
+
 
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="~/css/AdminOrder/Index.css" />
@@ -69,14 +67,14 @@
                         <td>
                             <div class="action-wrap">
                                 <a class="btn-edit"
-                                       asp-controller="AdminOrder"
+                                       asp-controller="Order"
                                        asp-action="OrderDetails"
                                        asp-route-id="@item.OrderId">
                                     ✏️ Xem chi tiết
                                 </a>
                                 @if (User.IsInRole("Admin"))
                                 {
-                                    <form asp-controller="AdminOrder"
+                                    <form asp-controller="Order"
                                           asp-action="CancelOrder"
                                           method="post"
                                           class="delete-form"

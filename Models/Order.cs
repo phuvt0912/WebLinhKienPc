@@ -20,6 +20,7 @@ namespace WebLinhKienPc.Models
 	{
 		[Key]
 		public int OrderId { get; set; }
+		public string OrderCode { get; set; }
 
 		public string UserId { get; set; }
 
@@ -36,6 +37,7 @@ namespace WebLinhKienPc.Models
 		public string Address { get; set; }
 
 		public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
+
 	}
 
 
