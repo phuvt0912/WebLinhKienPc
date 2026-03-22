@@ -15,6 +15,22 @@ namespace WebLinhKienPc.Controllers
 			_context = context;
 			_userManager = userManager;
 		}
+
+		public IActionResult Index()
+		{
+			var userId = _userManager.GetUserId(User);
+			var orders = _context.Orders.Where(u => u.UserId == userId).ToList();
+			return View(orders);
+		}
+
+		public IActionResult OrderDetails(int id)
+		{
+			var orders = _context.Orders
+				.Include(od => od.OrderDetails)
+				.ThenInclude(p => p.Product)
+				.FirstOrDefault(order => order.OrderId == id);
+			return View(orders);
+		}
 		public IActionResult Checkout()
 		{
 			var userId =  _userManager.GetUserId(User);
@@ -51,6 +67,7 @@ namespace WebLinhKienPc.Controllers
 			var order = new Order
 			{
 				UserId = userId,
+				OrderCode = GenerateOrderCode(),
 				TotalPrice = totalprice,
 				Name = Name,
 				Phone = Phone,
@@ -63,13 +80,18 @@ namespace WebLinhKienPc.Controllers
 				{
 					ProductId = item.ProductId,
 					Quantity = item.Quantity,
-					Price = item.Quantity * item.Product.Price,
+					Price = item.Product.Price,
 				});
 			}
 			_context.Orders.Add(order);
 			_context.CartItems.RemoveRange(cart.CartItems);
 			_context.SaveChanges();
 			return RedirectToAction("Index", "Product");
+		}
+		public string GenerateOrderCode()
+		{
+			var random = new Random();
+			return "DH" + DateTime.Now.ToString("yyyyMMdd") + random.Next(1000, 9999);
 		}
 	}
 }
