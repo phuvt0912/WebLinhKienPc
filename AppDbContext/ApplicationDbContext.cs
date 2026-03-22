@@ -18,5 +18,6 @@ namespace WebLinhKienPc.AppDbContext
 		public DbSet<OrderDetail> OrderDetails{ get; set; }
         public DbSet<ChatMessage> ChatMessages { get; set; }
         public DbSet<StaffStatus> StaffStatuses { get; set; }
+        public DbSet<UserProfile> UserProfiles { get; set; }
     }
 }

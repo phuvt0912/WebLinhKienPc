@@ -10,7 +10,7 @@ namespace WebLinhKienPc.Models
 		[Required]
 		[StringLength(200)]
 		public string Name { get; set; }
-
+		 
 		[Required]
 		public decimal Price { get; set; }
 	

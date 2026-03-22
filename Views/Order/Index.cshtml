@@ -1,0 +1,118 @@
+﻿@model IEnumerable<WebLinhKienPc.Models.Order>
+
+
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="~/css/AdminOrder/Index.css" />
+
+<div class="page-wrap">
+
+    <div class="page-header">
+        <h2 class="page-title">Quản Lý đơn hàng</h2>
+    </div>
+
+    <div class="total-count">
+        Tổng cộng <span>@Model.Count()</span> đơn hàng
+    </div>
+
+    <table class="ord-table">
+        <thead>
+            <tr>
+                <th>Mã vận đơn</th>
+                <th>Tên khách hàng</th>
+                <th>Tổng tiền</th>
+                <th>Trạng thái</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Any())
+            {
+                <tr>
+                    <td colspan="4">
+                        <div class="empty-state">
+                            <span class="empty-icon">📂</span>
+                            Chưa có đơn hàng nào
+                        </div>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var item in Model)
+                {
+                    string statusClass = item.Status switch
+                    {
+                        OrderStatus.Pending => "status-pending",
+                        OrderStatus.Shipping => "status-shipping",
+                        OrderStatus.Completed => "status-completed",
+                        OrderStatus.Cancelled => "status-cancelled",
+                        _ => "status-pending"
+                    };
+
+                    string statusLabel = item.Status switch
+                    {
+                        OrderStatus.Pending => "Chờ xử lý",
+                        OrderStatus.Shipping => "Đang giao",
+                        OrderStatus.Completed => "Hoàn thành",
+                        OrderStatus.Cancelled => "Đã huỷ",
+                        _ => item.Status.ToString()
+                    };
+                    <tr>
+                        <td class="ord-id">#@item.OrderCode</td>
+                        <td class="ord-name">@item.Name</td>
+                        <td class="ord-totalprice">@String.Format("{0:N0} đ", item.TotalPrice)</td>
+                        <td>
+                            <span class="status-badge @statusClass">@statusLabel</span>
+                        </td>
+                        <td>
+                            <div class="action-wrap">
+                                <a class="btn-edit"
+                                       asp-controller="Order"
+                                       asp-action="OrderDetails"
+                                       asp-route-id="@item.OrderId">
+                                    ✏️ Xem chi tiết
+                                </a>
+                                @if (User.IsInRole("Admin"))
+                                {
+                                    <form asp-controller="Order"
+                                          asp-action="CancelOrder"
+                                          method="post"
+                                          class="delete-form"
+                                          id="form-@item.OrderId">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="id" value="@item.OrderId" />
+                                        <button type="button"
+                                                class="btn-delete"
+                                                onclick="confirmDelete(@item.OrderId, '@item.Name')">
+                                            🗑️ Hủy đơn
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+
+</div>
+
+<!-- Modal/Thông báo xóa -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-icon">🗑️</div>
+        <div class="modal-title">Xác nhận xoá</div>
+        <div class="modal-msg">
+            Bạn có chắc muốn xoá danh mục<br>
+            <span class="modal-name" id="modalName"></span>?
+        </div>
+        <div class="modal-note">Hành động này không thể hoàn tác.</div>
+        <div class="modal-actions">
+            <button class="modal-btn-cancel" onclick="closeModal()">Huỷ</button>
+            <button class="modal-btn-confirm" onclick="submitDelete()">Xoá</button>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/admin-order.js"></script>
