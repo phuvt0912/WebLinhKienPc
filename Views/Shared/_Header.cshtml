@@ -19,6 +19,14 @@
             .FirstOrDefaultAsync(c => c.UserId == currentUser.Id);
         cartCount = cart?.CartItems.Sum(i => i.Quantity) ?? 0;
     }
+
+    string? avatarUrl = null;
+    if (currentUser != null)
+    {
+        var userProfile = await DbContext.UserProfiles
+            .FirstOrDefaultAsync(p => p.UserId == currentUser.Id);
+        avatarUrl = userProfile?.AvatarUrl;
+    }
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -331,7 +339,18 @@
             {
                 <div class="pc-avatar-wrap">
 
-                    <button class="pc-avatar">@avatar</button>
+                    <button class="pc-avatar">
+                        @if (!string.IsNullOrEmpty(avatarUrl))
+                        {
+                            <img src="@avatarUrl"
+                                 style="width:100%;height:100%;object-fit:cover;border-radius:8px;"
+                                 alt="Avatar" />
+                        }
+                        else
+                        {
+                            @avatar
+                        }
+                    </button>
 
                     <div class="pc-dropdown">
 
@@ -353,7 +372,7 @@
                             </span>
                         </div>
 
-                        <a asp-controller="Account" asp-action="Profile">Tài khoản</a>
+                        <a asp-controller="Profile" asp-action="Index">Trang cá nhân</a>
                         <a asp-controller="Order" asp-action="Index">Đơn hàng</a>
 
                         @if (User.IsInRole("Admin"))
