@@ -1,0 +1,188 @@
+﻿@using Microsoft.AspNetCore.Identity
+@inject UserManager<IdentityUser> _um
+@inject SignInManager<IdentityUser> _sm
+@model IdentityUser
+@{
+    var isAdmin = User.IsInRole("Admin") || User.IsInRole("NhanVien");
+    Layout = isAdmin ? "~/Views/Shared/_AdminLayout.cshtml" : "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Trang cá nhân";
+    var profile = ViewBag.Profile as WebLinhKienPc.Models.UserProfile;
+    var avatar = profile?.AvatarUrl;
+    var initial = (Model.UserName ?? Model.Email ?? "U")[0].ToString().ToUpper();
+    var userRoles = await _um.GetRolesAsync(Model);
+    var roleName = userRoles.FirstOrDefault();
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="~/css/profile.css" />
+
+<div class="pf-wrap">
+
+    <!-- ===== LEFT: AVATAR ===== -->
+    <div class="pf-left">
+        <form asp-action="UpdateAvatar" method="post"
+              enctype="multipart/form-data" id="avatarForm">
+            @Html.AntiForgeryToken()
+            <div class="pf-avatar-wrap">
+                @if (!string.IsNullOrEmpty(avatar))
+                {
+                    <img src="@avatar" class="pf-avatar-img" alt="Avatar" id="avatarPreview" />
+                }
+                else
+                {
+                    <div class="pf-avatar-initial" id="avatarInitial">@initial</div>
+                }
+                <button type="button" class="pf-avatar-btn"
+                        onclick="document.getElementById('avatarInput').click()"
+                        title="Đổi ảnh">
+                    ✏️
+                </button>
+            </div>
+            <input type="file" id="avatarInput" name="avatar"
+                   accept="image/*" style="display:none"
+                   onchange="previewAndSubmit(this)" />
+        </form>
+
+        <div class="pf-name">@Model.UserName</div>
+        <div class="pf-email">@Model.Email</div>
+
+        @* Role badge giống _Header *@
+        @if (roleName == "Admin")
+        {
+            <span class="pf-role" style="background:rgba(162,89,255,0.1);border-color:rgba(162,89,255,0.3);color:#a259ff">
+                ⚡ Quản trị viên
+            </span>
+        }
+        else if (roleName == "NhanVien")
+        {
+            <span class="pf-role" style="background:rgba(0,207,255,0.08);border-color:rgba(0,207,255,0.3);color:#00cfff">
+                🔧 Nhân viên
+            </span>
+        }
+        else
+        {
+            <span class="pf-role" style="background:rgba(162,89,255,0.06);border-color:rgba(162,89,255,0.2);color:#6a6a9a">
+                👤 Khách hàng
+            </span>
+        }
+
+        @if (!string.IsNullOrEmpty(avatar))
+        {
+            <form asp-action="RemoveAvatar" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn-remove-avatar">
+                    🗑 Xóa ảnh đại diện
+                </button>
+            </form>
+        }
+    </div>
+
+    <!-- ===== RIGHT ===== -->
+    <div class="pf-right">
+
+        @if (TempData["Success"] != null)
+        {
+            <div class="alert alert-success">✅ @TempData["Success"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="alert alert-error">❌ @TempData["Error"]</div>
+        }
+
+        <!-- Card: Thông tin -->
+        <div class="pf-card">
+            <div class="pf-card-hdr">Thông tin tài khoản</div>
+            <div class="pf-card-body">
+                <form asp-action="UpdateInfo" method="post">
+                    @Html.AntiForgeryToken()
+                    <div class="field">
+                        <label>Username</label>
+                        <input type="text" name="username"
+                               value="@Model.UserName"
+                               placeholder="Tên hiển thị..." />
+                    </div>
+                    <div class="field">
+                        <label>Email</label>
+                        <input type="email" name="email"
+                               value="@Model.Email"
+                               placeholder="email@example.com" />
+                    </div>
+                    <button type="submit" class="btn-save">Lưu thông tin</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Card: Đổi mật khẩu -->
+        <div class="pf-card">
+            <div class="pf-card-hdr">Đổi mật khẩu</div>
+            <div class="pf-card-body">
+
+                @if (TempData["PwdSuccess"] != null)
+                {
+                    <div class="alert alert-success">✅ @TempData["PwdSuccess"]</div>
+                }
+                @if (TempData["PwdError"] != null)
+                {
+                    <div class="alert alert-error">❌ @TempData["PwdError"]</div>
+                }
+
+                <form asp-action="ChangePassword" method="post">
+                    @Html.AntiForgeryToken()
+
+                    <div class="field">
+                        <label>Mật khẩu hiện tại</label>
+                        <div class="pwd-wrap">
+                            <input type="password" name="currentPassword"
+                                   id="curPwd"
+                                   placeholder="Nhập mật khẩu hiện tại..." />
+                            <button type="button" class="pwd-eye"
+                                    onclick="togglePwd('curPwd',this)">
+                                👁
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="field">
+                        <label>Mật khẩu mới</label>
+                        <div class="pwd-wrap">
+                            <input type="password" name="newPassword"
+                                   id="newPwd"
+                                   placeholder="Tối thiểu 6 ký tự..."
+                                   oninput="checkStrength(this.value)" />
+                            <button type="button" class="pwd-eye"
+                                    onclick="togglePwd('newPwd',this)">
+                                👁
+                            </button>
+                        </div>
+                        <div class="pwd-strength">
+                            <div class="pwd-bar" id="bar1"></div>
+                            <div class="pwd-bar" id="bar2"></div>
+                            <div class="pwd-bar" id="bar3"></div>
+                            <div class="pwd-bar" id="bar4"></div>
+                        </div>
+                        <div class="strength-label" id="strengthLabel"></div>
+                    </div>
+
+                    <div class="field">
+                        <label>Xác nhận mật khẩu mới</label>
+                        <div class="pwd-wrap">
+                            <input type="password" name="confirmPassword"
+                                   id="confirmPwd"
+                                   placeholder="Nhập lại mật khẩu mới..."
+                                   oninput="checkMatch()" />
+                            <button type="button" class="pwd-eye"
+                                    onclick="togglePwd('confirmPwd',this)">
+                                👁
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-save">Đổi mật khẩu</button>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="~/js/profile.js"></script>
