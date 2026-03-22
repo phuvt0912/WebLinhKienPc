@@ -286,3 +286,57 @@
 	.modal-btn-confirm:hover {
 		opacity: 0.85;
 	}
+
+.search-bar {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	margin-bottom: 20px;
+	width: 320px;
+}
+
+	.search-bar input {
+		width: 100%;
+		background: #12122a;
+		border: 1px solid rgba(162,89,255,0.2);
+		border-radius: 8px;
+		padding: 10px 40px 10px 16px;
+		color: #e8e8ff;
+		font-family: 'Inter', sans-serif;
+		font-size: 14px;
+		outline: none;
+		transition: border-color 0.2s, box-shadow 0.2s;
+	}
+
+		.search-bar input:focus {
+			border-color: #a259ff;
+			box-shadow: 0 0 0 3px rgba(162,89,255,0.1);
+		}
+
+		.search-bar input::placeholder {
+			color: #3a3a5a;
+		}
+
+.btn-clear-search {
+	position: absolute;
+	right: 12px;
+	background: none;
+	border: none;
+	color: #6a6a9a;
+	font-size: 14px;
+	cursor: pointer;
+	padding: 0;
+	transition: color 0.2s;
+}
+
+	.btn-clear-search:hover {
+		color: #ff4f7b;
+	}
+
+.no-result-row td {
+	text-align: center;
+	padding: 40px;
+	color: #6a6a9a;
+	font-family: 'Inter', sans-serif;
+	font-size: 14px;
+}

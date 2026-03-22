@@ -16,6 +16,18 @@
         Tổng cộng <span>@Model.Count()</span> đơn hàng
     </div>
 
+    <!-- Search bar -->
+    <div class="search-bar">
+        <input type="text"
+               id="searchInput"
+               placeholder="🔍 Tìm theo mã vận đơn..."
+               oninput="filterOrders(this.value)" />
+        <button class="btn-clear-search" id="btnClear"
+                onclick="clearSearch()" style="display:none">
+            ✕
+        </button>
+    </div>
+
     <table class="ord-table">
         <thead>
             <tr>
