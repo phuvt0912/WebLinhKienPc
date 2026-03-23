@@ -1,0 +1,489 @@
+﻿@{
+    ViewData["Title"] = "Xác nhận thanh toán";
+    decimal total = ViewBag.Total ?? 0;
+    string name    = ViewBag.Name ?? "";
+    string phone   = ViewBag.Phone ?? "";
+    string address = ViewBag.Address ?? "";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+    .pay-wrap {
+        max-width: 600px;
+        margin: 48px auto;
+        padding: 0 24px;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .pay-card {
+        background: #12122a;
+        border: 1px solid rgba(162,89,255,0.2);
+        border-radius: 20px;
+        overflow: hidden;
+    }
+
+    .pay-header {
+        padding: 28px 32px;
+        background: linear-gradient(135deg, rgba(108,43,217,0.3), rgba(162,89,255,0.15));
+        border-bottom: 1px solid rgba(162,89,255,0.2);
+        text-align: center;
+    }
+
+    .pay-header-icon { 
+        font-size: 44px; 
+        margin-bottom: 12px; 
+        display: block; 
+    }
+
+    .pay-header-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        color: #e8e8ff;
+        margin: 0 0 6px;
+    }
+
+    .pay-header-sub {
+        font-size: 14px;
+        color: #8888aa;
+    }
+
+    .pay-body { 
+        padding: 28px 32px; 
+    }
+
+    /* Timer */
+    .pay-timer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        padding: 16px;
+        background: rgba(255,170,0,0.08);
+        border: 1px solid rgba(255,170,0,0.2);
+        border-radius: 12px;
+        margin-bottom: 24px;
+    }
+
+    .pay-timer-icon { 
+        font-size: 24px; 
+    }
+
+    .pay-timer-text {
+        font-family: 'Inter', sans-serif;
+        font-size: 16px;
+        color: #8888aa;
+    }
+
+    .pay-timer-count {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        color: #ffaa00;
+        min-width: 70px;
+        text-align: center;
+    }
+
+    .pay-timer-count.urgent { 
+        color: #ff4f7b; 
+        animation: pulse 0.5s infinite; 
+    }
+
+    @@keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    /* QR */
+    .pay-qr-wrap {
+        text-align: center;
+        margin-bottom: 24px;
+    }
+
+    .pay-qr-img {
+        width: 240px;
+        height: 240px;
+        border-radius: 16px;
+        border: 3px solid rgba(162,89,255,0.3);
+        background: #fff;
+        padding: 10px;
+        display: block;
+        margin: 0 auto 16px;
+    }
+
+    .pay-qr-label {
+        font-size: 13px;
+        color: #6a6a9a;
+    }
+
+    /* Bank info */
+    .pay-bank {
+        background: rgba(162,89,255,0.05);
+        border: 1px solid rgba(162,89,255,0.15);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 24px;
+    }
+
+    .pay-bank-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 0;
+        border-bottom: 1px solid rgba(162,89,255,0.08);
+        font-size: 15px;
+    }
+
+    .pay-bank-row:last-child { 
+        border-bottom: none; 
+    }
+    
+    .pay-bank-label { 
+        color: #6a6a9a;
+        font-weight: 500;
+    }
+
+    .pay-bank-value {
+        color: #e8e8ff;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .pay-bank-value.highlight {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 20px;
+        color: #4cdf8a;
+    }
+
+    .copy-btn {
+        background: rgba(162, 89, 255, 0.12);
+        border: 1px solid rgba(162, 89, 255, 0.25);
+        color: #a259ff;
+        cursor: pointer;
+        font-size: 13px;
+        padding: 5px 12px;
+        border-radius: 6px;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-family: 'Inter', sans-serif;
+        font-weight: 500;
+    }
+
+    .copy-btn:hover { 
+        background: rgba(162, 89, 255, 0.25);
+        border-color: #a259ff;
+        transform: translateY(-1px);
+    }
+
+    /* Progress bar */
+    .pay-progress-wrap {
+        margin-bottom: 24px;
+    }
+
+    .pay-progress-bar-bg {
+        height: 8px;
+        background: rgba(255,255,255,0.06);
+        border-radius: 4px;
+        overflow: hidden;
+    }
+
+    .pay-progress-bar {
+        height: 100%;
+        background: linear-gradient(90deg, #a259ff, #00cfff);
+        border-radius: 4px;
+        transition: width 1s linear;
+        width: 100%;
+    }
+
+    /* Actions */
+    .pay-actions {
+        display: flex;
+        gap: 12px;
+        flex-direction: column;
+    }
+
+    .btn-paid {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 18px;
+        letter-spacing: 0.8px;
+        padding: 15px;
+        border-radius: 12px;
+        border: none;
+        background: linear-gradient(135deg, #1a6b3a, #4cdf8a);
+        color: #fff;
+        cursor: pointer;
+        transition: opacity 0.2s;
+        width: 100%;
+    }
+
+    .btn-paid:hover { 
+        opacity: 0.85; 
+    }
+
+    .btn-cancel-pay {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600;
+        font-size: 16px;
+        padding: 13px;
+        border-radius: 12px;
+        border: 1px solid rgba(255,79,123,0.3);
+        background: rgba(255,79,123,0.06);
+        color: #ff4f7b;
+        cursor: pointer;
+        transition: all 0.2s;
+        width: 100%;
+        text-align: center;
+    }
+
+    .btn-cancel-pay:hover {
+        background: rgba(255,79,123,0.12);
+        border-color: #ff4f7b;
+    }
+
+    /* Expired overlay */
+    .pay-expired {
+        display: none;
+        text-align: center;
+        padding: 40px 28px;
+    }
+
+    .pay-expired-icon { 
+        font-size: 56px; 
+        margin-bottom: 16px; 
+        display: block; 
+    }
+
+    .pay-expired-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        color: #ff4f7b;
+        margin-bottom: 12px;
+    }
+
+    .pay-expired-sub {
+        font-size: 15px;
+        color: #6a6a9a;
+        margin-bottom: 24px;
+        line-height: 1.5;
+    }
+
+    .btn-retry {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 700;
+        font-size: 16px;
+        padding: 13px 32px;
+        border-radius: 10px;
+        border: 1px solid rgba(162,89,255,0.3);
+        background: rgba(162,89,255,0.08);
+        color: #a259ff;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-block;
+    }
+
+    .btn-retry:hover {
+        background: rgba(162,89,255,0.15);
+        color: #c490ff;
+    }
+
+    .copy-icon {
+    width: 16px;
+    height: 16px;
+    fill: #a259ff;
+    transition: all 0.2s;
+}
+
+.copy-btn:hover .copy-icon {
+    fill: #c490ff;
+    transform: scale(1.1);
+}
+</style>
+
+<div class="pay-wrap">
+    <div class="pay-card" id="payCard">
+
+        <div class="pay-header">
+            <span class="pay-header-icon">💳</span>
+            <div class="pay-header-title">Xác nhận thanh toán</div>
+            <div class="pay-header-sub">Vui lòng chuyển khoản trong thời gian quy định</div>
+        </div>
+
+        <div class="pay-body" id="payBody">
+
+            <!-- Timer -->
+            <div class="pay-timer">
+                <span class="pay-timer-icon">⏱️</span>
+                <span class="pay-timer-text">Thời gian còn lại:</span>
+                <span class="pay-timer-count" id="timerCount">05:00</span>
+            </div>
+
+            <!-- Progress bar -->
+            <div class="pay-progress-wrap">
+                <div class="pay-progress-bar-bg">
+                    <div class="pay-progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+
+            <!-- QR Code -->
+            <div class="pay-qr-wrap">
+                @{
+                    string bankId    = "970426";
+                    string accountNo = "2455632188";
+                    string accountName = "DO MINH THANG";
+                    long amount      = (long)total;
+                    string qrUrl = $"https://img.vietqr.io/image/{bankId}-{accountNo}-compact2.png?amount={amount}&addInfo=DH{DateTime.Now:yyyyMMddHHmm}&accountName={Uri.EscapeDataString(accountName)}";
+                }
+                <img src="@qrUrl" class="pay-qr-img" alt="QR Chuyển khoản" />
+                <div class="pay-qr-label">Quét mã QR để chuyển khoản</div>
+            </div>
+
+            <!-- Bank info -->
+            <div class="pay-bank">
+                <div class="pay-bank-row">
+                    <span class="pay-bank-label">Ngân hàng</span>
+                    <span class="pay-bank-value">MB Bank</span>
+                </div>
+                <div class="pay-bank-row">
+                    <span class="pay-bank-label">Số tài khoản</span>
+                    <span class="pay-bank-value">
+                        @accountNo
+                        <button class="copy-btn" onclick="copyText('@accountNo')">
+                            <svg class="copy-icon" viewBox="0 0 24 24">
+                                <path d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 
+                                0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                            </svg>
+                        </button>
+                    </span>
+                </div>
+                <div class="pay-bank-row">
+                    <span class="pay-bank-label">Chủ tài khoản</span>
+                    <span class="pay-bank-value">@accountName</span>
+                </div>
+                <div class="pay-bank-row">
+                    <span class="pay-bank-label">Số tiền</span>
+                    <span class="pay-bank-value highlight">
+                        @total.ToString("N0") ₫
+                        <button class="copy-btn" onclick="copyText('@amount')">
+                            <svg class="copy-icon" viewBox="0 0 24 24">
+                                <path d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 
+                                0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                            </svg>
+                        </button>
+                    </span>
+                </div>
+                <div class="pay-bank-row">
+                    <span class="pay-bank-label">Nội dung CK</span>
+                    <span class="pay-bank-value">
+                        <span id="transferNote">DH @name @phone</span>
+                        <button class="copy-btn" onclick="copyText('DH @name @phone')">
+                            <svg class="copy-icon" viewBox="0 0 24 24">
+                                <path d="M16 1H4c-1.1 0-2 .9-2 2v12h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 
+                                0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/>
+                            </svg>
+                        </button>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="pay-actions">
+                <form asp-action="ConfirmPayment" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-paid">Chuyển khoản</button>
+                </form>
+
+                <form asp-action="CancelPayment" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn-cancel-pay">Hủy đặt hàng</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Expired state -->
+        <div class="pay-expired" id="payExpired">
+            <span class="pay-expired-icon">⏰</span>
+            <div class="pay-expired-title">Hết thời gian thanh toán</div>
+            <div class="pay-expired-sub">Đơn hàng đã bị hủy do quá thời gian xác nhận.<br>Vui lòng đặt hàng lại.</div>
+            <form asp-action="CancelPayment" method="post" style="display:inline">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn-retry">← Quay lại giỏ hàng</button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    const TOTAL_SECONDS = 5 * 60;
+    let remaining = TOTAL_SECONDS;
+
+    const timerEl    = document.getElementById('timerCount');
+    const progressEl = document.getElementById('progressBar');
+    const payBody    = document.getElementById('payBody');
+    const payExpired = document.getElementById('payExpired');
+
+    function updateTimer() {
+        const m = Math.floor(remaining / 60).toString().padStart(2, '0');
+        const s = (remaining % 60).toString().padStart(2, '0');
+        timerEl.textContent = `${m}:${s}`;
+
+        const pct = (remaining / TOTAL_SECONDS) * 100;
+        progressEl.style.width = pct + '%';
+
+        if (remaining <= 60) {
+            timerEl.classList.add('urgent');
+            progressEl.style.background = 'linear-gradient(90deg, #ff4f7b, #ffaa00)';
+        }
+
+        if (remaining <= 0) {
+            payBody.style.display = 'none';
+            payExpired.style.display = 'block';
+
+            setTimeout(() => {
+                document.querySelector('#payExpired form').submit();
+            }, 3000);
+            return;
+        }
+
+        remaining--;
+        setTimeout(updateTimer, 1000);
+    }
+
+    updateTimer();
+
+    function copyText(text) {
+        navigator.clipboard.writeText(text).then(() => {
+            showCopied();
+        }).catch(() => {
+            const el = document.createElement('textarea');
+            el.value = text;
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+            showCopied();
+        });
+    }
+
+    function showCopied() {
+        const toast = document.createElement('div');
+        toast.style.cssText = `
+            position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+            background:#12122a; border:1px solid rgba(76,223,138,0.3);
+            color:#4cdf8a; padding:12px 24px; border-radius:10px;
+            font-family:'Inter',sans-serif; font-size:14px;
+            z-index:9999; animation: fadeIn 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        `;
+        toast.textContent = '✅ Đã sao chép!';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+    }
+</script>
