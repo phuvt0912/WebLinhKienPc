@@ -1,64 +1,234 @@
-﻿let currentFormId = null;
+﻿let pendingFormId = null;
 
-function confirmDelete(id, name) {
-    currentFormId = id;
-    document.getElementById('modalName').textContent = name;
+function confirmCancel(id, name, code) {
+    pendingFormId = id;
+    document.getElementById('modalName').textContent = `#${code} - ${name}`;
     document.getElementById('modalOverlay').classList.add('show');
 }
 
 function closeModal() {
     document.getElementById('modalOverlay').classList.remove('show');
-    currentFormId = null;
+    pendingFormId = null;
 }
 
-function submitDelete() {
-    if (currentFormId) {
-        document.getElementById('form-' + currentFormId).submit();
+function submitCancel() {
+    if (pendingFormId) {
+        document.getElementById('form-' + pendingFormId).submit();
     }
 }
 
-document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') closeModal();
-})
-function filterOrders(val) {
-    const keyword = val.trim().toLowerCase();
-    const rows = document.querySelectorAll('.ord-table tbody tr:not(.no-result-row)');
+function applyFilter() {
+    const keyword = document.getElementById('searchInput').value.toLowerCase().trim();
+    const status = document.getElementById('statusFilter').value;
+    const rows = document.querySelectorAll('#ordBody tr[data-code]');
     const btnClear = document.getElementById('btnClear');
 
-    btnClear.style.display = val ? 'block' : 'none';
-
-    let visibleCount = 0;
+    btnClear.style.display = keyword ? 'block' : 'none';
 
     rows.forEach(row => {
-        const code = row.querySelector('.ord-id')?.textContent.toLowerCase() ?? '';
-        const show = !keyword || code.includes(keyword);
-        row.style.display = show ? '' : 'none';
-        if (show) visibleCount++;
+        const matchCode = !keyword || row.dataset.code?.includes(keyword);
+        const matchStatus = !status || row.dataset.status === status;
+        row.style.display = matchCode && matchStatus ? '' : 'none';
     });
-
-    // Hiện/ẩn dòng "không tìm thấy"
-    let noResult = document.querySelector('.no-result-row');
-    if (visibleCount === 0) {
-        if (!noResult) {
-            noResult = document.createElement('tr');
-            noResult.className = 'no-result-row';
-            noResult.innerHTML = `<td colspan="5">
-                <div class="empty-state">
-                    <span class="empty-icon">🔍</span>
-                    Không tìm thấy đơn hàng <strong>"${val}"</strong>
-                </div>
-            </td>`;
-            document.querySelector('.ord-table tbody').appendChild(noResult);
-        }
-        noResult.style.display = '';
-    } else if (noResult) {
-        noResult.style.display = 'none';
-    }
 }
 
 function clearSearch() {
-    const input = document.getElementById('searchInput');
-    input.value = '';
-    filterOrders('');
-    input.focus();
-};
+    document.getElementById('searchInput').value = '';
+    applyFilter();
+}
+
+// Auto hide toast after 3 seconds
+function initToast() {
+    const toast = document.getElementById('toast');
+    if (toast) {
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.4s';
+            setTimeout(() => toast.remove(), 400);
+        }, 3000);
+    }
+}
+
+// Initialize event listeners
+function initEventListeners() {
+    // Escape key to close modal
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
+    });
+}
+
+// Initialize everything when DOM is ready
+document.addEventListener('DOMContentLoaded', function () {
+    initToast();
+    initEventListeners();
+});
+
+// Thêm vào cuối file AdminOrder.js
+let selectedOrders = new Set();
+
+function updateOrderStatus(orderId, selectElement) {
+    const newStatus = selectElement.value;
+    if (!newStatus) return;
+
+    // Hiển thị loading
+    const btn = selectElement.nextElementSibling;
+    const originalText = btn.textContent;
+    btn.textContent = '⏳ Đang cập nhật...';
+    btn.disabled = true;
+
+    fetch('/AdminOrder/UpdateStatus', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+        },
+        body: JSON.stringify({ orderId: orderId, status: newStatus })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('success', `✅ ${data.message}`);
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                showToast('error', `❌ ${data.message}`);
+                // Reset dropdown về giá trị cũ
+                selectElement.value = selectElement.getAttribute('data-old-value');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('error', '❌ Có lỗi xảy ra');
+            selectElement.value = selectElement.getAttribute('data-old-value');
+        })
+        .finally(() => {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        });
+}
+
+function saveOldStatus(selectElement) {
+    selectElement.setAttribute('data-old-value', selectElement.value);
+}
+
+function showToast(type, message) {
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = message;
+    document.body.appendChild(toast);
+
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transition = 'opacity 0.4s';
+        setTimeout(() => toast.remove(), 400);
+    }, 3000);
+}
+
+function filterByDate() {
+    const fromDate = document.getElementById('fromDate').value;
+    const toDate = document.getElementById('toDate').value;
+
+    if (!fromDate && !toDate) {
+        applyFilter();
+        return;
+    }
+
+    const rows = document.querySelectorAll('#ordBody tr[data-date]');
+
+    rows.forEach(row => {
+        const orderDate = row.dataset.date;
+        let show = true;
+
+        if (fromDate && orderDate < fromDate) show = false;
+        if (toDate && orderDate > toDate) show = false;
+
+        row.style.display = show ? '' : 'none';
+    });
+}
+
+function resetDateFilter() {
+    document.getElementById('fromDate').value = '';
+    document.getElementById('toDate').value = '';
+    applyFilter();
+}
+
+function exportToExcel() {
+    window.location.href = '/AdminOrder/ExportExcel';
+}
+
+function toggleSelectAll(checkbox) {
+    const allCheckboxes = document.querySelectorAll('#ordBody input[type="checkbox"]');
+    allCheckboxes.forEach(cb => {
+        cb.checked = checkbox.checked;
+        if (checkbox.checked) {
+            selectedOrders.add(cb.value);
+        } else {
+            selectedOrders.delete(cb.value);
+        }
+    });
+    updateBulkUpdateButton();
+}
+
+function toggleOrderSelection(orderId, checkbox) {
+    if (checkbox.checked) {
+        selectedOrders.add(orderId);
+    } else {
+        selectedOrders.delete(orderId);
+        document.getElementById('selectAll').checked = false;
+    }
+    updateBulkUpdateButton();
+}
+
+function updateBulkUpdateButton() {
+    const btn = document.getElementById('bulkUpdateBtn');
+    const count = selectedOrders.size;
+    btn.textContent = `Cập nhật (${count})`;
+    btn.disabled = count === 0;
+}
+
+function bulkUpdateStatus() {
+    const newStatus = document.getElementById('bulkStatus').value;
+    if (!newStatus) {
+        showToast('error', '❌ Vui lòng chọn trạng thái cần cập nhật');
+        return;
+    }
+
+    if (selectedOrders.size === 0) {
+        showToast('error', '❌ Vui lòng chọn đơn hàng cần cập nhật');
+        return;
+    }
+
+    if (confirm(`Bạn có chắc muốn cập nhật ${selectedOrders.size} đơn hàng sang trạng thái ${newStatus}?`)) {
+        const btn = document.getElementById('bulkUpdateBtn');
+        btn.textContent = '⏳ Đang xử lý...';
+        btn.disabled = true;
+
+        fetch('/AdminOrder/BulkUpdateStatus', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+            },
+            body: JSON.stringify({
+                orderIds: Array.from(selectedOrders),
+                status: newStatus
+            })
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('success', `✅ ${data.message}`);
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast('error', `❌ ${data.message}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('error', '❌ Có lỗi xảy ra');
+            })
+            .finally(() => {
+                btn.textContent = `Cập nhật (${selectedOrders.size})`;
+                btn.disabled = false;
+            });
+    }
+}
