@@ -820,4 +820,16 @@ body {
 	.modal-box {
 		padding: 32px 24px;
 	}
+
+	/* Checkbox disabled style */
+	.check-col input[type="checkbox"]:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+		transform: none;
+	}
+
+		.check-col input[type="checkbox"]:disabled:hover {
+			transform: none;
+			filter: none;
+		}
 }

@@ -1,4 +1,5 @@
 ﻿let pendingFormId = null;
+let selectedOrders = new Set();
 
 function confirmCancel(id, name, code) {
     pendingFormId = id;
@@ -37,44 +38,75 @@ function clearSearch() {
     applyFilter();
 }
 
-// Auto hide toast after 3 seconds
-function initToast() {
-    const toast = document.getElementById('toast');
-    if (toast) {
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transition = 'opacity 0.4s';
-            setTimeout(() => toast.remove(), 400);
-        }, 3000);
+// Kiểm tra đơn hàng có thể chọn không (không phải Completed hoặc Cancelled)
+function isSelectable(row) {
+    const status = row.getAttribute('data-status');
+    return status !== 'status-completed' && status !== 'status-cancelled';
+}
+
+// Toggle chọn tất cả (CHỈ chọn các đơn có thể chọn)
+function toggleSelectAll(checkbox) {
+    const allRows = document.querySelectorAll('#ordBody tr[data-order-id]');
+    // Chỉ lấy các row có thể chọn và đang hiển thị (không bị filter ẩn)
+    const selectableRows = Array.from(allRows).filter(row => {
+        return isSelectable(row) && row.style.display !== 'none';
+    });
+
+    selectableRows.forEach(row => {
+        const orderId = row.getAttribute('data-order-id');
+        const cb = row.querySelector('.check-col input[type="checkbox"]');
+        if (cb) {
+            cb.checked = checkbox.checked;
+            if (checkbox.checked) {
+                selectedOrders.add(orderId);
+            } else {
+                selectedOrders.delete(orderId);
+            }
+        }
+    });
+
+    // Cập nhật checkbox header
+    const selectAllHeader = document.getElementById('selectAllHeader');
+    if (selectAllHeader && selectAllHeader !== checkbox) {
+        selectAllHeader.checked = checkbox.checked;
+    }
+
+    updateBulkUpdateButton();
+}
+
+function toggleOrderSelection(orderId, checkbox) {
+    if (checkbox.checked) {
+        selectedOrders.add(orderId.toString());
+    } else {
+        selectedOrders.delete(orderId.toString());
+        // Bỏ chọn checkbox chính
+        const selectAllCheckbox = document.getElementById('selectAll');
+        const selectAllHeader = document.getElementById('selectAllHeader');
+        if (selectAllCheckbox) selectAllCheckbox.checked = false;
+        if (selectAllHeader) selectAllHeader.checked = false;
+    }
+    updateBulkUpdateButton();
+}
+
+function updateBulkUpdateButton() {
+    const btn = document.getElementById('bulkUpdateBtn');
+    const count = selectedOrders.size;
+    if (btn) {
+        btn.textContent = `Cập nhật (${count})`;
+        btn.disabled = count === 0;
     }
 }
 
-// Initialize event listeners
-function initEventListeners() {
-    // Escape key to close modal
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') closeModal();
-    });
+function saveOldStatus(selectElement) {
+    selectElement.setAttribute('data-old-value', selectElement.value);
 }
-
-// Initialize everything when DOM is ready
-document.addEventListener('DOMContentLoaded', function () {
-    initToast();
-    initEventListeners();
-});
-
-// Thêm vào cuối file AdminOrder.js
-let selectedOrders = new Set();
 
 function updateOrderStatus(orderId, selectElement) {
     const newStatus = selectElement.value;
     if (!newStatus) return;
 
-    // Hiển thị loading
-    const btn = selectElement.nextElementSibling;
-    const originalText = btn.textContent;
-    btn.textContent = '⏳ Đang cập nhật...';
-    btn.disabled = true;
+    const oldValue = selectElement.getAttribute('data-old-value');
+    selectElement.disabled = true;
 
     fetch('/AdminOrder/UpdateStatus', {
         method: 'POST',
@@ -87,39 +119,40 @@ function updateOrderStatus(orderId, selectElement) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showToast('success', `✅ ${data.message}`);
-                setTimeout(() => location.reload(), 1000);
+                showToast('success', data.message);
+                setTimeout(() => location.reload(), 1500);
             } else {
-                showToast('error', `❌ ${data.message}`);
-                // Reset dropdown về giá trị cũ
-                selectElement.value = selectElement.getAttribute('data-old-value');
+                showToast('error', data.message);
+                selectElement.value = oldValue;
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showToast('error', '❌ Có lỗi xảy ra');
-            selectElement.value = selectElement.getAttribute('data-old-value');
+            showToast('error', 'Có lỗi xảy ra khi cập nhật trạng thái');
+            selectElement.value = oldValue;
         })
         .finally(() => {
-            btn.textContent = originalText;
-            btn.disabled = false;
+            selectElement.disabled = false;
         });
 }
 
-function saveOldStatus(selectElement) {
-    selectElement.setAttribute('data-old-value', selectElement.value);
-}
-
 function showToast(type, message) {
+    // Xóa toast cũ
+    const oldToast = document.querySelector('.toast:not(#toast)');
+    if (oldToast) oldToast.remove();
+
     const toast = document.createElement('div');
     toast.className = `toast ${type}`;
-    toast.innerHTML = message;
+    const icon = type === 'success' ? '✅' : '❌';
+    toast.innerHTML = `${icon} ${message}`;
     document.body.appendChild(toast);
 
     setTimeout(() => {
         toast.style.opacity = '0';
         toast.style.transition = 'opacity 0.4s';
-        setTimeout(() => toast.remove(), 400);
+        setTimeout(() => {
+            if (toast.parentNode) toast.remove();
+        }, 400);
     }, 3000);
 }
 
@@ -155,80 +188,91 @@ function exportToExcel() {
     window.location.href = '/AdminOrder/ExportExcel';
 }
 
-function toggleSelectAll(checkbox) {
-    const allCheckboxes = document.querySelectorAll('#ordBody input[type="checkbox"]');
-    allCheckboxes.forEach(cb => {
-        cb.checked = checkbox.checked;
-        if (checkbox.checked) {
-            selectedOrders.add(cb.value);
-        } else {
-            selectedOrders.delete(cb.value);
-        }
-    });
-    updateBulkUpdateButton();
-}
-
-function toggleOrderSelection(orderId, checkbox) {
-    if (checkbox.checked) {
-        selectedOrders.add(orderId);
-    } else {
-        selectedOrders.delete(orderId);
-        document.getElementById('selectAll').checked = false;
-    }
-    updateBulkUpdateButton();
-}
-
-function updateBulkUpdateButton() {
-    const btn = document.getElementById('bulkUpdateBtn');
-    const count = selectedOrders.size;
-    btn.textContent = `Cập nhật (${count})`;
-    btn.disabled = count === 0;
-}
-
 function bulkUpdateStatus() {
     const newStatus = document.getElementById('bulkStatus').value;
     if (!newStatus) {
-        showToast('error', '❌ Vui lòng chọn trạng thái cần cập nhật');
+        showToast('error', 'Vui lòng chọn trạng thái cần cập nhật');
         return;
     }
 
     if (selectedOrders.size === 0) {
-        showToast('error', '❌ Vui lòng chọn đơn hàng cần cập nhật');
+        showToast('error', 'Vui lòng chọn đơn hàng cần cập nhật');
         return;
     }
 
-    if (confirm(`Bạn có chắc muốn cập nhật ${selectedOrders.size} đơn hàng sang trạng thái ${newStatus}?`)) {
-        const btn = document.getElementById('bulkUpdateBtn');
-        btn.textContent = '⏳ Đang xử lý...';
-        btn.disabled = true;
+    const btn = document.getElementById('bulkUpdateBtn');
+    const originalText = btn.textContent;
+    btn.textContent = '⏳ Đang xử lý...';
+    btn.disabled = true;
 
-        fetch('/AdminOrder/BulkUpdateStatus', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-            },
-            body: JSON.stringify({
-                orderIds: Array.from(selectedOrders),
-                status: newStatus
-            })
+    fetch('/AdminOrder/BulkUpdateStatus', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+        },
+        body: JSON.stringify({
+            orderIds: Array.from(selectedOrders),
+            status: newStatus
         })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showToast('success', `✅ ${data.message}`);
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showToast('error', `❌ ${data.message}`);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                showToast('error', '❌ Có lỗi xảy ra');
-            })
-            .finally(() => {
-                btn.textContent = `Cập nhật (${selectedOrders.size})`;
-                btn.disabled = false;
-            });
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast('success', data.message);
+                selectedOrders.clear();
+                setTimeout(() => location.reload(), 1500);
+            } else {
+                showToast('error', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('error', 'Có lỗi xảy ra khi cập nhật hàng loạt');
+        })
+        .finally(() => {
+            btn.textContent = originalText;
+            btn.disabled = false;
+        });
+}
+
+// Auto hide toast from server
+function initToast() {
+    const toast = document.getElementById('toast');
+    if (toast) {
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transition = 'opacity 0.4s';
+            setTimeout(() => {
+                if (toast.parentNode) toast.remove();
+            }, 400);
+        }, 3000);
     }
 }
+
+// Initialize event listeners
+function initEventListeners() {
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
+    });
+}
+
+// Initialize everything when DOM is ready
+document.addEventListener('DOMContentLoaded', function () {
+    initToast();
+    initEventListeners();
+
+    // Disable checkboxes cho đơn đã hoàn thành hoặc đã hủy
+    const rows = document.querySelectorAll('#ordBody tr[data-order-id]');
+    rows.forEach(row => {
+        const checkbox = row.querySelector('.check-col input[type="checkbox"]');
+        if (checkbox && !isSelectable(row)) {
+            checkbox.disabled = true;
+            checkbox.style.opacity = '0.5';
+            checkbox.style.cursor = 'not-allowed';
+        }
+    });
+
+    // Cập nhật số lượng selected ban đầu (nếu có)
+    updateBulkUpdateButton();
+});
