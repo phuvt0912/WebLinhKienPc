@@ -108,15 +108,16 @@ function updateOrderStatus(orderId, selectElement) {
     const oldValue = selectElement.getAttribute('data-old-value');
     selectElement.disabled = true;
 
-    fetch('/AdminOrder/UpdateStatus', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-        },
-        body: JSON.stringify({ orderId: orderId, status: newStatus })
-    })
-        .then(response => response.json())
+    fetch('/AdminOrder/UpdateStatusAjax',
+        {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''
+            },
+            body: JSON.stringify({ orderId: orderId, status: newStatus })
+        })
+        .then(r => r.json())
         .then(data => {
             if (data.success) {
                 showToast('success', data.message);
@@ -126,14 +127,11 @@ function updateOrderStatus(orderId, selectElement) {
                 selectElement.value = oldValue;
             }
         })
-        .catch(error => {
-            console.error('Error:', error);
+        .catch(() => {
             showToast('error', 'Có lỗi xảy ra khi cập nhật trạng thái');
             selectElement.value = oldValue;
         })
-        .finally(() => {
-            selectElement.disabled = false;
-        });
+        .finally(() => { selectElement.disabled = false; });
 }
 
 function showToast(type, message) {

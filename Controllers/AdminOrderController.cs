@@ -72,9 +72,12 @@ namespace WebLinhKienPc.Controllers
             TempData["Success"] = $"Đã hủy đơn hàng #{order.OrderCode} thành công.";
             return RedirectToAction("Index");
         }
+
+        // Action này cho AJAX từ Index page (dropdown)
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> UpdateStatus([FromBody] UpdateStatusModel model)
+        public async Task<IActionResult> UpdateStatusAjax([FromBody] UpdateStatusModel model)
         {
             try
             {
@@ -82,18 +85,17 @@ namespace WebLinhKienPc.Controllers
                 if (order == null)
                     return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
 
-                // Kiểm tra không cho cập nhật nếu đã hoàn thành hoặc đã huỷ
                 if (order.Status == OrderStatus.Completed || order.Status == OrderStatus.Cancelled)
-                    return Json(new { success = false, message = "Không thể cập nhật đơn hàng đã hoàn thành hoặc đã huỷ" });
+                    return Json(new { success = false, message = "Không thể cập nhật đơn đã hoàn thành hoặc đã huỷ" });
 
                 order.Status = Enum.Parse<OrderStatus>(model.Status);
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true, message = $"Đã cập nhật trạng thái đơn hàng #{order.OrderCode}" });
+                return Json(new { success = true, message = $"Đã cập nhật trạng thái đơn #{order.OrderCode}" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+                return Json(new { success = false, message = "Có lỗi: " + ex.Message });
             }
         }
 
