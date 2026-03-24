@@ -2,74 +2,149 @@
     ViewData["Title"] = "Liên hệ";
 }
 
-<div class="container py-5 text-light">
+<style>
+    .page-header {
+        background: linear-gradient(135deg, #1a1f3c, #2a2f5a);
+        color: #e0e7ff;
+        padding: 40px 20px;
+        border-radius: 16px;
+        text-align: center;
+        margin-bottom: 30px;
+        border: 1px solid #2e3a8c;
+    }
 
-    <!-- Title -->
-    <div class="text-center mb-5">
-        <h2 class="fw-bold">Liên hệ với chúng tôi</h2>
-        <p class="text-secondary">
-            Hỗ trợ nhanh chóng – tư vấn tận tâm – phản hồi trong thời gian sớm nhất
-        </p>
+    .main-card {
+        background: #0f172a;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        height: 100%;
+        transition: 0.3s;
+        border: 1px solid #1e293b;
+        color: #c7d2fe;
+    }
+
+        .main-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(79,70,229,0.3);
+        }
+
+    /* INFO BOX */
+    .info-box {
+        background: #020617;
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #1e293b;
+        color: #e0e7ff;
+        transition: 0.2s;
+    }
+
+        .info-box:hover {
+            border-color: #4f46e5;
+            transform: translateX(5px);
+        }
+
+    /* INPUT */
+    .form-control {
+        border-radius: 10px;
+        padding: 10px 12px;
+        background: #020617;
+        border: 1px solid #1e293b;
+        color: #fff;
+    }
+
+        .form-control:focus {
+            border-color: #4f46e5;
+            box-shadow: 0 0 10px rgba(79,70,229,0.5);
+            background: #020617;
+            color: #fff;
+        }
+
+    /* BUTTON */
+    .btn-send {
+        background: linear-gradient(135deg, #4f46e5, #6366f1);
+        border: none;
+        border-radius: 12px;
+        padding: 12px;
+        color: white;
+        font-weight: 600;
+        transition: 0.3s;
+    }
+
+        .btn-send:hover {
+            transform: scale(1.03);
+            box-shadow: 0 10px 25px rgba(79,70,229,0.5);
+        }
+</style>
+
+<div class="container mt-4">
+
+    <!-- HEADER -->
+    <div class="page-header">
+        <h2>📞 Liên hệ với chúng tôi</h2>
+        <p>Hỗ trợ nhanh chóng – tư vấn tận tâm – phản hồi sớm nhất</p>
     </div>
 
     <div class="row g-4">
 
+        <!-- LEFT -->
         <div class="col-md-6">
+            <div class="main-card">
 
-            <div class="p-4 rounded-4 shadow-sm bg-dark border border-secondary h-100">
-
-                <h4 class="mb-4 text-info">Thông tin liên hệ</h4>
+                <h4 class="mb-4">Thông tin liên hệ</h4>
 
                 <p>
                     Web Linh Kiện PC chuyên cung cấp linh kiện máy tính chính hãng.
-                    Nếu bạn cần tư vấn hoặc hỗ trợ, hãy liên hệ với chúng tôi qua các thông tin bên dưới.
+                    Nếu bạn cần hỗ trợ hoặc tư vấn, hãy liên hệ với chúng tôi.
                 </p>
 
-                <hr class="border-secondary" />
+                <h5 class="mt-4">📍 Địa chỉ</h5>
+                <div class="info-box">123 Đường ABC, TP Vũng Tàu</div>
 
-                <p>📍 <strong>Địa chỉ:</strong> 123 Đường ABC, TP Vũng Tàu</p>
-                <p>📞 <strong>Điện thoại:</strong> 0123 456 789</p>
-                <p>📧 <strong>Email:</strong> support@linhkienpc.com</p>
-                <p>🕒 <strong>Giờ làm việc:</strong> 8:00 - 21:00 (Thứ 2 - CN)</p>
+                <h5>📞 Liên hệ</h5>
+                <div class="info-box">0123 456 789</div>
+                <div class="info-box">support@linhkienpc.com</div>
 
-                <hr class="border-secondary" />
+                <h5>🕒 Giờ làm việc</h5>
+                <div class="info-box">8:00 - 21:00 (Thứ 2 - CN)</div>
 
-                <p class="text-secondary small">
-                    Chúng tôi cam kết bảo mật thông tin khách hàng.
+                <p class="text-muted small mt-3">
+                    🔒 Chúng tôi cam kết bảo mật thông tin khách hàng.
                 </p>
 
             </div>
         </div>
 
+        <!-- RIGHT -->
         <div class="col-md-6">
+            <div class="main-card">
 
-            <div class="p-4 rounded-4 shadow-sm bg-dark border border-secondary">
-
-                <h4 class="mb-4 text-info">Gửi tin nhắn</h4>
+                <h4 class="mb-4">Gửi tin nhắn</h4>
 
                 <form method="post" asp-controller="Home" asp-action="Contact">
 
                     <div class="mb-3">
                         <label class="form-label">Họ và tên</label>
-                        <input name=" name" type="text" class="form-control bg-black text-light border-secondary" placeholder="Nhập tên của bạn" required />
+                        <input name="name" type="text" class="form-control" placeholder="Nhập tên của bạn" required />
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Email</label>
-                        <input name=" email" type="email" class="form-control bg-black text-light border-secondary" placeholder="example@email.com" required />
+                        <input name="email" type="email" class="form-control" placeholder="example@email.com" required />
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Số điện thoại</label>
-                        <input name=" phone" type="text" class="form-control bg-black text-light border-secondary" placeholder="0123 456 789" />
+                        <input name="phone" type="text" class="form-control" placeholder="0123 456 789" />
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label">Nội dung</label>
-                        <textarea name="message" class="form-control bg-black text-light border-secondary" rows="5" placeholder="Nhập nội dung..." required></textarea>
+                        <textarea name="message" class="form-control" rows="5" placeholder="Nhập nội dung..." required></textarea>
                     </div>
 
-                    <button type="submit" class="btn btn-outline-info w-100">
+                    <button type="submit" class="btn-send w-100">
                         🚀 Gửi liên hệ
                     </button>
 

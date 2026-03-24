@@ -2,54 +2,192 @@
     ViewData["Title"] = "Giới thiệu";
 }
 
+<style>
+    .about-header {
+        background: linear-gradient(135deg, #1a1f3c, #2a2f5a);
+        color: #e0e7ff;
+        padding: 40px 20px;
+        border-radius: 16px;
+        text-align: center;
+        margin-bottom: 30px;
+        border: 1px solid #2e3a8c;
+    }
+
+    .about-card {
+        background: #0f172a;
+        color: #c7d2fe;
+        border-radius: 16px;
+        padding: 25px;
+        box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+        height: 100%;
+        transition: 0.3s;
+        border: 1px solid #2e3a8c;
+    }
+
+        .about-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(79,70,229,0.3);
+        }
+
+    .about-img {
+        border-radius: 16px;
+        overflow: hidden;
+        border: 1px solid #2e3a8c;
+    }
+
+        .about-img img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: 0.4s;
+        }
+
+        .about-img:hover img {
+            transform: scale(1.05);
+        }
+
+    .info-box {
+        background: #020617;
+        padding: 12px 16px;
+        border-radius: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #1e293b;
+        color: #e0e7ff;
+    }
+
+        .info-box:hover {
+            background: #020617;
+            border-color: #4f46e5;
+            transform: translateX(5px);
+            transition: 0.2s;
+        }
+
+    .product-list li {
+        padding: 6px 0;
+        border-bottom: 1px dashed #334155;
+        color: #c7d2fe;
+    }
+
+        .product-list li:last-child {
+            border-bottom: none;
+        }
+</style>
+
 <div class="container mt-4">
 
-    <h2 class="text-center mb-4">Giới thiệu về cửa hàng</h2>
+    <!-- HEADER -->
+    <div class="about-header">
+        <h2>🚀 Web Linh Kiện PC</h2>
+        <p>Nơi cung cấp linh kiện máy tính chất lượng – giá tốt – uy tín</p>
+    </div>
 
-    <div class="row">
+    <div class="row g-4">
 
+        <!-- IMAGE -->
         <div class="col-md-6">
-            <img src="/images/store.jpg" class="img-fluid rounded shadow" />
+            <div class="about-img shadow">
+                <img src="~/images/products/c383f8fe-c43a-4575-b418-55b1cb5159de.png" />
+            </div>
         </div>
 
+        <!-- CONTENT -->
         <div class="col-md-6">
+            <div class="about-card">
 
-            <h4>Web Linh Kiện PC</h4>
+                <h4 class="mb-3">💻 Về chúng tôi</h4>
 
-            <p>
-                Chúng tôi chuyên cung cấp các linh kiện máy tính chất lượng cao
-                như CPU, RAM, Mainboard, VGA, SSD và các thiết bị công nghệ khác.
-            </p>
+                <p>
+                    Chúng tôi chuyên cung cấp các linh kiện máy tính chính hãng như
+                    <b>CPU, RAM, Mainboard, VGA, SSD</b> và nhiều thiết bị công nghệ khác.
+                </p>
 
-            <p>
-                Mục tiêu của chúng tôi là mang đến cho khách hàng những sản phẩm
-                chính hãng với mức giá hợp lý cùng dịch vụ hỗ trợ tốt nhất.
-            </p>
+                <p>
+                    Với tiêu chí <b>chất lượng - uy tín - giá hợp lý</b>, chúng tôi cam kết
+                    mang đến trải nghiệm mua sắm tốt nhất cho khách hàng.
+                </p>
 
-            <h5>Sản phẩm chính</h5>
+                <h5 class="mt-4">🔥 Sản phẩm chính</h5>
 
-            <ul>
-                <li>CPU Intel / AMD</li>
-                <li>RAM DDR4 / DDR5</li>
-                <li>Card đồ họa (VGA)</li>
-                <li>Mainboard</li>
-                <li>Ổ cứng SSD / HDD</li>
-                <li>Phụ kiện máy tính</li>
-            </ul>
+                <ul class="product-list">
+                    <li>⚡ CPU Intel / AMD</li>
+                    <li>🚀 RAM DDR4 / DDR5</li>
+                    <li>🎮 Card đồ họa (VGA)</li>
+                    <li>🧠 Mainboard</li>
+                    <li>💾 SSD / HDD</li>
+                    <li>🖱️ Phụ kiện máy tính</li>
+                </ul>
 
-            <h5>Thông tin liên hệ</h5>
+                <h5 class="mt-4">📞 Liên hệ</h5>
 
-            <p>
-                📍 Địa chỉ: 123 Đường ABC, TP Vũng Tàu
-            </p>
+                <div class="info-box">📍 123 Đường ABC, TP Vũng Tàu</div>
+                <div class="info-box">📞 0123 456 789</div>
+                <div class="info-box">📧 support@linhkienpc.com</div>
 
-            <p>
-                📞 Điện thoại: 0123 456 789
-            </p>
+            </div>
+        </div>
+        <!-- SUPPORT + POLICY -->
+        <div class="row g-4 mt-2">
 
-            <p>
-                📧 Email: support@linhkienpc.com
-            </p>
+            <!-- SUPPORT -->
+            <div class="col-md-6">
+                <div class="about-card">
+
+                    <h5 class="mb-3">🛠️ Hỗ trợ khách hàng</h5>
+
+                    <div class="info-box">📦 Hướng dẫn mua hàng nhanh chóng
+
+                        <p>
+                            -Khách hàng có thể đặt mua sản phẩm trực tiếp trên website bằng cách lựa chọn sản phẩm,
+                            thêm vào giỏ hàng và tiến hành thanh toán. Ngoài ra, bạn cũng có thể liên hệ qua hotline
+                            để được nhân viên tư vấn và hỗ trợ đặt hàng nhanh chóng.
+                        </p>
+                    </div>
+                    <div class="info-box">💳 Nhiều phương thức thanh toán
+                        <p>
+                            -Chúng tôi hỗ trợ nhiều phương thức thanh toán như: thanh toán khi nhận hàng (COD),
+                            chuyển khoản ngân hàng và thanh toán online. Mọi giao dịch đều được đảm bảo an toàn
+                            và bảo mật thông tin tuyệt đối.
+                        </p>
+                    </div>
+                    <div class="info-box">🛡️ Bảo hành chính hãng toàn quốc
+                        <p>
+                            -Tất cả sản phẩm đều được bảo hành chính hãng theo quy định của nhà sản xuất.
+                            Khách hàng có thể mang sản phẩm đến cửa hàng hoặc gửi về để được hỗ trợ bảo hành
+                            nhanh chóng và thuận tiện nhất.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- POLICY -->
+            <div class="col-md-6">
+                <div class="about-card">
+
+                    <h5 class="mb-3">📜 Chính sách</h5>
+
+                    <div class="info-box">🔒 Bảo mật thông tin khách hàng
+                        <p>
+                            -Chúng tôi cam kết bảo mật tuyệt đối mọi thông tin cá nhân của khách hàng.
+                            Thông tin chỉ được sử dụng cho mục đích xử lý đơn hàng và cải thiện dịch vụ,
+                            không chia sẻ với bên thứ ba khi chưa có sự đồng ý.
+                        </p>
+                    </div>
+                    <div class="info-box">🔁 Đổi trả linh hoạt trong 7 ngày
+                        <p>
+                            -Khách hàng được hỗ trợ đổi trả sản phẩm trong vòng 7 ngày nếu phát sinh lỗi từ nhà sản xuất
+                            hoặc sản phẩm không đúng mô tả. Sản phẩm cần còn nguyên vẹn và đầy đủ phụ kiện đi kèm.
+                        </p>
+                    </div>
+                    <div class="info-box">⚖️ Điều khoản & điều kiện rõ ràng
+                        <p>
+                            -Khi sử dụng website, khách hàng đồng ý tuân thủ các điều khoản và quy định của chúng tôi.
+                            Chúng tôi có quyền thay đổi nội dung mà không cần báo trước để phù hợp với chính sách kinh doanh.
+                        </p>
+                    </div>
+
+                </div>
+            </div>
 
         </div>
 
