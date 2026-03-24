@@ -13,14 +13,16 @@ namespace WebLinhKienPc.Models
 		 
 		[Required]
 		public decimal Price { get; set; }
+	
 
-		public int Stock { get; set; }
+        public int Stock { get; set; }
 
 		public string? Description { get; set; }
 
 		public string? ImageUrl { get; set; }
+		public int Sold { get; set; } = 0;
 
-		public DateTime CreatedDate { get; set; } = DateTime.Now;
+        public DateTime CreatedDate { get; set; } = DateTime.Now;
 
 		// Foreign Key
 		public int CategoryId { get; set; }

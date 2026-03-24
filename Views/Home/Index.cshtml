@@ -1,8 +1,97 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Trang chủ";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+@model WebLinhKienPc.ViewModels.HomeViewModel
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="/js/site.js"></script>
+
+<div class="container mt-4">
+    <!-- ================= BANNER ================= -->
+    <div class="banner-section mb-4">
+        <div class="swiper bannerSwiper">
+            <div class="swiper-wrapper">
+
+                @foreach (var banner in Model.Banners)
+                {
+                    <div class="swiper-slide">
+                        <a href="@banner.Link">
+                            <img src="@banner.ImageUrl" class="w-100 rounded-3" style="height:300px; object-fit:cover;" />
+                        </a>
+                    </div>
+                }
+
+            </div>
+
+            <!-- pagination -->
+            <div class="swiper-pagination"></div>
+        </div>
+    </div>
+    <div class="hot-section p-3 rounded-3">
+
+        <!-- HEADER -->
+        <div class="hot-header d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0"> Sản phẩm hot</h5>
+            <a href="#" class="view-all">Xem tất cả</a>
+        </div>
+
+        <!-- SLIDER -->
+        <div class="slider-wrap">
+
+            <button class="slider-btn prev">‹</button>
+
+            <div class="slider-viewport">
+                <div class="slider-track">
+                    @foreach (var product in Model.HotProducts)
+                    {
+                        <div class="slider-item">
+                            <partial name="_ProductCard" model="product" />
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <button class="slider-btn next">›</button>
+
+        </div>
+
+    </div>
+
+    <div class="hot-section p-3 rounded-3 mt-4">
+
+        <div class="hot-header d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0"> Sản phẩm mới</h5>
+            <a href="#" class="view-all">Xem tất cả</a>
+        </div>
+
+        <div class="product-list">
+            @foreach (var product in Model.NewProducts)
+            {
+                <partial name="_ProductCard" model="product" />
+            }
+        </div>
+
+    </div>
+
+    @foreach (var cate in Model.Categories)
+    {
+        <div class="hot-section p-3 rounded-3 mt-4">
+
+            <div class="hot-header d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">@cate.CategoryName</h5>
+                <a href="#" class="view-all">Xem tất cả</a>
+            </div>
+
+            <div class="product-list">
+                @foreach (var product in cate.Products)
+                {
+                    <partial name="_ProductCard" model="product" />
+                }
+            </div>
+
+        </div>
+    }
+
 </div>
