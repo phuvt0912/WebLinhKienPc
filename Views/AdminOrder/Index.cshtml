@@ -1,6 +1,7 @@
 ﻿@model IEnumerable<WebLinhKienPc.Models.Order>
 @{
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    ViewData["Title"] = "Quản lý đơn hàng";
 }
 
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
@@ -9,110 +10,212 @@
 <div class="page-wrap">
 
     <div class="page-header">
-        <h2 class="page-title">Quản Lý đơn hàng</h2>
+        <h2 class="page-title">Quản Lý Đơn Hàng</h2>
     </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="toast success" id="toast">✅ @TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="toast error" id="toast">❌ @TempData["Error"]</div>
+    }
 
     <div class="total-count">
         Tổng cộng <span>@Model.Count()</span> đơn hàng
     </div>
 
-    <table class="ord-table">
-        <thead>
-            <tr>
-                <th>Mã vận đơn</th>
-                <th>Tên khách hàng</th>
-                <th>Tổng tiền</th>
-                <th>Trạng thái</th>
-                <th>Thao tác</th>
-            </tr>
-        </thead>
-        <tbody>
-            @if (!Model.Any())
-            {
-                <tr>
-                    <td colspan="4">
-                        <div class="empty-state">
-                            <span class="empty-icon">📂</span>
-                            Chưa có đơn hàng nào
-                        </div>
-                    </td>
-                </tr>
-            }
-            else
-            {
-                @foreach (var item in Model)
-                {
-                    string statusClass = item.Status switch
-                    {
-                        OrderStatus.Pending => "status-pending",
-                        OrderStatus.Shipping => "status-shipping",
-                        OrderStatus.Completed => "status-completed",
-                        OrderStatus.Cancelled => "status-cancelled",
-                        _ => "status-pending"
-                    };
+    <div class="filter-bar">
+        <!-- Filter trạng thái -->
+        <select class="filter-select" id="statusFilter" onchange="applyFilter()">
+            <option value="">Tất cả trạng thái</option>
+            <option value="status-pending">Chờ xử lý</option>
+            <option value="status-shipping">Đang giao</option>
+            <option value="status-completed">Hoàn thành</option>
+            <option value="status-cancelled">Đã huỷ</option>
+        </select>
 
-                    string statusLabel = item.Status switch
-                    {
-                        OrderStatus.Pending => "Chờ xử lý",
-                        OrderStatus.Shipping => "Đang giao",
-                        OrderStatus.Completed => "Hoàn thành",
-                        OrderStatus.Cancelled => "Đã huỷ",
-                        _ => item.Status.ToString()
-                    };
+        <!-- Lọc theo ngày -->
+        <div class="date-filter">
+            <label>Từ:</label>
+            <input type="date" id="fromDate" onchange="filterByDate()">
+            <label>Đến:</label>
+            <input type="date" id="toDate" onchange="filterByDate()">
+            <button class="btn-reset-date" onclick="resetDateFilter()" title="Xóa lọc ngày">✕</button>
+        </div>
+
+        <!-- Tìm kiếm mã vận đơn -->
+        <div class="search-wrap">
+            <input type="text"
+                   class="search-input"
+                   id="searchInput"
+                   placeholder="🔍 Tìm theo mã vận đơn..."
+                   oninput="applyFilter()" />
+            <button class="btn-clear-search" id="btnClear"
+                    onclick="clearSearch()" style="display:none">
+                ✕
+            </button>
+        </div>
+        
+        <!-- Xuất Excel -->
+        <button class="btn-export-excel" onclick="exportToExcel()">
+            📊 Xuất Excel
+        </button>
+    </div>
+
+    <!-- Bulk Actions -->
+    <div class="filter-bar" style="margin-bottom: 16px;">
+        <div class="bulk-actions">
+            <div class="select-all-wrap">
+                <input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)">
+                <label for="selectAll">Chọn tất cả</label>
+            </div>
+            <select id="bulkStatus" class="bulk-status-select">
+                <option value="">Cập nhật trạng thái...</option>
+                <option value="Pending">⏳ Chờ xử lý</option>
+                <option value="Shipping">🚚 Đang giao</option>
+                <option value="Completed">✅ Hoàn thành</option>
+                <option value="Cancelled">❌ Đã huỷ</option>
+            </select>
+            <button id="bulkUpdateBtn" class="btn-bulk-update" onclick="bulkUpdateStatus()" disabled>
+                Cập nhật (0)
+            </button>
+        </div>
+    </div>
+
+    <!-- Table Container - Thêm container để scroll ngang khi cần -->
+    <div class="ord-table-container">
+        <table class="ord-table" id="ordTable">
+            <thead>
+                <tr>
+                    <th class="check-col">
+                        <input type="checkbox" id="selectAllHeader" onchange="toggleSelectAll(this)">
+                    </th>
+                    <th>Mã vận đơn</th>
+                    <th>Khách hàng</th>
+                    <th>Tổng tiền</th>
+                    <th class="center">Trạng thái</th>
+                    <th>Ngày đặt</th>
+                    <th class="center">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody id="ordBody">
+                @if (!Model.Any())
+                {
                     <tr>
-                        <td class="ord-id">#@item.OrderCode</td>
-                        <td class="ord-name">@item.Name</td>
-                        <td class="ord-totalprice">@String.Format("{0:N0} đ", item.TotalPrice)</td>
-                        <td>
-                            <span class="status-badge @statusClass">@statusLabel</span>
-                        </td>
-                        <td>
-                            <div class="action-wrap">
-                                <a class="btn-edit"
-                                       asp-controller="AdminOrder"
-                                       asp-action="OrderDetails"
-                                       asp-route-id="@item.OrderId">
-                                    ✏️ Xem chi tiết
-                                </a>
-                                @if (User.IsInRole("Admin"))
-                                {
-                                    <form asp-controller="AdminOrder"
-                                          asp-action="CancelOrder"
-                                          method="post"
-                                          class="delete-form"
-                                          id="form-@item.OrderId">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="id" value="@item.OrderId" />
-                                        <button type="button"
-                                                class="btn-delete"
-                                                onclick="confirmDelete(@item.OrderId, '@item.Name')">
-                                            🗑️ Hủy đơn
-                                        </button>
-                                    </form>
-                                }
+                        <td colspan="7">
+                            <div class="empty-state">
+                                <span class="empty-icon">📂</span>
+                                Chưa có đơn hàng nào
                             </div>
                         </td>
                     </tr>
                 }
-            }
-        </tbody>
-    </table>
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        string statusClass = item.Status switch
+                        {
+                            OrderStatus.Pending => "status-pending",
+                            OrderStatus.Shipping => "status-shipping",
+                            OrderStatus.Completed => "status-completed",
+                            OrderStatus.Cancelled => "status-cancelled",
+                            _ => "status-pending"
+                        };
 
+                        string statusLabel = item.Status switch
+                        {
+                            OrderStatus.Pending => "⏳ Chờ xử lý",
+                            OrderStatus.Shipping => "🚚 Đang giao",
+                            OrderStatus.Completed => "✅ Hoàn thành",
+                            OrderStatus.Cancelled => "❌ Đã huỷ",
+                            _ => item.Status.ToString()
+                        };
+
+                        bool canCancel = item.Status != OrderStatus.Completed
+                                      && item.Status != OrderStatus.Cancelled;
+                        
+                        string orderDateStr = item.OrderDate.ToString("yyyy-MM-dd");
+
+                        <tr data-status="@statusClass"
+                            data-code="@item.OrderCode?.ToLower()"
+                            data-date="@orderDateStr"
+                            data-order-id="@item.OrderId">
+                            <td class="check-col">
+                                <input type="checkbox"
+                                       value="@item.OrderId"
+                                       onchange="toggleOrderSelection(@item.OrderId, this)">
+                            </td>
+                            <td class="ord-id">#@item.OrderCode</td>
+                            <td class="ord-name">@item.Name</td>
+                            <td class="ord-price">@item.TotalPrice.ToString("N0") đ</td>
+                            <td class="center">
+                                <div style="display: flex; gap: 8px; align-items: center; justify-content: center;">
+                                    <select class="status-dropdown"
+                                            onchange="saveOldStatus(this); updateOrderStatus(@item.OrderId, this)"
+                                        @(item.Status == OrderStatus.Completed || item.Status == OrderStatus.Cancelled ? "disabled" : "")>
+                                        <option value="Pending" selected="@(item.Status == OrderStatus.Pending)">⏳ Chờ xử lý</option>
+                                        <option value="Shipping" selected="@(item.Status == OrderStatus.Shipping)">🚚 Đang giao</option>
+                                        <option value="Completed" selected="@(item.Status == OrderStatus.Completed)">✅ Hoàn thành</option>
+                                        <option value="Cancelled" selected="@(item.Status == OrderStatus.Cancelled)">❌ Đã huỷ</option>
+                                    </select>
+                                    <span class="status-badge @statusClass" style="display: none;">@statusLabel</span>
+                                </div>
+                            </td>
+                            <td class="ord-date">
+                                @item.OrderDate.ToString("dd/MM/yyyy HH:mm")
+                            </td>
+                            <td class="center">
+                                <div class="action-wrap">
+                                    <a class="btn-detail"
+                                           asp-controller="AdminOrder"
+                                           asp-action="OrderDetails"
+                                           asp-route-id="@item.OrderId">
+                                        Chi tiết
+                                    </a>
+                                    @if (User.IsInRole("Admin") && canCancel)
+                                    {
+                                        <form asp-controller="AdminOrder"
+                                              asp-action="CancelOrder"
+                                              method="post"
+                                              id="form-@item.OrderId"
+                                              style="display:inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="id" value="@item.OrderId" />
+                                            <button type="button"
+                                                    class="btn-cancel"
+                                                    onclick="confirmCancel(@item.OrderId, '@item.Name', '@item.OrderCode')">
+                                                Hủy đơn
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
 
-<!-- Modal/Thông báo xóa -->
+@Html.AntiForgeryToken()
+
+<!-- Modal xác nhận hủy -->
 <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
     <div class="modal-box" onclick="event.stopPropagation()">
         <div class="modal-icon">🗑️</div>
-        <div class="modal-title">Xác nhận xoá</div>
+        <div class="modal-title">Xác nhận hủy đơn</div>
         <div class="modal-msg">
-            Bạn có chắc muốn xoá danh mục<br>
+            Bạn có chắc muốn hủy đơn hàng<br>
             <span class="modal-name" id="modalName"></span>?
         </div>
         <div class="modal-note">Hành động này không thể hoàn tác.</div>
         <div class="modal-actions">
-            <button class="modal-btn-cancel" onclick="closeModal()">Huỷ</button>
-            <button class="modal-btn-confirm" onclick="submitDelete()">Xoá</button>
+            <button class="modal-btn-cancel" onclick="closeModal()">Quay lại</button>
+            <button class="modal-btn-confirm" onclick="submitCancel()">Hủy đơn</button>
         </div>
     </div>
 </div>
