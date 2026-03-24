@@ -47,7 +47,11 @@ namespace WebLinhKienPc.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CancelOrder(int id)
         {
-            var order = await _context.Orders.FindAsync(id);
+            var order = await _context.Orders
+                .Include(o => o.OrderDetails)
+                .ThenInclude(od => od.Product)
+                .FirstOrDefaultAsync(o => o.OrderId == id);
+
             if (order == null)
             {
                 TempData["Error"] = "Không tìm thấy đơn hàng.";
@@ -57,20 +61,48 @@ namespace WebLinhKienPc.Controllers
             if (order.Status == OrderStatus.Completed)
             {
                 TempData["Error"] = "Không thể hủy đơn đã hoàn thành.";
-                return RedirectToAction("Index");
+                return RedirectToAction("OrderDetails", new { id });
             }
 
             if (order.Status == OrderStatus.Cancelled)
             {
                 TempData["Error"] = "Đơn hàng này đã bị hủy trước đó.";
-                return RedirectToAction("Index");
+                return RedirectToAction("OrderDetails", new { id });
+            }
+
+            // DEBUG - xem OrderDetails có load được không
+            Console.WriteLine($"=== CancelOrder #{order.OrderCode} ===");
+            Console.WriteLine($"OrderDetails count: {order.OrderDetails?.Count ?? 0}");
+
+            foreach (var detail in order.OrderDetails ?? new List<OrderDetail>())
+            {
+                Console.WriteLine($"  ProductId: {detail.ProductId} | Product null: {detail.Product == null} | Qty: {detail.Quantity}");
+
+                if (detail.Product != null)
+                {
+                    Console.WriteLine($"  Stock trước: {detail.Product.Stock}");
+                    detail.Product.Stock += detail.Quantity;
+                    Console.WriteLine($"  Stock sau: {detail.Product.Stock}");
+                }
+                else
+                {
+                    // Product null → load thủ công
+                    var product = await _context.Products.FindAsync(detail.ProductId);
+                    if (product != null)
+                    {
+                        Console.WriteLine($"  Load thủ công - Stock trước: {product.Stock}");
+                        product.Stock += detail.Quantity;
+                        Console.WriteLine($"  Load thủ công - Stock sau: {product.Stock}");
+                    }
+                }
             }
 
             order.Status = OrderStatus.Cancelled;
-            await _context.SaveChangesAsync();
+            var saved = await _context.SaveChangesAsync();
+            Console.WriteLine($"SaveChanges result: {saved} rows affected");
 
             TempData["Success"] = $"Đã hủy đơn hàng #{order.OrderCode} thành công.";
-            return RedirectToAction("Index");
+            return RedirectToAction("OrderDetails", new { id });
         }
 
         // Action này cho AJAX từ Index page (dropdown)
@@ -81,14 +113,33 @@ namespace WebLinhKienPc.Controllers
         {
             try
             {
-                var order = await _context.Orders.FindAsync(model.OrderId);
+                var order = await _context.Orders
+                    .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
+                    .FirstOrDefaultAsync(o => o.OrderId == model.OrderId);
+
                 if (order == null)
                     return Json(new { success = false, message = "Không tìm thấy đơn hàng" });
 
                 if (order.Status == OrderStatus.Completed || order.Status == OrderStatus.Cancelled)
                     return Json(new { success = false, message = "Không thể cập nhật đơn đã hoàn thành hoặc đã huỷ" });
 
-                order.Status = Enum.Parse<OrderStatus>(model.Status);
+                var newStatus = Enum.Parse<OrderStatus>(model.Status);
+
+                // ===== NẾU HỦY → HOÀN TRẢ STOCK =====
+                if (newStatus == OrderStatus.Cancelled)
+                {
+                    foreach (var detail in order.OrderDetails)
+                    {
+                        var product = detail.Product
+                            ?? await _context.Products.FindAsync(detail.ProductId);
+
+                        if (product != null)
+                            product.Stock += detail.Quantity;
+                    }
+                }
+
+                order.Status = newStatus;
                 await _context.SaveChangesAsync();
 
                 return Json(new { success = true, message = $"Đã cập nhật trạng thái đơn #{order.OrderCode}" });
@@ -106,6 +157,8 @@ namespace WebLinhKienPc.Controllers
             try
             {
                 var orders = await _context.Orders
+                    .Include(o => o.OrderDetails)
+                    .ThenInclude(od => od.Product)
                     .Where(o => model.OrderIds.Contains(o.OrderId))
                     .ToListAsync();
 
@@ -114,21 +167,32 @@ namespace WebLinhKienPc.Controllers
 
                 foreach (var order in orders)
                 {
-                    // Không cập nhật đơn đã hoàn thành hoặc đã huỷ
-                    if (order.Status != OrderStatus.Completed && order.Status != OrderStatus.Cancelled)
+                    if (order.Status == OrderStatus.Completed || order.Status == OrderStatus.Cancelled)
+                        continue;
+
+                    // ===== NẾU HỦY → HOÀN TRẢ STOCK =====
+                    if (newStatus == OrderStatus.Cancelled)
                     {
-                        order.Status = newStatus;
-                        updatedCount++;
+                        foreach (var detail in order.OrderDetails)
+                        {
+                            var product = detail.Product
+                                ?? await _context.Products.FindAsync(detail.ProductId);
+
+                            if (product != null)
+                                product.Stock += detail.Quantity;
+                        }
                     }
+
+                    order.Status = newStatus;
+                    updatedCount++;
                 }
 
                 await _context.SaveChangesAsync();
-
                 return Json(new { success = true, message = $"Đã cập nhật {updatedCount}/{orders.Count} đơn hàng" });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Có lỗi xảy ra: " + ex.Message });
+                return Json(new { success = false, message = "Có lỗi: " + ex.Message });
             }
         }
 
