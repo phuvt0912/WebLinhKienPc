@@ -1,0 +1,158 @@
+﻿@model WebLinhKienPc.Models.Banner
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="~/css/Banner/CreateBanner.css" />
+
+<div class="form-wrap">
+    <div class="page-header">
+        <h2 class="page-title">Thêm Banner</h2>
+        <p class="page-sub">Điền thông tin để tạo banner mới</p>
+    </div>
+
+    <form asp-action="CreateBanner" method="post" enctype="multipart/form-data" id="createForm">
+        @Html.AntiForgeryToken()
+
+        <div class="form-grid">
+
+            <!-- Title -->
+            <div class="field full">
+                <div class="field-header">
+                    <label>Tiêu đề</label>
+                </div>
+                <input asp-for="Title" placeholder="VD: Khuyến mãi tháng 3..." />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <!-- Link -->
+            <div class="field full">
+                <div class="field-header">
+                    <label>Link</label>
+                </div>
+                <input asp-for="Link" placeholder="https://..." />
+                <span asp-validation-for="Link" class="text-danger"></span>
+            </div>
+
+            <!-- IMAGE -->
+            <div class="field full">
+                <div class="field-header">
+                    <label>Ảnh banner</label>
+                </div>
+
+                <div class="img-tabs">
+                    <button type="button" class="img-tab active" onclick="switchTab('url', this)">🔗 URL</button>
+                    <button type="button" class="img-tab" onclick="switchTab('file', this)">📁 Tải lên</button>
+                </div>
+
+                <!-- URL -->
+                <div id="tab-url">
+                    <input asp-for="ImageUrl"
+                           id="imageUrlInput"
+                           placeholder="https://..."
+                           oninput="previewImage(this.value)" />
+                </div>
+
+                <!-- FILE -->
+                <div id="tab-file" style="display:none">
+                    <div class="upload-area" id="uploadArea">
+                        <span class="upload-icon">📁</span>
+                        <span class="upload-text">Kéo thả hoặc click để chọn ảnh</span>
+                        <span class="upload-sub">PNG, JPG, WEBP — tối đa 5MB</span>
+                    </div>
+
+                    <input type="file"
+                           name="imageFile"
+                           id="imageFileInput"
+                           accept="image/*"
+                           style="display:none" />
+                </div>
+
+                <!-- PREVIEW -->
+                <div class="img-preview-wrap" id="imgPreviewWrap">
+                    <img id="imgPreview" class="img-preview" />
+                    <button type="button" class="img-clear" onclick="clearImage()">✕</button>
+                </div>
+            </div>
+
+            <!-- ACTION -->
+            <div class="form-actions">
+                <button type="submit" class="btn-submit" id="submitBtn">+ Thêm banner</button>
+                <a asp-action="Index" class="btn-back">← Quay lại</a>
+            </div>
+        </div>
+    </form>
+</div>
+<script>
+    function switchTab(tab, btn) {
+        document.querySelectorAll('.img-tab').forEach(t => t.classList.remove('active'));
+        btn.classList.add('active');
+
+        document.getElementById('tab-url').style.display = tab === 'url' ? 'block' : 'none';
+        document.getElementById('tab-file').style.display = tab === 'file' ? 'block' : 'none';
+
+        clearImage();
+    }
+
+    function previewImage(url) {
+        const wrap = document.getElementById('imgPreviewWrap');
+        const img = document.getElementById('imgPreview');
+
+        if (url && url.trim()) {
+            img.src = url;
+            img.onload = () => wrap.classList.add('show');
+            img.onerror = () => wrap.classList.remove('show');
+        } else {
+            wrap.classList.remove('show');
+        }
+    }
+
+    function previewFile(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert("File không hợp lệ");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('imgPreview').src = e.target.result;
+            document.getElementById('imgPreviewWrap').classList.add('show');
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function clearImage() {
+        document.getElementById('imgPreview').src = '';
+        document.getElementById('imgPreviewWrap').classList.remove('show');
+
+        const url = document.getElementById('imageUrlInput');
+        if (url) url.value = '';
+
+        const file = document.getElementById('imageFileInput');
+        if (file) file.value = '';
+    }
+
+    // upload click
+    const uploadArea = document.getElementById('uploadArea');
+    const fileInput = document.getElementById('imageFileInput');
+
+    if (uploadArea) {
+        uploadArea.onclick = () => fileInput.click();
+
+        fileInput.addEventListener('change', function () {
+            previewFile(this);
+        });
+    }
+
+    // submit loading
+    document.getElementById('createForm').addEventListener('submit', function () {
+        const btn = document.getElementById('submitBtn');
+        btn.textContent = 'Đang lưu...';
+        btn.disabled = true;
+    });
+</script>
