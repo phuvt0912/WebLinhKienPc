@@ -1,101 +1,368 @@
 ﻿@model WebLinhKienPc.Models.Order
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+}
 
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
-<div class="container mt-4">
+<style>
+    .od-wrap {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 40px 32px;
+    }
 
-    <!-- HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Đơn hàng #@Model.OrderId</h3>
+    .od-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 28px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .od-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        color: #e8e8ff;
+        margin: 0 0 4px;
+    }
+
+    .od-title span { color: #a259ff; }
+
+    .od-date-sub {
+        font-family: 'Inter', sans-serif;
+        font-size: 14px;
+        color: #6a6a9a;
+    }
+
+    .status-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 7px 18px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+
+    .status-pending   { background:rgba(255,170,0,0.12);  color:#ffaa00; border:1px solid rgba(255,170,0,0.25); }
+    .status-shipping  { background:rgba(0,207,255,0.1);   color:#00cfff; border:1px solid rgba(0,207,255,0.25); }
+    .status-completed { background:rgba(76,223,138,0.1);  color:#4cdf8a; border:1px solid rgba(76,223,138,0.25); }
+    .status-cancelled { background:rgba(255,79,123,0.1);  color:#ff4f7b; border:1px solid rgba(255,79,123,0.25); }
+
+    /* Info grid */
+    .od-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 24px;
+    }
+
+    .od-card {
+        background: #12122a;
+        border: 1px solid rgba(162,89,255,0.15);
+        border-radius: 12px;
+        padding: 22px 26px;
+    }
+
+    .od-card-title {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: #a259ff;
+        letter-spacing: 0.8px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(162,89,255,0.1);
+    }
+
+    .od-row {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+        font-family: 'Inter', sans-serif;
+        font-size: 15px;
+    }
+
+    .od-row:last-child { margin-bottom: 0; }
+    .od-label { color: #6a6a9a; flex-shrink: 0; }
+    .od-value { color: #e8e8ff; font-weight: 500; text-align: right; }
+
+    /* Products */
+    .od-products {
+        background: #12122a;
+        border: 1px solid rgba(162,89,255,0.15);
+        border-radius: 12px;
+        overflow: hidden;
+        margin-bottom: 20px;
+    }
+
+    .od-products-title {
+        padding: 18px 24px;
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: #a259ff;
+        letter-spacing: 0.8px;
+        border-bottom: 1px solid rgba(162,89,255,0.15);
+        background: rgba(162,89,255,0.05);
+    }
+
+    .od-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: 'Inter', sans-serif;
+        font-size: 15px;
+    }
+
+    .od-table th {
+        padding: 13px 22px;
+        background: rgba(162,89,255,0.07);
+        color: #8888aa;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        border-bottom: 1px solid rgba(162,89,255,0.1);
+    }
+
+    .od-table td {
+        padding: 16px 22px;
+        color: #c0c0e0;
+        border-bottom: 1px solid rgba(255,255,255,0.04);
+        vertical-align: middle;
+    }
+
+    .od-table tr:last-child td { border-bottom: none; }
+    .od-table tr:hover td { background: rgba(162,89,255,0.03); }
+
+    .prod-img {
+        width: 52px; height: 52px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 1px solid rgba(162,89,255,0.15);
+    }
+
+    .prod-img-empty {
+        width: 52px; height: 52px;
+        border-radius: 8px;
+        background: #1a1a35;
+        border: 1px solid rgba(162,89,255,0.1);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 22px; color: #3a3a5a;
+    }
+
+    .prod-name { font-weight: 500; color: #e8e8ff; font-size: 15px; }
+    .prod-price { color: #a259ff; font-weight: 600; white-space: nowrap; font-size: 15px; }
+
+    .prod-qty {
+        display: inline-flex;
+        align-items: center; justify-content: center;
+        width: 34px; height: 34px;
+        background: rgba(162,89,255,0.1);
+        border: 1px solid rgba(162,89,255,0.2);
+        border-radius: 6px;
+        font-weight: 700; color: #e8e8ff;
+        font-size: 15px;
+    }
+
+    .prod-total {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 17px; font-weight: 700;
+        background: linear-gradient(135deg, #a259ff, #00cfff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        white-space: nowrap;
+    }
+
+    /* Summary */
+    .od-summary {
+        background: #12122a;
+        border: 1px solid rgba(162,89,255,0.15);
+        border-radius: 12px;
+        padding: 22px 26px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+
+    .od-summary-label {
+        font-family: 'Inter', sans-serif;
+        font-size: 15px;
+        color: #6a6a9a;
+    }
+
+    .od-summary-price {
+        font-family: 'Rajdhani', sans-serif;
+        font-size: 30px; font-weight: 700;
+        background: linear-gradient(135deg, #a259ff, #00cfff);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .btn-back {
+        font-family: 'Rajdhani', sans-serif;
+        font-weight: 600; font-size: 15px;
+        padding: 11px 24px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.1);
+        color: #6a6a9a;
+        text-decoration: none;
+        transition: all 0.2s;
+        display: inline-flex; align-items: center; gap: 6px;
+    }
+
+    .btn-back:hover {
+        border-color: rgba(162,89,255,0.3);
+        color: #c0c0e0;
+    }
+
+    @@media (max-width: 768px) {
+        .od-grid { grid-template-columns: 1fr; }
+        .od-wrap { padding: 24px 16px; }
+    }
+</style>
+
+<div class="od-wrap">
+
+    <!-- Header -->
+    <div class="od-header">
+        <div>
+            <h2 class="od-title">Đơn hàng <span>#@Model.OrderCode</span></h2>
+            <div class="od-date-sub">Đặt lúc @Model.OrderDate.ToString("HH:mm - dd/MM/yyyy")</div>
+        </div>
 
         @{
-            string statusClass = Model.Status switch
-            {
-                OrderStatus.Pending => "bg-secondary",
-                OrderStatus.Shipping => "bg-warning text-dark",
-                OrderStatus.Completed => "bg-success",
-                OrderStatus.Cancelled => "bg-danger",
-                _ => "bg-secondary"
+            string statusClass = Model.Status switch {
+                OrderStatus.Pending   => "status-pending",
+                OrderStatus.Shipping  => "status-shipping",
+                OrderStatus.Completed => "status-completed",
+                OrderStatus.Cancelled => "status-cancelled",
+                _ => "status-pending"
+            };
+            string statusLabel = Model.Status switch {
+                OrderStatus.Pending   => "⏳ Chờ xử lý",
+                OrderStatus.Shipping  => "🚚 Đang giao",
+                OrderStatus.Completed => "✅ Hoàn thành",
+                OrderStatus.Cancelled => "❌ Đã huỷ",
+                _ => Model.Status.ToString()
             };
         }
-
-        <span class="badge @statusClass px-3 py-2">
-            @Model.Status
-        </span>
+        <span class="status-badge @statusClass">@statusLabel</span>
     </div>
 
-    <!-- INFO GRID -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card p-3 shadow-sm">
-                <h5>Thông tin đơn hàng</h5>
-                <p><strong>Ngày đặt:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
-                <p><strong>Tổng tiền:</strong> @Model.TotalPrice.ToString("N0") ₫</p>
+    <!-- Info grid -->
+    <div class="od-grid">
+        <div class="od-card">
+            <div class="od-card-title">📋 Thông tin đơn hàng</div>
+            <div class="od-row">
+                <span class="od-label">Mã đơn</span>
+                <span class="od-value" style="color:#a259ff">#@Model.OrderCode</span>
+            </div>
+            <div class="od-row">
+                <span class="od-label">Ngày đặt</span>
+                <span class="od-value">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</span>
+            </div>
+            <div class="od-row">
+                <span class="od-label">Trạng thái</span>
+                <span class="od-value">
+                    <span class="status-badge @statusClass" style="font-size:12px;padding:4px 12px">@statusLabel</span>
+                </span>
+            </div>
+            <div class="od-row">
+                <span class="od-label">Tổng tiền</span>
+                <span class="od-value" style="font-family:'Rajdhani',sans-serif;font-size:20px;color:#4cdf8a">
+                    @Model.TotalPrice.ToString("N0") ₫
+                </span>
             </div>
         </div>
 
-        <div class="col-md-6">
-            <div class="card p-3 shadow-sm">
-                <h5>Khách hàng</h5>
-                <p><strong>Tên:</strong> @Model.Name</p>
-                <p><strong>SĐT:</strong> @Model.Phone</p>
-                <p><strong>Địa chỉ:</strong> @Model.Address</p>
+        <div class="od-card">
+            <div class="od-card-title">👤 Thông tin giao hàng</div>
+            <div class="od-row">
+                <span class="od-label">Họ tên</span>
+                <span class="od-value">@Model.Name</span>
+            </div>
+            <div class="od-row">
+                <span class="od-label">Số điện thoại</span>
+                <span class="od-value">@Model.Phone</span>
+            </div>
+            <div class="od-row">
+                <span class="od-label">Địa chỉ</span>
+                <span class="od-value" style="max-width:200px">@Model.Address</span>
             </div>
         </div>
     </div>
 
-    <!-- PRODUCT TABLE -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">Sản phẩm</h5>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table mb-0 align-middle">
-                <thead class="table-light">
+    <!-- Products -->
+    <div class="od-products">
+        <div class="od-products-title">🛒 Sản phẩm đã đặt</div>
+        <table class="od-table">
+            <thead>
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th>Đơn giá</th>
+                    <th style="text-align:center">SL</th>
+                    <th style="text-align:right">Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.OrderDetails)
+                {
                     <tr>
-                        <th>Sản phẩm</th>
-                        <th>Đơn giá</th>
-                        <th>SL</th>
-                        <th>Thành tiền</th>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:14px">
+                                @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
+                                {
+                                    <img src="@item.Product.ImageUrl" class="prod-img" alt="@item.Product.Name" />
+                                }
+                                else
+                                {
+                                    <div class="prod-img-empty">📷</div>
+                                }
+                                <a asp-controller="Product"
+                                   asp-action="Details"
+                                   asp-route-id="@item.ProductId"
+                                   class="prod-name"
+                                   style="text-decoration:none">
+                                    @item.Product?.Name
+                                </a>
+                            </div>
+                        </td>
+                        <td class="prod-price">@item.Price.ToString("N0") ₫</td>
+                        <td style="text-align:center">
+                            <span class="prod-qty">@item.Quantity</span>
+                        </td>
+                        <td style="text-align:right">
+                            <span class="prod-total">@((item.Price * item.Quantity).ToString("N0")) ₫</span>
+                        </td>
                     </tr>
-                </thead>
+                }
+            </tbody>
+        </table>
+    </div>
 
-                <tbody>
-                    @foreach (var item in Model.OrderDetails)
-                    {
-                        <tr>
-                            <td>
-                                <strong>@item.Product.Name</strong>
-                            </td>
-
-                            <td>
-                                @String.Format("{0:N0} đ", item.Price)
-                            </td>
-
-                            <td>
-                                @item.Quantity
-                            </td>
-
-                            <td class="text-success fw-bold">
-                                @String.Format("{0:N0} đ", item.Price * item.Quantity)
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+    <!-- Summary -->
+    <div class="od-summary">
+        <div>
+            <div class="od-summary-label">Tổng thanh toán</div>
+            <div style="font-size:13px;color:#6a6a9a;margin-top:3px;font-family:'Inter',sans-serif">
+                @Model.OrderDetails.Count() sản phẩm
+            </div>
         </div>
+        <div class="od-summary-price">@Model.TotalPrice.ToString("N0") ₫</div>
     </div>
 
-    <!-- TOTAL -->
-    <div class="card shadow-sm p-3 text-end">
-        <h4 class="text-success">
-            Tổng thanh toán: @Model.TotalPrice.ToString("N0") ₫
-        </h4>
-    </div>
-
-    <!-- ACTION -->
-    <div class="mt-3">
-        <a asp-action="Index" class="btn btn-secondary">← Quay lại</a>
-    </div>
+    <!-- Back -->
+    <a asp-action="Index" class="btn-back">← Quay lại đơn hàng</a>
 
 </div>
