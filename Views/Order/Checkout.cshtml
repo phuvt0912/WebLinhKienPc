@@ -431,6 +431,73 @@
     @@media (max-width: 768px) {
         /* ... */
     }
+    /* Shipping options */
+    .shipping-options {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .ship-option {
+        cursor: pointer;
+        display: block;
+    }
+
+        .ship-option input[type="radio"] {
+            display: none;
+        }
+
+    .ship-option-body {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 16px;
+        background: var(--dark-bg);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        transition: all 0.2s;
+    }
+
+    .ship-option:hover .ship-option-body {
+        border-color: rgba(162,89,255,0.4);
+        background: rgba(162,89,255,0.05);
+    }
+
+    .ship-option input:checked + .ship-option-body {
+        border-color: var(--primary);
+        background: rgba(162,89,255,0.08);
+        box-shadow: 0 0 0 2px rgba(162,89,255,0.2);
+    }
+
+    .ship-option-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .ship-icon {
+        font-size: 22px;
+    }
+
+    .ship-name {
+        font-family: var(--font-body);
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .ship-desc {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 2px;
+    }
+
+    .ship-price {
+        font-family: var(--font-display);
+        font-size: 16px;
+        font-weight: 700;
+        color: #00cfff;
+    }
 </style>
 
 <div class="checkout-wrap">
@@ -465,6 +532,56 @@
                     <label>📍 Địa chỉ giao hàng</label>
                     <input asp-for="Address" class="form-control" placeholder="Nhập địa chỉ chi tiết" />
                     <span asp-validation-for="Address" class="text-danger"></span>
+                </div>
+                <!-- Phương thức vận chuyển -->
+                <div class="form-group">
+                    <label>🚚 Phương thức vận chuyển</label>
+                    <div class="shipping-options">
+                        <label class="ship-option" id="opt-standard">
+                            <input type="radio" name="ShippingMethod" value="standard"
+                                   checked onchange="updateShipping(this)" />
+                            <div class="ship-option-body">
+                                <div class="ship-option-left">
+                                    <span class="ship-icon">📦</span>
+                                    <div>
+                                        <div class="ship-name">Bình thường</div>
+                                        <div class="ship-desc">3-5 ngày làm việc</div>
+                                    </div>
+                                </div>
+                                <span class="ship-price">30.000 đ</span>
+                            </div>
+                        </label>
+
+                        <label class="ship-option" id="opt-express">
+                            <input type="radio" name="ShippingMethod" value="express"
+                                   onchange="updateShipping(this)" />
+                            <div class="ship-option-body">
+                                <div class="ship-option-left">
+                                    <span class="ship-icon">⚡</span>
+                                    <div>
+                                        <div class="ship-name">Giao nhanh</div>
+                                        <div class="ship-desc">1-2 ngày làm việc</div>
+                                    </div>
+                                </div>
+                                <span class="ship-price">50.000 đ</span>
+                            </div>
+                        </label>
+
+                        <label class="ship-option" id="opt-sameday">
+                            <input type="radio" name="ShippingMethod" value="sameday"
+                                   onchange="updateShipping(this)" />
+                            <div class="ship-option-body">
+                                <div class="ship-option-left">
+                                    <span class="ship-icon">🔥</span>
+                                    <div>
+                                        <div class="ship-name">Hỏa tốc</div>
+                                        <div class="ship-desc">Giao trong ngày</div>
+                                    </div>
+                                </div>
+                                <span class="ship-price">100.000 đ</span>
+                            </div>
+                        </label>
+                    </div>
                 </div>
 
                 @if (Model.CartItems != null && Model.CartItems.Any())
@@ -516,15 +633,19 @@
                 <div class="cart-summary">
                     <div class="summary-row">
                         <span class="summary-label">Tạm tính</span>
-                        <span class="summary-value">@String.Format("{0:N0} đ", Model.CartItems.Sum(x => (x.Product?.Price ?? 0) * x.Quantity))</span>
+                        <span class="summary-value" id="subTotalDisplay">
+                            @String.Format("{0:N0} đ", Model.CartItems.Sum(x => (x.Product?.Price ?? 0) * x.Quantity))
+                        </span>
                     </div>
                     <div class="summary-row">
                         <span class="summary-label">Phí vận chuyển</span>
-                        <span class="summary-value">0 đ</span>
+                        <span class="summary-value" style="color:#00cfff" id="shippingDisplay">30.000 đ</span>
                     </div>
                     <div class="summary-row total">
                         <span class="summary-label">Tổng cộng</span>
-                        <span class="summary-value">@String.Format("{0:N0} đ", Model.CartItems.Sum(x => (x.Product?.Price ?? 0) * x.Quantity))</span>
+                        <span class="summary-value" id="totalDisplay">
+                            @String.Format("{0:N0} đ", Model.CartItems.Sum(x => (x.Product?.Price ?? 0) * x.Quantity) + 30000)
+                        </span>
                     </div>
                 </div>
             }
@@ -539,7 +660,25 @@
         </div>
     </div>
 </div>
+<script>
+    const subTotal = @Model.CartItems.Sum(x => (x.Product?.Price ?? 0) * x.Quantity);
+    const fees = { standard: 30000, express: 50000, sameday: 100000 };
 
+    function updateShipping(radio) {
+        const fee   = fees[radio.value] || 30000;
+        const total = subTotal + fee;
+
+        document.getElementById('shippingDisplay').textContent =
+            fee.toLocaleString('vi-VN') + ' đ';
+        document.getElementById('totalDisplay').textContent =
+            total.toLocaleString('vi-VN') + ' đ';
+
+        // Highlight option đang chọn
+        document.querySelectorAll('.ship-option').forEach(el => {
+            el.querySelector('.ship-option-body').style.borderColor = '';
+        });
+    }
+</script>
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
