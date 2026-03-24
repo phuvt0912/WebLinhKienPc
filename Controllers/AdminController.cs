@@ -35,12 +35,13 @@ namespace WebLinhKienPc.Controllers
             ViewBag.PendingCount = await _context.Orders
                 .CountAsync(o => o.Status == OrderStatus.Pending);
 
-            // Sản phẩm sắp hết hàng (stock <= 5)
+            // Sửa LowStockCount - đếm cả hết hàng
             ViewBag.LowStockCount = await _context.Products
-                .CountAsync(p => p.Stock <= 5 && p.Stock > 0);
+                .CountAsync(p => p.Stock <= 5); // ← bỏ && p.Stock > 0
 
+            // Sửa LowStockProducts - lấy cả hết hàng
             ViewBag.LowStockProducts = await _context.Products
-                .Where(p => p.Stock <= 5 && p.Stock > 0)
+                .Where(p => p.Stock <= 5) // ← bỏ && p.Stock > 0
                 .OrderBy(p => p.Stock)
                 .Take(5)
                 .Select(p => new { p.Name, p.Stock, p.ImageUrl })
@@ -49,7 +50,7 @@ namespace WebLinhKienPc.Controllers
             // Top 10 sản phẩm bán chạy - CHỈ tính đơn Completed
             ViewBag.TopProducts = await _context.OrderDetails
                 .Include(od => od.Product)
-                .Where(od => od.Order.Status == OrderStatus.Completed) // ← thêm dòng này
+                .Where(od => od.Order.Status == OrderStatus.Completed)
                 .GroupBy(od => new { od.ProductId, od.Product.Name, od.Product.ImageUrl })
                 .Select(g => new {
                     g.Key.ProductId,

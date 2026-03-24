@@ -10,7 +10,11 @@
 <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
 
 <style>
-    .dash-wrap { padding: 32px 40px; max-width: 1400px; }
+    .dash-wrap {
+    padding: 32px 40px;
+    max-width: 100%;
+    box-sizing: border-box;
+}
 
 .page-title {
     font-family: 'Rajdhani', sans-serif;
@@ -229,6 +233,16 @@
     padding: 4px 12px; border-radius: 6px;
     white-space: nowrap; flex-shrink: 0;
 }
+.stock-0 {
+    background: rgba(255,79,123,0.15);
+    color: #ff4f7b;
+    border: 1px solid rgba(255,79,123,0.35);
+}
+
+.out-of-stock {
+    background: rgba(255,79,123,0.04);
+    border-color: rgba(255,79,123,0.15);
+}
 
 .stock-1 { background: rgba(255,79,123,0.12); color: #ff4f7b; border: 1px solid rgba(255,79,123,0.25); }
 .stock-3 { background: rgba(255,140,0,0.12);  color: #ff8c00; border: 1px solid rgba(255,140,0,0.25); }
@@ -392,7 +406,7 @@
         <div class="dash-card">
             <div class="dash-card-hdr">
                 <span class="dash-card-title">⚠️ Sản phẩm sắp hết hàng</span>
-                <span style="font-size:12px;color:#6a6a9a;font-family:'Inter',sans-serif">Stock ≤ 5</span>
+                <span style="font-size:12px;color:#6a6a9a;font-family:'Inter',sans-serif">Stock ≤ 5 + Hết hàng</span>
             </div>
             <div class="dash-card-body">
                 @if (lowStockProds.Any())
@@ -401,8 +415,10 @@
                         @foreach (var p in lowStockProds)
                         {
                             int stock = (int)p.Stock;
-                            string sc = stock <= 1 ? "stock-1" : stock <= 3 ? "stock-3" : "stock-5";
-                            <div class="low-item">
+                            string sc = stock == 0 ? "stock-0" : stock <= 1 ? "stock-1" : stock <= 3 ? "stock-3" : "stock-5";
+                            string stockLabel = stock == 0 ? "Hết hàng" : $"Còn {stock}";
+
+                            <div class="low-item @(stock == 0 ? "out-of-stock" : "")">
                                 @if (!string.IsNullOrEmpty((string)p.ImageUrl))
                                 {
                                     <img src="@p.ImageUrl" class="prod-thumb" alt="" />
@@ -412,7 +428,7 @@
                                     <div class="prod-thumb-empty">📷</div>
                                 }
                                 <span class="low-name">@p.Name</span>
-                                <span class="low-stock-badge @sc">Còn @stock</span>
+                                <span class="low-stock-badge @sc">@stockLabel</span>
                             </div>
                         }
                     </div>
