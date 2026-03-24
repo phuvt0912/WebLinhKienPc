@@ -107,7 +107,7 @@ namespace WebLinhKienPc.Controllers
 		}
 
         [HttpPost]
-        public IActionResult PreCheckout(string Name, string Phone, string Address)
+        public IActionResult PreCheckout(string Name, string Phone, string Address, string ShippingMethod)
         {
             var userId = _userManager.GetUserId(User);
             var cart = _context.Carts
@@ -118,14 +118,18 @@ namespace WebLinhKienPc.Controllers
             if (cart == null || !cart.CartItems.Any())
                 return RedirectToAction("Index", "Cart");
 
-            decimal totalPrice = cart.CartItems.Sum(i => i.Product.Price * i.Quantity);
+            decimal shippingFee = CheckoutViewModel.GetShippingFee(ShippingMethod);
+            decimal subTotal = cart.CartItems.Sum(i => i.Product.Price * i.Quantity);
+            decimal totalPrice = subTotal + shippingFee;
 
-            // Lưu thông tin đơn tạm vào Session
             var pending = new
             {
                 Name,
                 Phone,
                 Address,
+                ShippingMethod,
+                ShippingFee = shippingFee,
+                SubTotal = subTotal,
                 TotalPrice = totalPrice
             };
             HttpContext.Session.SetString("PendingOrder", JsonSerializer.Serialize(pending));
@@ -133,12 +137,15 @@ namespace WebLinhKienPc.Controllers
             ViewBag.Name = Name;
             ViewBag.Phone = Phone;
             ViewBag.Address = Address;
+            ViewBag.ShippingMethod = ShippingMethod;
+            ViewBag.ShippingLabel = CheckoutViewModel.GetShippingLabel(ShippingMethod);
+            ViewBag.ShippingFee = shippingFee;
+            ViewBag.SubTotal = subTotal;
             ViewBag.Total = totalPrice;
 
             return View("PaymentConfirm");
         }
 
-        // Action xác nhận thanh toán thành công
         [HttpPost]
         public IActionResult ConfirmPayment()
         {
@@ -157,7 +164,8 @@ namespace WebLinhKienPc.Controllers
 
             if (cart == null) return RedirectToAction("Index", "Cart");
 
-            decimal totalPrice = cart.CartItems.Sum(i => i.Product.Price * i.Quantity);
+            // Lấy totalPrice từ session (đã bao gồm phí ship)
+            decimal totalPrice = pending.GetProperty("TotalPrice").GetDecimal();
 
             var order = new Order
             {
