@@ -11,40 +11,37 @@ namespace WebLinhKienPc.Controllers
 	{
 		ApplicationDbContext _context;
 		public HomeController(ApplicationDbContext context) { _context = context; }
-        public IActionResult Index()
+		public IActionResult Index()
 		{
-            var vm = new HomeViewModel
-            {
-                HotProducts = _context.Products
-         .OrderByDescending(p => p.Sold)
-         .Take(7)
-         .ToList(),
+			var categories = _context.Categories
+				.Include(c => c.Products)
+				.ToList();
 
-                NewProducts = _context.Products
-         .OrderByDescending(p => p.ProductId)
-         .Take(5)
-         .ToList(),
+			var model = new HomeViewModel
+			{
+				HotProducts = _context.Products
+					.OrderByDescending(p => p.ProductId)
+					.Take(10)
+					.ToList(),
 
-                LapsProducts = _context.Products
-         .Where(p => p.Category.Name == "Laptop")
-         .Take(5)
-         .ToList(),
+				NewProducts = _context.Products
+					.OrderByDescending(p => p.CreatedDate)
+					.Take(10)
+					.ToList(),
 
-                Accsessories = _context.Products
-         .Where(p => p.Category.Name == "Phụ kiện")
-         .Take(5)
-         .ToList(),
+				Categories = categories.Select(c => new CategoryWithProducts
+				{
+					CategoryName = c.Name,
+					Products = c.Products.ToList()
+				}).ToList(),
 
-                Phones = _context.Products
-         .Where(p => p.Category.Name == "Điện thoại")
-         .Take(5)
-         .ToList()
-            };
+				Banners = _context.Banners.ToList() // 👈 lấy banner
+			};
 
-            return View(vm);
-        }
+			return View(model);
+		}
 
-        public IActionResult Privacy()
+		public IActionResult Privacy()
 		{
 			return View();
 		}

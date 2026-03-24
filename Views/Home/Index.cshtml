@@ -3,27 +3,46 @@
 }
 
 @model WebLinhKienPc.ViewModels.HomeViewModel
+
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 <script src="/js/site.js"></script>
 
 <div class="container mt-4">
+    <!-- ================= BANNER ================= -->
+    <div class="banner-section mb-4">
+        <div class="swiper bannerSwiper">
+            <div class="swiper-wrapper">
 
-    <div class="hot-section p-3 rounded-3">
+                @foreach (var banner in Model.Banners)
+                {
+                    <div class="swiper-slide">
+                        <a href="@banner.Link">
+                            <img src="@banner.ImageUrl" class="w-100 rounded-3" style="height:300px; object-fit:cover;" />
+                        </a>
+                    </div>
+                }
 
-            <!-- HEADER -->
-            <div class="hot-header d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0"> Sản phẩm hot</h5>
-                <a href="#" class="view-all">Xem tất cả</a>
             </div>
 
-            <!-- PRODUCT LIST -->
-            <div class="slider-wrap">
+            <!-- pagination -->
+            <div class="swiper-pagination"></div>
+        </div>
+    </div>
+    <div class="hot-section p-3 rounded-3">
 
-        <button class="slider-btn prev">‹</button>
+        <!-- HEADER -->
+        <div class="hot-header d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0"> Sản phẩm hot</h5>
+            <a href="#" class="view-all">Xem tất cả</a>
+        </div>
+
+        <!-- SLIDER -->
+        <div class="slider-wrap">
+
+            <button class="slider-btn prev">‹</button>
 
             <div class="slider-viewport">
-
                 <div class="slider-track">
                     @foreach (var product in Model.HotProducts)
                     {
@@ -55,53 +74,24 @@
         </div>
 
     </div>
-    <div class="hot-section p-3 rounded-3 mt-4">
 
-        <div class="hot-header d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0"> Laptop</h5>
-            <a href="#" class="view-all">Xem tất cả</a>
+    @foreach (var cate in Model.Categories)
+    {
+        <div class="hot-section p-3 rounded-3 mt-4">
+
+            <div class="hot-header d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">@cate.CategoryName</h5>
+                <a href="#" class="view-all">Xem tất cả</a>
+            </div>
+
+            <div class="product-list">
+                @foreach (var product in cate.Products)
+                {
+                    <partial name="_ProductCard" model="product" />
+                }
+            </div>
+
         </div>
+    }
 
-        <div class="product-list">
-            @foreach (var product in Model.LapsProducts)
-            {
-                <partial name="_ProductCard" model="product" />
-            }
-        </div>
-
-    </div>
-
-
-    <div class="hot-section p-3 rounded-3 mt-4">
-
-        <div class="hot-header d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0"> Điện thoại</h5>
-            <a href="#" class="view-all">Xem tất cả</a>
-        </div>
-
-        <div class="product-list">
-            @foreach (var product in Model.Phones)
-            {
-                <partial name="_ProductCard" model="product" />
-            }
-        </div>
-
-    </div>
-
-
-    <div class="hot-section p-3 rounded-3 mt-4">
-
-        <div class="hot-header d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0"> Phụ kiện</h5>
-            <a href="#" class="view-all">Xem tất cả</a>
-        </div>
-
-        <div class="product-list">
-            @foreach (var product in Model.Accsessories)
-            {
-                <partial name="_ProductCard" model="product" />
-            }
-        </div>
-
-    </div>
 </div>
