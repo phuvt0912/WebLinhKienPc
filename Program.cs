@@ -18,6 +18,10 @@ namespace WebLinhKienPc
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
+            builder.Services.AddSession(options => {
+                options.IdleTimeout = TimeSpan.FromMinutes(10);
+            });
+
             builder.Services.AddAuthentication()
                 .AddGoogle(options =>
                 {
@@ -71,7 +75,8 @@ namespace WebLinhKienPc
             app.UseHttpsRedirection();
             app.UseRouting();
 
-            app.UseAuthentication(); // ← phải có trước UseAuthorization
+            app.UseAuthentication();
+            app.UseSession();
             app.UseAuthorization();
 
             app.MapStaticAssets();

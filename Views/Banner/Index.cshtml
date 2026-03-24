@@ -1,0 +1,149 @@
+﻿@using WebLinhKienPc.ViewModels
+@model BannerViewModel
+
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="~/css/Banner/Index.css" />
+
+<div class="page-wrap">
+    <div class="page-header">
+        <h2 class="page-title">Quản Lý Banner</h2>
+        <a class="btn-add" asp-action="CreateBanner">+ Thêm banner</a>
+    </div>
+
+    <div class="total-count">
+        Tổng cộng <span>@Model.Banners.Count()</span> banner
+    </div>
+
+    <!-- Filter -->
+    <form method="get">
+        <div class="filter-bar">
+            <input class="filter-input"
+                   name="keyword"
+                   value="@Model.Keyword"
+                   placeholder="Tìm tiêu đề banner..." />
+
+            <button type="submit" class="btn-filter">🔍 Lọc</button>
+
+            @if (!string.IsNullOrEmpty(Model.Keyword))
+            {
+                <a asp-action="Index" class="btn-filter btn-clear">✕ Xoá lọc</a>
+            }
+        </div>
+    </form>
+
+    <!-- Table -->
+    <table class="banner-table">
+        <thead>
+            <tr>
+                <th>Ảnh</th>
+                <th>Tiêu đề</th>
+                <th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (!Model.Banners.Any())
+            {
+                <tr>
+                    <td colspan="5">
+                        <div class="empty-state">
+                            📷 Chưa có banner nào
+                        </div>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                @foreach (var b in Model.Banners)
+                {
+                    <tr>
+
+                        <td>
+                            @if (!string.IsNullOrEmpty(b.ImageUrl))
+                            {
+                                <img src="@b.ImageUrl" class="banner-img" />
+                            }
+                            else
+                            {
+                                <div class="banner-img-empty">📷</div>
+                            }
+                        </td>
+
+                        <td>
+                            <span class="banner-title" title="@b.Title">@b.Title</span>
+                        </td>
+
+                        <td>
+                            <div class="action-wrap">
+                                <a class="btn-edit"
+                                       asp-action="EditBanner"
+                                       asp-route-id="@b.Id">
+                                    ✏️ Sửa
+                                </a>
+
+                                <form asp-action="DeleteBanner"
+                                      method="post"
+                                      id="form-@b.Id"
+                                      style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@b.Id" />
+
+                                    <button type="button"
+                                            class="btn-delete"
+                                            onclick="confirmDelete(@b.Id, '@b.Title')">
+                                        🗑️ Xoá
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+        <div class="modal-icon">🗑️</div>
+        <div class="modal-title">Xác nhận xoá</div>
+        <div class="modal-msg">
+            Bạn có chắc muốn xoá banner<br>
+            <span class="modal-name" id="modalName"></span>?
+        </div>
+        <div class="modal-note">Hành động này không thể hoàn tác.</div>
+        <div class="modal-actions">
+            <button class="modal-btn-cancel" onclick="closeModal()">Huỷ</button>
+            <button class="modal-btn-confirm" onclick="submitDelete()">Xoá</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let currentFormId = null;
+
+    function confirmDelete(id, name) {
+        currentFormId = id;
+        document.getElementById('modalName').textContent = name;
+        document.getElementById('modalOverlay').classList.add('show');
+    }
+
+    function closeModal() {
+        document.getElementById('modalOverlay').classList.remove('show');
+        currentFormId = null;
+    }
+
+    function submitDelete() {
+        if (currentFormId) {
+            document.getElementById('form-' + currentFormId).submit();
+        }
+    }
+
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
+    });
+</script>
