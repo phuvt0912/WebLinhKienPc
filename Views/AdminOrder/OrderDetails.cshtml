@@ -1,105 +1,198 @@
 ﻿@model WebLinhKienPc.Models.Order
-
 @{
     ViewData["Title"] = "Chi tiết đơn hàng";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 }
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">                
-<div class="container mt-4">
 
-    <!-- HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Đơn hàng #@Model.OrderCode</h3>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="~/css/AdminOrder/OrderDetails.css" />
+
+<div class="od-wrap">
+    @if (TempData["Success"] != null)
+    {
+        <div class="od-toast success" id="toast">✅ @TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="od-toast error" id="toast">❌ @TempData["Error"]</div>
+    }
+    
+    <!-- Header -->
+    <div class="od-header">
+        <div>
+            <h2 class="od-title">Đơn hàng <span>#@Model.OrderCode</span></h2>
+            <div style="font-family:'Inter',sans-serif;font-size:13px;color:#6a6a9a;margin-top:4px">
+                Đặt lúc @Model.OrderDate.ToString("HH:mm - dd/MM/yyyy")
+            </div>
+        </div>
 
         @{
             string statusClass = Model.Status switch
             {
-                OrderStatus.Pending => "bg-secondary",
-                OrderStatus.Shipping => "bg-warning text-dark",
-                OrderStatus.Completed => "bg-success",
-                OrderStatus.Cancelled => "bg-danger",
-                _ => "bg-secondary"
+                OrderStatus.Pending => "status-pending",
+                OrderStatus.Shipping => "status-shipping",
+                OrderStatus.Completed => "status-completed",
+                OrderStatus.Cancelled => "status-cancelled",
+                _ => "status-pending"
+            };
+            string statusLabel = Model.Status switch
+            {
+                OrderStatus.Pending => "⏳ Chờ xử lý",
+                OrderStatus.Shipping => "🚚 Đang giao",
+                OrderStatus.Completed => "✅ Hoàn thành",
+                OrderStatus.Cancelled => "❌ Đã huỷ",
+                _ => Model.Status.ToString()
             };
         }
-
-        <span class="badge @statusClass px-3 py-2">
-            @Model.Status
-        </span>
+        <span class="status-badge @statusClass">@statusLabel</span>
     </div>
 
-    <!-- INFO GRID -->
-    <div class="row mb-4">
-        <div class="col-md-6">
-            <div class="card p-3 shadow-sm">
-                <h5>Thông tin đơn hàng</h5>
-                <p><strong>Ngày đặt:</strong> @Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</p>
-                <p><strong>Tổng tiền:</strong> @Model.TotalPrice.ToString("N0") ₫</p>
+    <!-- Info grid -->
+    <div class="od-grid">
+        <div class="od-card">
+            <div class="od-card-title">📋 Thông tin đơn hàng</div>
+            <div class="od-row">
+                <span class="od-label">Mã đơn</span>
+                <span class="od-value" style="color:#a259ff">#@Model.OrderCode</span>
+            </div>
+            <div class="od-row">
+                <span class="od-label">Ngày đặt</span>
+                <span class="od-value">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</span>
+            </div>
+            <div class="od-row">
+                <span class="od-label">Trạng thái</span>
+                <span class="od-value">
+                    <span class="status-badge @statusClass" style="font-size:11px;padding:3px 10px">@statusLabel</span>
+                </span>
+            </div>
+            <div class="od-row">
+                <span class="od-label">Tổng tiền</span>
+                <span class="od-value" style="font-family:'Rajdhani',sans-serif;font-size:18px;color:#4cdf8a">
+                    @Model.TotalPrice.ToString("N0") ₫
+                </span>
             </div>
         </div>
 
-        <div class="col-md-6">
-            <div class="card p-3 shadow-sm">
-                <h5>Khách hàng</h5>
-                <p><strong>Tên:</strong> @Model.Name</p>
-                <p><strong>SĐT:</strong> @Model.Phone</p>
-                <p><strong>Địa chỉ:</strong> @Model.Address</p>
+        <div class="od-card">
+            <div class="od-card-title">👤 Thông tin khách hàng</div>
+            <div class="od-row">
+                <span class="od-label">Họ tên</span>
+                <span class="od-value">@Model.Name</span>
+            </div>
+            <div class="od-row">
+                <span class="od-label">Số điện thoại</span>
+                <span class="od-value">@Model.Phone</span>
+            </div>
+            <div class="od-row">
+                <span class="od-label">Địa chỉ</span>
+                <span class="od-value" style="max-width:220px">@Model.Address</span>
             </div>
         </div>
     </div>
 
-    <!-- PRODUCT TABLE -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-header">
-            <h5 class="mb-0">Sản phẩm</h5>
-        </div>
-
-        <div class="table-responsive">
-            <table class="table mb-0 align-middle">
-                <thead class="table-light">
+    <!-- Products -->
+    <div class="od-products">
+        <div class="od-products-title">🛒 Sản phẩm trong đơn</div>
+        <table class="od-table">
+            <thead>
+                <tr>
+                    <th>Sản phẩm</th>
+                    <th>Đơn giá</th>
+                    <th style="text-align:center">SL</th>
+                    <th style="text-align:right">Thành tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.OrderDetails)
+                {
                     <tr>
-                        <th>Sản phẩm</th>
-                        <th>Đơn giá</th>
-                        <th>SL</th>
-                        <th>Thành tiền</th>
+                        <td>
+                            <div style="display:flex;align-items:center;gap:12px">
+                                @if (!string.IsNullOrEmpty(item.Product?.ImageUrl))
+                                {
+                                    <img src="@item.Product.ImageUrl" class="prod-img" alt="@item.Product.Name" />
+                                }
+                                else
+                                {
+                                    <div class="prod-img-empty">📷</div>
+                                }
+                                <span class="prod-name">@item.Product?.Name</span>
+                            </div>
+                        </td>
+                        <td class="prod-price">@item.Price.ToString("N0") ₫</td>
+                        <td style="text-align:center">
+                            <span class="prod-qty">@item.Quantity</span>
+                        </td>
+                        <td style="text-align:right">
+                            <span class="prod-total">@((item.Price * item.Quantity).ToString("N0")) ₫</span>
+                        </td>
                     </tr>
-                </thead>
+                }
+            </tbody>
+        </table>
+    </div>
 
-                <tbody>
-                    @foreach (var item in Model.OrderDetails)
-                    {
-                        <tr>
-                            <td>
-                                <strong>@item.Product.Name</strong>
-                            </td>
+    <!-- Summary -->
+    <div class="od-summary">
+        <div>
+            <div class="od-summary-label">Tổng thanh toán</div>
+            <div style="font-family:'Inter',sans-serif;font-size:13px;color:#6a6a9a;margin-top:2px">
+                @Model.OrderDetails.Count() sản phẩm
+            </div>
+        </div>
+        <div class="od-summary-price">@Model.TotalPrice.ToString("N0") ₫</div>
+    </div>
 
-                            <td>
-                                @String.Format("{0:N0} đ", item.Price)
-                            </td>
+    <!-- Actions -->
+    <div class="od-actions">
+        <a asp-action="Index" class="btn-back">← Quay lại</a>
 
-                            <td>
-                                @item.Quantity
-                            </td>
+        @if (User.IsInRole("Admin"))
+        {
+            @if (Model.Status == OrderStatus.Pending)
+            {
+                <button type="button" class="btn-status btn-ship" onclick="updateOrderStatus(@Model.OrderId, 'Shipping')">
+                    🚚 Xác nhận giao hàng
+                </button>
+            }
 
-                            <td class="text-success fw-bold">
-                                @String.Format("{0:N0} đ", item.Price * item.Quantity)
-                            </td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
+            @if (Model.Status == OrderStatus.Shipping)
+            {
+                <button type="button" class="btn-status btn-done" onclick="updateOrderStatus(@Model.OrderId, 'Completed')">
+                    ✅ Hoàn thành
+                </button>
+            }
+
+            @if (Model.Status != OrderStatus.Completed && Model.Status != OrderStatus.Cancelled)
+            {
+                <form asp-action="CancelOrder" method="post" style="display:inline" id="cancelForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.OrderId" />
+                    <button type="button" class="btn-status btn-cancel" onclick="showCancelModal()">
+                        ❌ Hủy đơn
+                    </button>
+                </form>
+            }
+        }
+    </div>
+
+    <!-- Modal xác nhận hủy -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal()">
+        <div class="modal-box" onclick="event.stopPropagation()">
+            <div class="modal-icon">🗑️</div>
+            <div class="modal-title">Xác nhận hủy đơn</div>
+            <div class="modal-msg">
+                Bạn có chắc muốn hủy đơn hàng<br>
+                <span class="modal-name">#@Model.OrderCode - @Model.Name</span>?
+            </div>
+            <div class="modal-note">Hành động này không thể hoàn tác.</div>
+            <div class="modal-actions">
+                <button class="modal-btn-back" onclick="closeModal()">Quay lại</button>
+                <button class="modal-btn-confirm" onclick="submitCancelDetail()">Hủy đơn</button>
+            </div>
         </div>
     </div>
-
-    <!-- TOTAL -->
-    <div class="card shadow-sm p-3 text-end">
-        <h4 class="text-success">
-            Tổng thanh toán: @String.Format("{0:N0} đ", Model.TotalPrice)
-        </h4>
-    </div>
-
-    <!-- ACTION -->
-    <div class="mt-3">
-        <a asp-action="Index" class="btn btn-secondary">← Quay lại</a>
-    </div>
-
 </div>
+
+@Html.AntiForgeryToken()
+<script src="~/js/order-details.js"></script>
