@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebLinhKienPc.AppDbContext;
 
@@ -11,9 +12,11 @@ using WebLinhKienPc.AppDbContext;
 namespace WebLinhKienPc.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260325081331_AddContactTable")]
+    partial class AddContactTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -519,73 +522,6 @@ namespace WebLinhKienPc.Migrations
                     b.ToTable("ProductImages");
                 });
 
-            modelBuilder.Entity("WebLinhKienPc.Models.SiteAddress", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Branch")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("City")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("District")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("SiteInfoId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Street")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SiteInfoId");
-
-                    b.ToTable("Addresses");
-                });
-
-            modelBuilder.Entity("WebLinhKienPc.Models.SiteInfo", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("SiteURL")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Slogan")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("SiteInfos");
-                });
-
             modelBuilder.Entity("WebLinhKienPc.Models.StaffStatus", b =>
                 {
                     b.Property<string>("StaffId")
@@ -616,36 +552,6 @@ namespace WebLinhKienPc.Migrations
                     b.HasKey("UserId");
 
                     b.ToTable("UserProfiles");
-                });
-
-            modelBuilder.Entity("WebLinhKienPc.Models.WorkHour", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<TimeSpan>("CloseHour")
-                        .HasColumnType("time");
-
-                    b.Property<int>("EndDay")
-                        .HasColumnType("int");
-
-                    b.Property<TimeSpan>("OpenHour")
-                        .HasColumnType("time");
-
-                    b.Property<int>("SiteInfoId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("StartDay")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SiteInfoId");
-
-                    b.ToTable("WorkHours");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -759,28 +665,6 @@ namespace WebLinhKienPc.Migrations
                     b.Navigation("Product");
                 });
 
-            modelBuilder.Entity("WebLinhKienPc.Models.SiteAddress", b =>
-                {
-                    b.HasOne("WebLinhKienPc.Models.SiteInfo", "SiteInfo")
-                        .WithMany("Addresses")
-                        .HasForeignKey("SiteInfoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SiteInfo");
-                });
-
-            modelBuilder.Entity("WebLinhKienPc.Models.WorkHour", b =>
-                {
-                    b.HasOne("WebLinhKienPc.Models.SiteInfo", "SiteInfo")
-                        .WithMany("WorkHours")
-                        .HasForeignKey("SiteInfoId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("SiteInfo");
-                });
-
             modelBuilder.Entity("WebLinhKienPc.Models.Cart", b =>
                 {
                     b.Navigation("CartItems");
@@ -799,13 +683,6 @@ namespace WebLinhKienPc.Migrations
             modelBuilder.Entity("WebLinhKienPc.Models.Product", b =>
                 {
                     b.Navigation("Images");
-                });
-
-            modelBuilder.Entity("WebLinhKienPc.Models.SiteInfo", b =>
-                {
-                    b.Navigation("Addresses");
-
-                    b.Navigation("WorkHours");
                 });
 #pragma warning restore 612, 618
         }

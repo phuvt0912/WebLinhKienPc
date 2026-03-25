@@ -15,6 +15,12 @@ namespace WebLinhKienPc.AppDbContext
 		public DbSet<Category> Categories { get; set; }
 		public DbSet<ChatMessage> ChatMessages { get; set; }
 		public DbSet<Order> Orders { get; set; }
+		public DbSet<OrderDetail> OrderDetails{ get; set; }
+        public DbSet<ChatMessage> ChatMessages { get; set; }
+        public DbSet<StaffStatus> StaffStatuses { get; set; }
+        public DbSet<UserProfile> UserProfiles { get; set; }
+        public DbSet<Contact> Contacts { get; set; }
+    }
 		public DbSet<OrderDetail> OrderDetails { get; set; }
 		public DbSet<Product> Products { get; set; }
 		public DbSet<ProductImage> ProductImages { get; set; }
