@@ -584,6 +584,40 @@
                     </div>
                 </div>
 
+                <!-- Phương thức thanh toán -->
+                <div class="form-group">
+                    <label><i class="bi bi-wallet2 text-muted me-1"></i> Phương thức thanh toán</label>
+                    <div class="shipping-options">
+                        <label class="ship-option" id="pay-bank">
+                            <input type="radio" asp-for="PaymentMethod" value="QR" />
+                            <div class="ship-option-body">
+                                <div class="ship-option-left">
+                                    <span class="ship-icon"><i class="bi bi-bank text-primary"></i></span>
+                                    <div>
+                                        <div class="ship-name">Ngân hàng (QR Code)</div>
+                                        <div class="ship-desc">Quét mã QR để thanh toán</div>
+                                    </div>
+                                </div>
+                                <span class="ship-price">Tức thì</span>
+                            </div>
+                        </label>
+
+                        <label class="ship-option" id="pay-cash">
+                            <input type="radio" asp-for="PaymentMethod" value="CashOnDelivery" />
+                            <div class="ship-option-body">
+                                <div class="ship-option-left">
+                                    <span class="ship-icon"><i class="bi bi-cash-stack text-success"></i></span>
+                                    <div>
+                                        <div class="ship-name">Tiền mặt</div>
+                                        <div class="ship-desc">Thanh toán khi nhận hàng</div>
+                                    </div>
+                                </div>
+                                <span class="ship-price">Tại chỗ</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
                 @if (Model.CartItems != null && Model.CartItems.Any())
                 {
                     <button type="submit" class="btn-submit">

@@ -4,6 +4,8 @@ using System.Diagnostics;
 using WebLinhKienPc.AppDbContext;
 using WebLinhKienPc.Models;
 using WebLinhKienPc.ViewModels;
+using MimeKit;
+using MailKit.Net.Smtp;
 
 namespace WebLinhKienPc.Controllers
 {
@@ -89,29 +91,51 @@ namespace WebLinhKienPc.Controllers
 
         public IActionResult About()
         {
-            return View();
-        }
+			var siteinfo = _context.SiteInfos
+				.Include(x => x.Addresses)
+				.Include(x => x.WorkHours)
+				.FirstOrDefault();
+
+			var vm = new ContactViewModel
+			{
+				SiteInfo = siteinfo,
+				Contact = new Contact()
+			};
+
+			return View(vm);
+		}
 
         // GET: Trang liên hệ
         public IActionResult Contact()
         {
-            return View();
-        }
+			var siteinfo = _context.SiteInfos
+				.Include(x => x.Addresses)
+				.Include(x => x.WorkHours)
+				.FirstOrDefault();
 
-        // POST: Xử lý form liên hệ
+			var vm = new ContactViewModel
+			{
+				SiteInfo = siteinfo,
+				Contact = new Contact()
+			};
+
+			return View(vm);
+		}
+
+        // POST: Xử lý form liên hệ + gửi email xác nhận
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Contact(string Name, string Email, string Phone, string Message)
+        public async Task<IActionResult> Contact([Bind(Prefix = "Contact")] Contact contact)
         {
             // Kiểm tra dữ liệu đầu vào
-            if (string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Message))
+            if (contact == null || string.IsNullOrEmpty(contact.Name) || string.IsNullOrEmpty(contact.Email) || string.IsNullOrEmpty(contact.Message))
             {
                 TempData["Error"] = "Vui lòng điền đầy đủ thông tin bắt buộc (Họ tên, Email, Nội dung).";
                 return RedirectToAction("Contact");
             }
 
             // Kiểm tra email hợp lệ
-            if (!IsValidEmail(Email))
+            if (!IsValidEmail(contact.Email))
             {
                 TempData["Error"] = "Email không hợp lệ. Vui lòng nhập đúng định dạng email.";
                 return RedirectToAction("Contact");
@@ -119,27 +143,88 @@ namespace WebLinhKienPc.Controllers
 
             try
             {
-                var contact = new Contact
-                {
-                    Name = Name,
-                    Email = Email,
-                    Phone = Phone ?? string.Empty,
-                    Message = Message,
-                    CreatedAt = DateTime.Now,
-                    IsRead = false
-                };
+                // 1. Lưu vào database
+                contact.CreatedAt = DateTime.Now;
+                contact.IsRead = false;
 
                 _context.Contacts.Add(contact);
                 await _context.SaveChangesAsync();
 
-                TempData["Success"] = "Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất.";
+                // 2. Gửi email xác nhận cho khách hàng
+                await SendConfirmationEmail(contact.Email, contact.Name, contact.Message);
+
+                TempData["Success"] = "Cảm ơn bạn đã liên hệ! Chúng tôi đã gửi email xác nhận đến hộp thư của bạn.";
             }
             catch (Exception ex)
             {
                 TempData["Error"] = "Có lỗi xảy ra, vui lòng thử lại sau.";
+                // Ghi log lỗi nếu cần
+                Console.WriteLine($"Lỗi: {ex.Message}");
             }
 
             return RedirectToAction("Contact");
+        }
+
+        // Hàm gửi email xác nhận cho khách hàng
+        private async Task SendConfirmationEmail(string toEmail, string name, string message)
+        {
+            try
+            {
+                // Tạo email
+                var email = new MimeMessage();
+                email.From.Add(new MailboxAddress("Web Linh Kiện PC", "dominhtoan9467@gmail.com")); // THAY EMAIL CỦA BẠN
+                email.To.Add(new MailboxAddress(name, toEmail));
+                email.Subject = "Xác nhận liên hệ - Web Linh Kiện PC";
+
+                // Nội dung email HTML
+                var body = $@"
+                    <div style='font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #0a0a1a; color: #c0c0e0;'>
+                        <div style='text-align: center; border-bottom: 2px solid #a259ff; padding-bottom: 20px; margin-bottom: 20px;'>
+                            <h2 style='color: #c490ff;'>📧 XÁC NHẬN LIÊN HỆ</h2>
+                        </div>
+                        
+                        <p>Xin chào <strong style='color: #a259ff;'>{name}</strong>,</p>
+                        
+                        <p>Cảm ơn bạn đã liên hệ với <strong>Web Linh Kiện PC</strong>.</p>
+                        
+                        <p>Chúng tôi đã nhận được tin nhắn của bạn:</p>
+                        
+                        <div style='background: #12122a; padding: 15px; border-radius: 8px; border-left: 3px solid #a259ff; margin: 15px 0;'>
+                            <p style='margin: 0; color: #e8e8ff;'>{message}</p>
+                        </div>
+                        
+                        <p>Đội ngũ hỗ trợ sẽ phản hồi lại bạn trong thời gian sớm nhất (thường trong vòng 24 giờ).</p>
+                        
+                        <div style='margin-top: 20px; padding: 15px; background: #12122a; border-radius: 8px; text-align: center;'>
+                            <p style='margin: 0; color: #8a8aba; font-size: 12px;'>
+                                📞 Hotline: 0123 456 789<br>
+                                📧 Email: support@linhkienpc.com<br>
+                                🌐 Website: www.linhkienpc.com
+                            </p>
+                        </div>
+                        
+                        <p style='margin-top: 20px; font-size: 12px; color: #6a6a9a; text-align: center;'>
+                            Đây là email tự động, vui lòng không phản hồi email này.
+                        </p>
+                    </div>
+                ";
+
+                email.Body = new TextPart("html") { Text = body };
+
+                // Gửi email
+                using (var smtp = new SmtpClient())
+                {
+                    await smtp.ConnectAsync("smtp.gmail.com", 587, MailKit.Security.SecureSocketOptions.StartTls);
+                    await smtp.AuthenticateAsync("dominhtoan9467@gmail.com", "eliz jtwx abtj ojfd"); // THAY EMAIL VÀ MẬT KHẨU
+                    await smtp.SendAsync(email);
+                    await smtp.DisconnectAsync(true);
+                }
+            }
+            catch (Exception ex)
+            {
+                // Ghi log lỗi gửi email nhưng không ảnh hưởng đến việc lưu database
+                Console.WriteLine($"Lỗi gửi email: {ex.Message}");
+            }
         }
 
         // Helper: Kiểm tra email hợp lệ

@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
 namespace WebLinhKienPc.Models
 {
@@ -15,6 +15,15 @@ namespace WebLinhKienPc.Models
 
 		[Display(Name = "Đã hủy")]
 		Cancelled
+	}
+
+	public enum PaymentMethod
+	{
+		[Display(Name = "Thanh toán khi nhận hàng")]
+		CashOnDelivery,
+
+		[Display(Name = "QR Code / Chuyển khoản")]
+		QR
 	}
 	public class Order
 	{
@@ -35,6 +44,7 @@ namespace WebLinhKienPc.Models
 		public string Phone { get; set; }
 
 		public string Address { get; set; }
+		public PaymentMethod PaymentMethod { get; set; }
 
 		public ICollection<OrderDetail> OrderDetails { get; set; } = new List<OrderDetail>();
 

@@ -24,14 +24,27 @@
 		public int SiteInfoId { get; set; }
 		public SiteInfo? SiteInfo { get; set; }
 	}
-	public class SiteAddress 
+	public class SiteAddress
 	{
 		public int Id { get; set; }
-		public string Branch { get; set; }
-		public string City { get; set; }
-		public string District { get; set; }
-		public string Street { get; set; }
+
+		public string? Branch { get; set; }
+		public string? StreetNumber { get; set; }
+		public string? Street { get; set; }
+		public string? Ward { get; set; }
+		public string? District { get; set; }
+		public string? City { get; set; }
+
 		public int SiteInfoId { get; set; }
 		public SiteInfo? SiteInfo { get; set; }
+
+		public string FullAddress =>
+			string.Join(", ", new[]
+			{
+		$"{StreetNumber} {Street}".Trim(),
+		Ward,
+		District,
+		City
+			}.Where(x => !string.IsNullOrWhiteSpace(x)));
 	}
 }

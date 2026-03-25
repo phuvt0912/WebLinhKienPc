@@ -3,41 +3,44 @@
 
 // Write your JavaScript code.
 document.addEventListener('DOMContentLoaded', function () {
-    var swiper = new Swiper(".mySwiper", {
-        slidesPerView: "auto",
-        spaceBetween: 20,
-    });
+    // Initialize Swipers only if Swiper is loaded
+    if (typeof Swiper !== 'undefined') {
+        var swiper = new Swiper(".mySwiper", {
+            slidesPerView: "auto",
+            spaceBetween: 20,
+        });
 
-    var hotSwiper = new Swiper(".hotSwiper", {
-        slidesPerView: 2,
-        spaceBetween: 16,
-        loop: true,
-        autoplay: {
-            delay: 3000,
-            disableOnInteraction: false,
-        },
-        navigation: {
-            nextEl: ".hot-next",
-            prevEl: ".hot-prev",
-        },
-        breakpoints: {
-            576: { slidesPerView: 3, spaceBetween: 15 },
-            768: { slidesPerView: 4, spaceBetween: 20 },
-            992: { slidesPerView: 5, spaceBetween: 20 },
-            1200: { slidesPerView: 5, spaceBetween: 20 }
-        }
-    });
+        var hotSwiper = new Swiper(".hotSwiper", {
+            slidesPerView: 2,
+            spaceBetween: 16,
+            loop: true,
+            autoplay: {
+                delay: 3000,
+                disableOnInteraction: false,
+            },
+            navigation: {
+                nextEl: ".hot-next",
+                prevEl: ".hot-prev",
+            },
+            breakpoints: {
+                576: { slidesPerView: 3, spaceBetween: 15 },
+                768: { slidesPerView: 4, spaceBetween: 20 },
+                992: { slidesPerView: 5, spaceBetween: 20 },
+                1200: { slidesPerView: 5, spaceBetween: 20 }
+            }
+        });
 
-    var bannerSwiper = new Swiper(".bannerSwiper", {
-        loop: true,
-        autoplay: {
-            delay: 3000,
-        },
-        pagination: {
-            el: ".swiper-pagination",
-            clickable: true,
-        },
-    });
+        var bannerSwiper = new Swiper(".bannerSwiper", {
+            loop: true,
+            autoplay: {
+                delay: 3000,
+            },
+            pagination: {
+                el: ".swiper-pagination",
+                clickable: true,
+            },
+        });
+    }
 
     // === QUICK VIEW: Event Delegation (đọc dữ liệu từ data-attributes của thẻ cha .product-card) ===
     document.body.addEventListener('click', function (e) {

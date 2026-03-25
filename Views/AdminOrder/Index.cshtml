@@ -96,6 +96,7 @@
                     <th>Khách hàng</th>
                     <th>Tổng tiền</th>
                     <th class="center">Trạng thái</th>
+                    <th>Phương thức thanh toán</th>
                     <th>Ngày đặt</th>
                     <th class="center">Thao tác</th>
                 </tr>
@@ -163,6 +164,9 @@
                                     </select>
                                     <span class="status-badge @statusClass" style="display: none;">@statusLabel</span>
                                 </div>
+                            </td>
+                            <td class="ord-payment">
+                                @(item.PaymentMethod == PaymentMethod.CashOnDelivery ? "Thanh toán khi nhận hàng" : "QR Code / Chuyển khoản")
                             </td>
                             <td class="ord-date">
                                 @item.OrderDate.ToString("dd/MM/yyyy HH:mm")

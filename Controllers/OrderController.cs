@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebLinhKienPc.AppDbContext;
@@ -106,101 +106,121 @@ namespace WebLinhKienPc.Controllers
 			return "DH" + DateTime.Now.ToString("yyyyMMdd") + random.Next(1000, 9999);
 		}
 
-        [HttpPost]
-        public IActionResult PreCheckout(string Name, string Phone, string Address, string ShippingMethod)
-        {
-            var userId = _userManager.GetUserId(User);
-            var cart = _context.Carts
-                .Include(c => c.CartItems)
-                .ThenInclude(p => p.Product)
-                .FirstOrDefault(u => u.UserId == userId);
+		[HttpPost]
+		public IActionResult PreCheckout(string Name, string Phone, string Address, string ShippingMethod, PaymentMethod PaymentMethod)
+		{
+			var userId = _userManager.GetUserId(User);
+			var cart = _context.Carts
+				.Include(c => c.CartItems)
+				.ThenInclude(p => p.Product)
+				.FirstOrDefault(u => u.UserId == userId);
 
-            if (cart == null || !cart.CartItems.Any())
-                return RedirectToAction("Index", "Cart");
+			if (cart == null || !cart.CartItems.Any())
+				return RedirectToAction("Index", "Cart");
 
-            decimal shippingFee = CheckoutViewModel.GetShippingFee(ShippingMethod);
-            decimal subTotal = cart.CartItems.Sum(i => i.Product.Price * i.Quantity);
-            decimal totalPrice = subTotal + shippingFee;
+			decimal shippingFee = CheckoutViewModel.GetShippingFee(ShippingMethod);
+			decimal subTotal = cart.CartItems.Sum(i => i.Product.Price * i.Quantity);
+			decimal totalPrice = subTotal + shippingFee;
 
-            var pending = new
-            {
-                Name,
-                Phone,
-                Address,
-                ShippingMethod,
-                ShippingFee = shippingFee,
-                SubTotal = subTotal,
-                TotalPrice = totalPrice
-            };
-            HttpContext.Session.SetString("PendingOrder", JsonSerializer.Serialize(pending));
+			// Lưu session dạng string, parse lại dễ dàng
+			var pending = new
+			{
+				Name,
+				Phone,
+				Address,
+				ShippingMethod,
+				PaymentMethod = PaymentMethod.ToString(),
+				ShippingFee = shippingFee,
+				SubTotal = subTotal,
+				TotalPrice = totalPrice
+			};
+			HttpContext.Session.SetString("PendingOrder", JsonSerializer.Serialize(pending));
 
-            ViewBag.Name = Name;
-            ViewBag.Phone = Phone;
-            ViewBag.Address = Address;
-            ViewBag.ShippingMethod = ShippingMethod;
-            ViewBag.ShippingLabel = CheckoutViewModel.GetShippingLabel(ShippingMethod);
-            ViewBag.ShippingFee = shippingFee;
-            ViewBag.SubTotal = subTotal;
-            ViewBag.Total = totalPrice;
+			if (PaymentMethod == PaymentMethod.CashOnDelivery)
+			{
+				// Thanh toán tiền mặt thì tạo đơn ngay
+				return CreateOrderFromSession(userId);
+			}
 
-            return View("PaymentConfirm");
-        }
+			// Hiển thị xác nhận thanh toán online
+			ViewBag.Name = Name;
+			ViewBag.Phone = Phone;
+			ViewBag.Address = Address;
+			ViewBag.ShippingMethod = ShippingMethod;
+			ViewBag.ShippingLabel = CheckoutViewModel.GetShippingLabel(ShippingMethod);
+			ViewBag.ShippingFee = shippingFee;
+			ViewBag.SubTotal = subTotal;
+			ViewBag.Total = totalPrice;
 
-        [HttpPost]
+			return View("PaymentConfirm");
+		}
+
+
+		[HttpPost]
         public IActionResult ConfirmPayment()
         {
             var userId = _userManager.GetUserId(User);
-            var pendingJson = HttpContext.Session.GetString("PendingOrder");
-
-            if (string.IsNullOrEmpty(pendingJson))
-                return RedirectToAction("Index", "Cart");
-
-            var pending = JsonSerializer.Deserialize<JsonElement>(pendingJson);
-
-            var cart = _context.Carts
-                .Include(c => c.CartItems)
-                .ThenInclude(p => p.Product)
-                .FirstOrDefault(u => u.UserId == userId);
-
-            if (cart == null) return RedirectToAction("Index", "Cart");
-
-            // Lấy totalPrice từ session (đã bao gồm phí ship)
-            decimal totalPrice = pending.GetProperty("TotalPrice").GetDecimal();
-
-            var order = new Order
-            {
-                UserId = userId,
-                OrderCode = GenerateOrderCode(),
-                TotalPrice = totalPrice,
-                Name = pending.GetProperty("Name").GetString(),
-                Phone = pending.GetProperty("Phone").GetString(),
-                Address = pending.GetProperty("Address").GetString(),
-                OrderDetails = new List<OrderDetail>()
-            };
-
-            foreach (var item in cart.CartItems)
-            {
-                order.OrderDetails.Add(new OrderDetail
-                {
-                    ProductId = item.ProductId,
-                    Quantity = item.Quantity,
-                    Price = item.Product.Price
-                });
-                item.Product.Stock -= item.Quantity;
-                if (item.Product.Stock < 0) item.Product.Stock = 0;
-            }
-
-            _context.Orders.Add(order);
-            _context.CartItems.RemoveRange(cart.CartItems);
-            _context.SaveChanges();
-
-            HttpContext.Session.Remove("PendingOrder");
-            TempData["OrderSuccess"] = order.OrderCode;
-            return RedirectToAction("Index", "Order");
+            return CreateOrderFromSession(userId);
         }
 
-        // Action hủy - không đặt hàng
-        [HttpPost]
+		private IActionResult CreateOrderFromSession(string userId)
+		{
+			var pendingJson = HttpContext.Session.GetString("PendingOrder");
+
+			if (string.IsNullOrEmpty(pendingJson))
+				return RedirectToAction("Index", "Cart");
+
+			var pending = JsonSerializer.Deserialize<JsonElement>(pendingJson);
+
+			var cart = _context.Carts
+				.Include(c => c.CartItems)
+				.ThenInclude(p => p.Product)
+				.FirstOrDefault(u => u.UserId == userId);
+
+			if (cart == null) return RedirectToAction("Index", "Cart");
+
+			// Lấy PaymentMethod từ session (luôn parse từ string)
+			var paymentMethodStr = pending.GetProperty("PaymentMethod").GetString();
+			var paymentMethod = Enum.Parse<PaymentMethod>(paymentMethodStr);
+
+			var order = new Order
+			{
+				UserId = userId,
+				OrderCode = GenerateOrderCode(),
+				TotalPrice = pending.GetProperty("TotalPrice").GetDecimal(),
+				Name = pending.GetProperty("Name").GetString(),
+				Phone = pending.GetProperty("Phone").GetString(),
+				Address = pending.GetProperty("Address").GetString(),
+				PaymentMethod = paymentMethod,
+				OrderDetails = new List<OrderDetail>()
+			};
+
+			foreach (var item in cart.CartItems)
+			{
+				order.OrderDetails.Add(new OrderDetail
+				{
+					ProductId = item.ProductId,
+					Quantity = item.Quantity,
+					Price = item.Product.Price
+				});
+
+				// Trừ tồn kho
+				item.Product.Stock -= item.Quantity;
+				if (item.Product.Stock < 0) item.Product.Stock = 0;
+			}
+
+			_context.Orders.Add(order);
+			_context.CartItems.RemoveRange(cart.CartItems);
+			_context.SaveChanges();
+
+			HttpContext.Session.Remove("PendingOrder");
+			TempData["OrderSuccess"] = order.OrderCode;
+
+			return RedirectToAction("OrderDetails", "Order", new { id = order.OrderId });
+		}
+
+		// Action hủy - không đặt hàng
+		[HttpPost]
         public IActionResult CancelPayment()
         {
             HttpContext.Session.Remove("PendingOrder");

@@ -1,5 +1,6 @@
-﻿<footer class="border-top footer text-muted">
- 
+﻿@model WebLinhKienPc.Models.SiteInfo
+
+<footer class="border-top footer text-muted mt-5">
 
     <style>
             /* ===== TOP FOOTER ===== */
@@ -22,10 +23,12 @@
                 background: #0f172a;
                 border-radius: 16px;
                 padding: 20px;
-                transition: 0.3s;
+                transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
                 height: 100%;
                 border: 1px solid #1e293b;
                 color: #c7d2fe;
+                display: flex;
+                flex-direction: column;
             }
 
                 .showroom-card:hover {
@@ -45,6 +48,10 @@
                 margin: 4px 0;
                 font-size: 14px;
             }
+
+                .showroom-card p:last-child {
+                    margin-bottom: 0;
+                }
 
             /* ===== BOTTOM FOOTER ===== */
             .footer-bottom {
@@ -83,104 +90,99 @@
             }
     </style>
 
-    @model WebLinhKienPc.Models.SiteInfo
+    <!-- TOP FOOTER -->
+    <div class="footer-top">
+        <div class="container">
+            <h5>Hệ thống cửa hàng</h5>
 
-    <footer class="mt-5">
-
-        <!-- TOP -->
-        <div class="footer-top">
-            <div class="container">
-
-                <h5>Hệ thống cửa hàng</h5>
-
-                <div class="row g-4">
-
-                    @if (Model?.Addresses != null && Model.Addresses.Any())
+            <div class="row g-4 align-items-stretch justify-content-center">
+                @if (Model?.Addresses != null && Model.Addresses.Any())
+                {
+                    foreach (var addr in Model.Addresses)
                     {
-                        foreach (var addr in Model.Addresses)
-                        {
-                            <div class="col-md-6">
-                                <div class="showroom-card">
+                        <div class="col-md-6 col-lg-4 d-flex">
+                            <div class="showroom-card flex-fill">
 
-                                    <div class="showroom-title">
-                                        📍 @addr.Branch
-                                    </div>
-
-                                    <p>
-                                        @addr.Street, @addr.District, @addr.City
-                                    </p>
-
-                                    <p>📞 @Model.Phone</p>
-                                    <p>📧 @Model.Email</p>
-
-                                    @if (Model.WorkHours != null && Model.WorkHours.Any())
-                                    {
-                                        var wh = Model.WorkHours.First();
-
-                                        <p>
-                                            🕒 @wh.OpenHour.ToString(@"hh\:mm") -
-                                            @wh.CloseHour.ToString(@"hh\:mm")
-                                            (@ToVN(wh.StartDay) - @ToVN(wh.EndDay))
-                                        </p>
-                                    }
-
+                                <div class="showroom-title">
+                                    📍 @(addr.Branch ?? "")
                                 </div>
+
+                                <p>
+                                    @(
+                                        string.Join(" ", new[]
+                                        {
+                                            (!string.IsNullOrWhiteSpace(addr.StreetNumber) && !string.IsNullOrWhiteSpace(addr.Street))
+                                                ? $"{addr.StreetNumber} {addr.Street}" : null,
+                                            !string.IsNullOrWhiteSpace(addr.Ward) ? $"Phường {addr.Ward}" : null,
+                                            !string.IsNullOrWhiteSpace(addr.District) ? $"Quận {addr.District}" : null,
+                                            !string.IsNullOrWhiteSpace(addr.City) ? $"Thành phố {addr.City}" : null
+                                        }.Where(x => !string.IsNullOrWhiteSpace(x)))
+                                    )
+                                </p>
+
+                                <p>📞 @Model?.Phone</p>
+                                <p>📧 @Model?.Email</p>
+
+                                @if (Model.WorkHours != null && Model.WorkHours.Any())
+                                {
+                                    var wh = Model.WorkHours.First();
+                                    <p>
+                                        🕒 @wh.OpenHour.ToString(@"hh\:mm") - @wh.CloseHour.ToString(@"hh\:mm")
+                                        (@ToVN(wh.StartDay) - @ToVN(wh.EndDay))
+                                    </p>
+                                }
+
                             </div>
-                        }
-                    }
-                    else
-                    {
-                        <p style="text-align:center;">Chưa có dữ liệu chi nhánh</p>
-                    }
-
-                </div>
-
-            </div>
-        </div>
-
-        <!-- BOTTOM -->
-        <div class="footer-bottom">
-            <div class="container">
-
-                <div class="row">
-
-                    <!-- BRAND -->
-                    <div class="col-md-3">
-                        <div class="footer-brand">
-                            @Model?.Name
                         </div>
-                        <p>@Model?.Slogan</p>
-                    </div>
+                    }
+                }
+                else
+                {
+                    <p style="text-align:center; width:100%;">Chưa có dữ liệu chi nhánh</p>
+                }
+            </div>
+        </div>
+    </div>
 
-                    <!-- CONTACT -->
-                    <div class="col-md-3">
-                        <h6>Liên hệ</h6>
-                        <p>📞 @Model?.Phone</p>
-                        <p>📧 @Model?.Email</p>
-                        <p>🌐 @Model?.SiteURL</p>
-                    </div>
+    <!-- BOTTOM FOOTER -->
+    <div class="footer-bottom">
+        <div class="container">
+            <div class="row">
 
-                    <!-- SUPPORT -->
-                    <div class="col-md-3">
-                        <h6>Hỗ trợ</h6>
-                        <a href="#">Hướng dẫn mua hàng</a>
-                        <a href="#">Thanh toán</a>
-                        <a href="#">Bảo hành</a>
-                    </div>
+                <!-- BRAND -->
+                <div class="col-md-3">
+                    <div class="footer-brand">@Model?.Name</div>
+                    <p>@Model?.Slogan</p>
+                </div>
 
-                    <!-- POLICY -->
-                    <div class="col-md-3">
-                        <h6>Chính sách</h6>
-                        <a href="#">Bảo mật</a>
-                        <a href="#">Đổi trả</a>
-                        <a href="#">Điều khoản</a>
-                    </div>
+                <!-- CONTACT -->
+                <div class="col-md-3">
+                    <h6>Liên hệ</h6>
+                    <p>📞 @Model?.Phone</p>
+                    <p>📧 @Model?.Email</p>
+                    <p>🌐 @Model?.SiteURL</p>
+                </div>
 
+                <!-- SUPPORT -->
+                <div class="col-md-3">
+                    <h6>Hỗ trợ</h6>
+                    <a href="#">Hướng dẫn mua hàng</a>
+                    <a href="#">Thanh toán</a>
+                    <a href="#">Bảo hành</a>
+                </div>
+
+                <!-- POLICY -->
+                <div class="col-md-3">
+                    <h6>Chính sách</h6>
+                    <a href="#">Bảo mật</a>
+                    <a href="#">Đổi trả</a>
+                    <a href="#">Điều khoản</a>
                 </div>
 
             </div>
         </div>
-    </footer>
+    </div>
+</footer>
 
 @functions {
     public string ToVN(DayOfWeek d)
