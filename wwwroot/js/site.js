@@ -170,7 +170,7 @@ async function qvAddToCart() {
 
     const token = tokenEl.value;
     btn.disabled = true;
-    btn.innerHTML = '<span>⏳</span> Đang thêm...';
+    btn.innerHTML = '<i class="bi bi-hourglass-split me-1 fs-5"></i> Đang thêm...';
 
     try {
         const res = await fetch('/Cart/AddToCart', {
@@ -213,7 +213,7 @@ async function qvAddToCart() {
 
     setTimeout(() => {
         btn.disabled = false;
-        btn.innerHTML = '<span>🛒</span> Thêm giỏ hàng';
+        btn.innerHTML = '<i class="bi bi-cart-plus me-1 fs-5"></i> Thêm giỏ hàng';
     }, 1000);
 }
 
@@ -226,10 +226,13 @@ function showToast(title, msg, type = 'success') {
 
     const isSuccess = type === 'success';
     const borderColor = isSuccess ? 'rgba(76,223,138,0.3)' : 'rgba(255,79,123,0.3)';
+    const iconHtml = isSuccess 
+        ? '<i class="bi bi-check-circle-fill" style="color:#4cdf8a"></i>' 
+        : '<i class="bi bi-x-circle-fill" style="color:#ff4f7b"></i>';
     toast.style.borderColor = borderColor;
 
     toast.innerHTML = `
-        <span class="toast-icon">${isSuccess ? '✅' : '❌'}</span>
+        <span class="toast-icon">${iconHtml}</span>
         <div class="toast-content">
             <div class="toast-title ${isSuccess ? '' : 'error'}">${title}</div>
             <div class="toast-msg">${msg}</div>

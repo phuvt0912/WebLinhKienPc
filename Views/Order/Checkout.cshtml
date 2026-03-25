@@ -1,4 +1,4 @@
-﻿@using WebLinhKienPc.ViewModels;
+@using WebLinhKienPc.ViewModels;
 @model CheckoutViewModel
 
 @{
@@ -501,7 +501,7 @@
 </style>
 
 <div class="checkout-wrap">
-    <h2 class="checkout-title">🛒 Thanh toán</h2>
+    <h2 class="checkout-title"><i class="bi bi-credit-card-2-front me-2 text-warning"></i> Thanh toán</h2>
 
     <div asp-validation-summary="All" class="validation-summary-errors"></div>
 
@@ -509,7 +509,7 @@
         <!-- Form thông tin -->
         <div class="checkout-form-section">
             <div class="section-title">
-                <span>📝</span>
+                <i class="bi bi-card-text text-primary"></i>
                 <span>Thông tin nhận hàng</span>
             </div>
 
@@ -517,32 +517,32 @@
                 @Html.AntiForgeryToken()
 
                 <div class="form-group">
-                    <label>👤 Họ và tên</label>
+                    <label><i class="bi bi-person-fill text-muted me-1"></i> Họ và tên</label>
                     <input asp-for="Name" class="form-control" placeholder="Nhập họ tên của bạn" />
                     <span asp-validation-for="Name" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
-                    <label>📞 Số điện thoại</label>
+                    <label><i class="bi bi-telephone-fill text-muted me-1"></i> Số điện thoại</label>
                     <input asp-for="Phone" class="form-control" placeholder="VD: 0912345678" />
                     <span asp-validation-for="Phone" class="text-danger"></span>
                 </div>
 
                 <div class="form-group">
-                    <label>📍 Địa chỉ giao hàng</label>
+                    <label><i class="bi bi-geo-alt-fill text-muted me-1"></i> Địa chỉ giao hàng</label>
                     <input asp-for="Address" class="form-control" placeholder="Nhập địa chỉ chi tiết" />
                     <span asp-validation-for="Address" class="text-danger"></span>
                 </div>
                 <!-- Phương thức vận chuyển -->
                 <div class="form-group">
-                    <label>🚚 Phương thức vận chuyển</label>
+                    <label><i class="bi bi-truck text-muted me-1"></i> Phương thức vận chuyển</label>
                     <div class="shipping-options">
                         <label class="ship-option" id="opt-standard">
                             <input type="radio" name="ShippingMethod" value="standard"
                                    checked onchange="updateShipping(this)" />
                             <div class="ship-option-body">
                                 <div class="ship-option-left">
-                                    <span class="ship-icon">📦</span>
+                                    <span class="ship-icon"><i class="bi bi-box-seam text-info"></i></span>
                                     <div>
                                         <div class="ship-name">Bình thường</div>
                                         <div class="ship-desc">3-5 ngày làm việc</div>
@@ -557,7 +557,7 @@
                                    onchange="updateShipping(this)" />
                             <div class="ship-option-body">
                                 <div class="ship-option-left">
-                                    <span class="ship-icon">⚡</span>
+                                    <span class="ship-icon"><i class="bi bi-lightning-charge-fill text-warning"></i></span>
                                     <div>
                                         <div class="ship-name">Giao nhanh</div>
                                         <div class="ship-desc">1-2 ngày làm việc</div>
@@ -572,7 +572,7 @@
                                    onchange="updateShipping(this)" />
                             <div class="ship-option-body">
                                 <div class="ship-option-left">
-                                    <span class="ship-icon">🔥</span>
+                                    <span class="ship-icon"><i class="bi bi-fire text-danger"></i></span>
                                     <div>
                                         <div class="ship-name">Hỏa tốc</div>
                                         <div class="ship-desc">Giao trong ngày</div>
@@ -587,7 +587,7 @@
                 @if (Model.CartItems != null && Model.CartItems.Any())
                 {
                     <button type="submit" class="btn-submit">
-                        💳 Đặt hàng ngay
+                        <i class="bi bi-credit-card-fill me-2"></i> Đặt hàng ngay
                     </button>
                 }
             </form>
@@ -597,7 +597,7 @@
         <div class="checkout-cart-section">
             <div class="cart-header">
                 <div class="cart-header-title">
-                    <span>🛍️</span>
+                    <i class="bi bi-bag-check-fill text-success"></i>
                     <span>Giỏ hàng của bạn</span>
                 </div>
             </div>
@@ -614,7 +614,7 @@
                             }
                             else
                             {
-                                <div class="cart-item-img-empty">📷</div>
+                                <div class="cart-item-img-empty"><i class="bi bi-image"></i></div>
                             }
                             <div class="cart-item-info">
                                 <div class="cart-item-name">@item.Product?.Name</div>
@@ -652,7 +652,7 @@
             else
             {
                 <div class="empty-cart">
-                    <div class="empty-cart-icon">🛒</div>
+                    <div class="empty-cart-icon"><i class="bi bi-cart-x text-muted"></i></div>
                     <div class="empty-cart-text">Giỏ hàng của bạn đang trống</div>
                     <a href="/" class="btn-shop">Tiếp tục mua sắm</a>
                 </div>

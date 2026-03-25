@@ -1,4 +1,4 @@
-﻿@model WebLinhKienPc.Models.Order
+@model WebLinhKienPc.Models.Order
 @{
     ViewData["Title"] = "Chi tiết đơn hàng";
 }
@@ -250,20 +250,20 @@
                 _ => "status-pending"
             };
             string statusLabel = Model.Status switch {
-                OrderStatus.Pending   => "⏳ Chờ xử lý",
-                OrderStatus.Shipping  => "🚚 Đang giao",
-                OrderStatus.Completed => "✅ Hoàn thành",
-                OrderStatus.Cancelled => "❌ Đã huỷ",
+                OrderStatus.Pending   => "<i class='bi bi-hourglass-split me-1'></i> Chờ xử lý",
+                OrderStatus.Shipping  => "<i class='bi bi-truck me-1'></i> Đang giao",
+                OrderStatus.Completed => "<i class='bi bi-check-circle-fill me-1'></i> Hoàn thành",
+                OrderStatus.Cancelled => "<i class='bi bi-x-circle-fill me-1'></i> Đã huỷ",
                 _ => Model.Status.ToString()
             };
         }
-        <span class="status-badge @statusClass">@statusLabel</span>
+        <span class="status-badge @statusClass">@Html.Raw(statusLabel)</span>
     </div>
 
     <!-- Info grid -->
     <div class="od-grid">
         <div class="od-card">
-            <div class="od-card-title">📋 Thông tin đơn hàng</div>
+            <div class="od-card-title"><i class="bi bi-card-checklist me-2"></i> Thông tin đơn hàng</div>
             <div class="od-row">
                 <span class="od-label">Mã đơn</span>
                 <span class="od-value" style="color:#a259ff">#@Model.OrderCode</span>
@@ -275,7 +275,7 @@
             <div class="od-row">
                 <span class="od-label">Trạng thái</span>
                 <span class="od-value">
-                    <span class="status-badge @statusClass" style="font-size:12px;padding:4px 12px">@statusLabel</span>
+                    <span class="status-badge @statusClass" style="font-size:12px;padding:4px 12px">@Html.Raw(statusLabel)</span>
                 </span>
             </div>
             <div class="od-row">
@@ -287,7 +287,7 @@
         </div>
 
         <div class="od-card">
-            <div class="od-card-title">👤 Thông tin giao hàng</div>
+            <div class="od-card-title"><i class="bi bi-person-lines-fill me-2"></i> Thông tin giao hàng</div>
             <div class="od-row">
                 <span class="od-label">Họ tên</span>
                 <span class="od-value">@Model.Name</span>
@@ -305,7 +305,7 @@
 
     <!-- Products -->
     <div class="od-products">
-        <div class="od-products-title">🛒 Sản phẩm đã đặt</div>
+        <div class="od-products-title"><i class="bi bi-box-seam me-2"></i> Sản phẩm đã đặt</div>
         <table class="od-table">
             <thead>
                 <tr>
@@ -327,7 +327,7 @@
                                 }
                                 else
                                 {
-                                    <div class="prod-img-empty">📷</div>
+                                    <div class="prod-img-empty"><i class="bi bi-image"></i></div>
                                 }
                                 <a asp-controller="Product"
                                    asp-action="Details"

@@ -1,4 +1,4 @@
-﻿// order-details.js
+// order-details.js
 
 // Modal functions
 function showCancelModal() {

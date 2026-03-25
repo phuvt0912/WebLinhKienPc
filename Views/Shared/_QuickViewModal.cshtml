@@ -29,7 +29,7 @@
             <!-- Actions - ĐÃ SỬA CÂN ĐỐI -->
             <div class="qv-actions">
                 <button type="button" class="qv-btn-cart" id="qvAddToCartBtn" onclick="qvAddToCart()">
-                    <span>🛒</span> Thêm giỏ hàng
+                    <i class="bi bi-cart-plus me-1 fs-5"></i> Thêm giỏ hàng
                 </button>
 
                 <form id="qvBuyForm" method="post" action="/Cart/AddToCart" style="flex:1;display:flex;">
@@ -37,12 +37,12 @@
                     <input type="hidden" name="productId" id="qvBuyProductId" value="" />
                     <input type="hidden" name="quantity" id="qvBuyProductQty" value="1" />
                     <button type="submit" class="qv-btn-buy" id="qvBuyNowBtn">
-                        <span>⚡</span> Mua ngay
+                        <i class="bi bi-lightning-fill me-1 fs-5"></i> Mua ngay
                     </button>
                 </form>
 
                 <a id="qvBtnDetail" class="qv-btn-detail" href="#">
-                    <span>📄</span> Chi tiết
+                    <i class="bi bi-file-text me-1 fs-5"></i> Chi tiết
                 </a>
             </div>
         </div>

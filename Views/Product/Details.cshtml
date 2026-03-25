@@ -1,4 +1,4 @@
-﻿@model WebLinhKienPc.Models.Product
+@model WebLinhKienPc.Models.Product
 
 @{
     ViewData["Title"] = "Chi tiết sản phẩm";
@@ -512,7 +512,7 @@
             }
             else
             {
-                <div class="product-img-empty">📷</div>
+                <div class="product-img-empty"><i class="bi bi-image text-muted"></i></div>
             }
             @if (Model.Category != null)
             {
@@ -576,7 +576,7 @@
                                     if (!string.IsNullOrWhiteSpace(line))
                                     {
                                         <div class="desc-line">
-                                            <span class="desc-icon">✅</span>
+                                            <span class="desc-icon"><i class="bi bi-check-circle-fill text-success fs-6"></i></span>
                                             <span>@line.Trim()</span>
                                         </div>
                                     }
@@ -594,14 +594,14 @@
                             value="buy"
                             class="btn-buy"
                             @(Model.Stock == 0 ? "disabled" : "")>
-                        🛒 Mua ngay
+                        <i class="bi bi-lightning-fill me-1 fs-5"></i> Mua ngay
                     </button>
                     <button type="submit"
                             name="action"
                             value="cart"
                             class="btn-cart"
                             @(Model.Stock == 0 ? "disabled" : "")>
-                        + Giỏ hàng
+                        <i class="bi bi-cart-plus me-1 fs-5"></i> Thêm giỏ hàng
                     </button>
                 </div>
             </form>
@@ -638,7 +638,7 @@
                                     }
                                     else
                                     {
-                                        <div class="slider-img-empty">📷</div>
+                                        <div class="slider-img-empty"><i class="bi bi-image text-muted"></i></div>
                                     }
                                 </div>
                                 <div class="slider-info">

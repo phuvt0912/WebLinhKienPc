@@ -1,4 +1,4 @@
-﻿let chatOpen = false;
+let chatOpen = false;
 let lastMsgCount = 0;
 let welcomeSent = false;
 
@@ -6,7 +6,7 @@ function toggleChat() {
     chatOpen = !chatOpen;
     const box = document.getElementById('chatBox');
     box.style.display = chatOpen ? 'block' : 'none';
-    document.getElementById('fabIcon').textContent = chatOpen ? '✕' : '💬';
+    document.getElementById('fabIcon').innerHTML = chatOpen ? '<i class="bi bi-x-lg fs-4"></i>' : '<i class="bi bi-chat-dots-fill fs-4"></i>';
     if (chatOpen) {
         document.getElementById('fabBadge').style.display = 'none';
         loadChatHistory();
@@ -122,8 +122,8 @@ function appendMsgWithProducts(content, products, type, time, scroll = true) {
     div.className = `cmsg ${type}`;
 
     let senderHtml = '';
-    if (type === 'ai') senderHtml = '<div class="cmsg-sender">🤖 AI</div>';
-    if (type === 'staff') senderHtml = '<div class="cmsg-sender">👨‍💼 Nhân viên</div>';
+    if (type === 'ai') senderHtml = '<div class="cmsg-sender"><i class="bi bi-robot me-1 text-primary"></i> AI</div>';
+    if (type === 'staff') senderHtml = '<div class="cmsg-sender"><i class="bi bi-person-badge-fill me-1 text-info"></i> Nhân viên</div>';
 
     div.innerHTML = `
         ${senderHtml}
@@ -154,7 +154,7 @@ function renderSingleProduct(product, isGrid) {
     return `
         <div class="product-card" onclick="window.location.href='${product.url || '#'}'">
             <div class="product-image-container ${hasImage ? '' : 'no-image'}">
-                ${hasImage ? `<img src="${product.imageUrl}" class="product-image" alt="${escHtml(product.name)}">` : '📷'}
+                ${hasImage ? `<img src="${product.imageUrl}" class="product-image" alt="${escHtml(product.name)}">` : '<i class="bi bi-image text-muted"></i>'}
             </div>
             <div class="product-info">
                 <div class="product-name">${escHtml(product.name)}</div>
@@ -173,8 +173,8 @@ function appendMsg(content, type, time, scroll = true) {
     const div = document.createElement('div');
     div.className = `cmsg ${type}`;
     let senderHtml = '';
-    if (type === 'ai') senderHtml = '<div class="cmsg-sender">🤖 AI</div>';
-    if (type === 'staff') senderHtml = '<div class="cmsg-sender">👨‍💼 Nhân viên</div>';
+    if (type === 'ai') senderHtml = '<div class="cmsg-sender"><i class="bi bi-robot me-1 text-primary"></i> AI</div>';
+    if (type === 'staff') senderHtml = '<div class="cmsg-sender"><i class="bi bi-person-badge-fill me-1 text-info"></i> Nhân viên</div>';
     div.innerHTML = `
         ${senderHtml}
         <div class="cbubble">${escHtml(content)}</div>
