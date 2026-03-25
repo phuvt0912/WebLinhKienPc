@@ -284,6 +284,12 @@
                     @Model.TotalPrice.ToString("N0") ₫
                 </span>
             </div>
+            <div class="od-row">
+                <span class="od-label">Phương thức thanh toán</span>
+                <span class="od-value" style="font-family:'Rajdhani',sans-serif;font-size:18px;color:#4cdf8a">
+                    @(Model.PaymentMethod == PaymentMethod.CashOnDelivery ? "Thanh toán khi nhận hàng" : "QR Code / Chuyển khoản")
+                </span>
+            </div>
         </div>
 
         <div class="od-card">

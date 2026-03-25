@@ -208,6 +208,7 @@
                     <th>Ngày đặt</th>
                     <th>Tổng tiền</th>
                     <th>Trạng thái</th>
+                    <th>Phương thức thanh toán</th>
                     <th>Chi tiết</th>
                 </tr>
             </thead>
@@ -236,6 +237,9 @@
                         </td>
                         <td><span class="ord-price">@item.TotalPrice.ToString("N0") ₫</span></td>
                         <td><span class="status-badge @statusClass">@statusLabel</span></td>
+                        <td class="ord-payment">
+                            @(item.PaymentMethod == PaymentMethod.CashOnDelivery ? "Thanh toán khi nhận hàng" : "QR Code / Chuyển khoản")
+                        </td>
                         <td>
                             <a class="btn-detail"
                                asp-controller="Order"

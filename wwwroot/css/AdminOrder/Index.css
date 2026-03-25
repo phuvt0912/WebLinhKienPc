@@ -465,7 +465,9 @@ body {
 	white-space: nowrap;
 	font-weight: 500;
 }
+.ord-payment{
 
+}
 /* Status Badge */
 .status-badge {
 	display: inline-flex;
@@ -795,7 +797,8 @@ body {
 
 	.ord-name,
 	.ord-id,
-	.ord-price {
+	.ord-price,
+	.ord-payment{
 		font-size: 13px;
 	}
 

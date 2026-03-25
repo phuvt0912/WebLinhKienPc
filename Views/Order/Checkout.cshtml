@@ -589,7 +589,7 @@
                     <label><i class="bi bi-wallet2 text-muted me-1"></i> Phương thức thanh toán</label>
                     <div class="shipping-options">
                         <label class="ship-option" id="pay-bank">
-                            <input type="radio" asp-for="PaymentMethod" value="bank" checked />
+                            <input type="radio" asp-for="PaymentMethod" value="QR" />
                             <div class="ship-option-body">
                                 <div class="ship-option-left">
                                     <span class="ship-icon"><i class="bi bi-bank text-primary"></i></span>
@@ -603,7 +603,7 @@
                         </label>
 
                         <label class="ship-option" id="pay-cash">
-                            <input type="radio" asp-for="PaymentMethod" value="cash" />
+                            <input type="radio" asp-for="PaymentMethod" value="CashOnDelivery" />
                             <div class="ship-option-body">
                                 <div class="ship-option-left">
                                     <span class="ship-icon"><i class="bi bi-cash-stack text-success"></i></span>
