@@ -1,200 +1,110 @@
-﻿<footer class="border-top footer text-muted">
- 
+﻿@model WebLinhKienPc.Models.SiteInfo
 
-<style>
-            /* ===== TOP FOOTER ===== */
-            .footer-top {
-                background: linear-gradient(135deg, #1a1f3c, #2a2f5a);
-                color: #e0e7ff;
-                padding: 40px 0;
-                border-radius: 16px 16px 0 0;
-                border: 1px solid #2e3a8c;
-            }
+<link rel="stylesheet" href="~/css/footer.css" />
 
-                .footer-top h5 {
-                    text-align: center;
-                    font-weight: 700;
-                    margin-bottom: 30px;
-                }
+<footer class="footer">
 
-            /* SHOWROOM CARD */
-            .showroom-card {
-                background: #0f172a;
-                border-radius: 16px;
-                padding: 20px;
-                transition: 0.3s;
-                height: 100%;
-                border: 1px solid #1e293b;
-                color: #c7d2fe;
-            }
+    <!-- TOP: SHOWROOM -->
+    <div class="footer-top">
+        <div class="container">
 
-                .showroom-card:hover {
-                    transform: translateY(-5px);
-                    box-shadow: 0 10px 25px rgba(79,70,229,0.4);
-                    border-color: #4f46e5;
-                }
+            <h5 class="footer-title">Hệ thống cửa hàng</h5>
 
-            .showroom-title {
-                font-weight: 600;
-                margin-bottom: 10px;
-                font-size: 16px;
-                color: #e0e7ff;
-            }
+            <div class="row">
 
-            .showroom-card p {
-                margin: 4px 0;
-                font-size: 14px;
-            }
-
-            /* ===== BOTTOM FOOTER ===== */
-            .footer-bottom {
-                background: #020617;
-                padding: 35px 0;
-                border-top: 1px solid #1e293b;
-            }
-
-                .footer-bottom h6 {
-                    font-weight: 600;
-                    margin-bottom: 15px;
-                    color: #e0e7ff;
-                }
-
-                .footer-bottom p,
-                .footer-bottom a {
-                    font-size: 14px;
-                    color: #94a3b8;
-                    margin-bottom: 6px;
-                    display: block;
-                    text-decoration: none;
-                    transition: 0.2s;
-                }
-
-                    .footer-bottom a:hover {
-                        color: #4f46e5;
-                        transform: translateX(3px);
-                    }
-
-            /* BRAND */
-            .footer-brand {
-                font-size: 20px;
-                font-weight: bold;
-                margin-bottom: 10px;
-                color: #4f46e5;
-            }
-</style>
-
-    @model WebLinhKienPc.Models.SiteInfo
-
-    <footer class="mt-5">
-
-        <!-- TOP -->
-        <div class="footer-top">
-            <div class="container">
-
-                <h5>Hệ thống cửa hàng</h5>
-
-                <div class="row g-4">
-
-                    @if (Model?.Addresses != null && Model.Addresses.Any())
+                @if (Model?.Addresses != null && Model.Addresses.Any())
+                {
+                    foreach (var addr in Model.Addresses)
                     {
-                        foreach (var addr in Model.Addresses)
-                        {
-                            <div class="col-md-6">
-                                <div class="showroom-card">
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="showroom-card">
 
-                                    <div class="showroom-title">
-                                        📍 @addr.Branch
+                                <div class="showroom-header">
+                                    <span class="icon">📍</span>
+                                    <span class="branch">@addr.Branch</span>
+                                </div>
+
+                                <div class="showroom-body">
+                                    <p>@addr.Street, @addr.District</p>
+                                    <p>@addr.City</p>
+
+                                    <div class="contact">
+                                        <span>📞 @Model.Phone</span>
+                                        <span>📧 @Model.Email</span>
                                     </div>
 
-                                    <p>
-                                        @addr.Street, @addr.District, @addr.City
-                                    </p>
-
-                                    <p>📞 @Model.Phone</p>
-                                    <p>📧 @Model.Email</p>
-
-                                    @if (Model.WorkHours != null && Model.WorkHours.Any())
-                                    {
-                                        var wh = Model.WorkHours.First();
-
-                                        <p>
-                                            🕒 @wh.OpenHour.ToString(@"hh\:mm") -
-                                            @wh.CloseHour.ToString(@"hh\:mm")
-                                            (@ToVN(wh.StartDay) - @ToVN(wh.EndDay))
-                                        </p>
+                                    @{
+                                        var wh = Model.WorkHours?.FirstOrDefault();
                                     }
 
+                                    @if (wh != null)
+                                    {
+                                        <div class="time">
+                                            🕒 @wh.OpenHour.ToString(@"hh\:mm") -
+                                            @wh.CloseHour.ToString(@"hh\:mm")
+                                        </div>
+                                    }
                                 </div>
+
                             </div>
-                        }
-                    }
-                    else
-                    {
-                        <p style="text-align:center;">Chưa có dữ liệu chi nhánh</p>
-                    }
-
-                </div>
-
-            </div>
-        </div>
-
-        <!-- BOTTOM -->
-        <div class="footer-bottom">
-            <div class="container">
-
-                <div class="row">
-
-                    <!-- BRAND -->
-                    <div class="col-md-3">
-                        <div class="footer-brand">
-                            @Model?.Name
                         </div>
-                        <p>@Model?.Slogan</p>
-                    </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-center">Chưa có dữ liệu chi nhánh</p>
+                }
 
-                    <!-- CONTACT -->
-                    <div class="col-md-3">
-                        <h6>Liên hệ</h6>
-                        <p>📞 @Model?.Phone</p>
-                        <p>📧 @Model?.Email</p>
-                        <p>🌐 @Model?.SiteURL</p>
-                    </div>
+            </div>
 
-                    <!-- SUPPORT -->
-                    <div class="col-md-3">
-                        <h6>Hỗ trợ</h6>
-                        <a href="#">Hướng dẫn mua hàng</a>
-                        <a href="#">Thanh toán</a>
-                        <a href="#">Bảo hành</a>
-                    </div>
+        </div>
+    </div>
 
-                    <!-- POLICY -->
-                    <div class="col-md-3">
-                        <h6>Chính sách</h6>
-                        <a href="#">Bảo mật</a>
-                        <a href="#">Đổi trả</a>
-                        <a href="#">Điều khoản</a>
-                    </div>
+    <!-- BOTTOM -->
+    <div class="footer-bottom">
+        <div class="container">
 
+            <div class="row gy-4">
+
+                <!-- BRAND -->
+                <div class="col-lg-3 col-md-6">
+                    <div class="footer-brand">@Model?.Name</div>
+                    <p class="footer-desc">@Model?.Slogan</p>
+                </div>
+
+                <!-- CONTACT -->
+                <div class="col-lg-3 col-md-6">
+                    <h6>Liên hệ</h6>
+                    <ul class="footer-list">
+                        <li>📞 @Model?.Phone</li>
+                        <li>📧 @Model?.Email</li>
+                        <li>🌐 @Model?.SiteURL</li>
+                    </ul>
+                </div>
+
+                <!-- SUPPORT -->
+                <div class="col-lg-3 col-md-6">
+                    <h6>Hỗ trợ</h6>
+                    <ul class="footer-list">
+                        <li><a href="#">Hướng dẫn mua hàng</a></li>
+                        <li><a href="#">Thanh toán</a></li>
+                        <li><a href="#">Bảo hành</a></li>
+                    </ul>
+                </div>
+
+                <!-- POLICY -->
+                <div class="col-lg-3 col-md-6">
+                    <h6>Chính sách</h6>
+                    <ul class="footer-list">
+                        <li><a href="#">Bảo mật</a></li>
+                        <li><a href="#">Đổi trả</a></li>
+                        <li><a href="#">Điều khoản</a></li>
+                    </ul>
                 </div>
 
             </div>
-        </div>
-    </footer>
 
-@functions {
-    public string ToVN(DayOfWeek d)
-    {
-        return d switch
-        {
-            DayOfWeek.Monday => "T2",
-            DayOfWeek.Tuesday => "T3",
-            DayOfWeek.Wednesday => "T4",
-            DayOfWeek.Thursday => "T5",
-            DayOfWeek.Friday => "T6",
-            DayOfWeek.Saturday => "T7",
-            DayOfWeek.Sunday => "CN",
-            _ => ""
-        };
-    }
-}
+        </div>
+    </div>
+
+</footer>
