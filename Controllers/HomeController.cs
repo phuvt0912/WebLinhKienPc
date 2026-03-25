@@ -89,14 +89,36 @@ namespace WebLinhKienPc.Controllers
 
         public IActionResult About()
         {
-            return View();
-        }
+			var siteinfo = _context.SiteInfos
+				.Include(x => x.Addresses)
+				.Include(x => x.WorkHours)
+				.FirstOrDefault();
+
+			var vm = new ContactViewModel
+			{
+				SiteInfo = siteinfo,
+				Contact = new Contact()
+			};
+
+			return View(vm);
+		}
 
         // GET: Trang liên hệ
         public IActionResult Contact()
         {
-            return View();
-        }
+			var siteinfo = _context.SiteInfos
+				.Include(x => x.Addresses)
+				.Include(x => x.WorkHours)
+				.FirstOrDefault();
+
+			var vm = new ContactViewModel
+			{
+				SiteInfo = siteinfo,
+				Contact = new Contact()
+			};
+
+			return View(vm);
+		}
 
         // POST: Xử lý form liên hệ
         [HttpPost]

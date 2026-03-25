@@ -1,3 +1,5 @@
+@model WebLinhKienPc.ViewModels.ContactViewModel;
+
 @{
     ViewData["Title"] = "Giới thiệu";
 }
@@ -119,9 +121,31 @@
 
                 <h5 class="mt-4">📞 Liên hệ</h5>
 
-                <div class="info-box">📍 123 Đường ABC, TP Vũng Tàu</div>
-                <div class="info-box">📞 0123 456 789</div>
-                <div class="info-box">📧 support@linhkienpc.com</div>
+                <div class="info-box">
+                    @foreach (var addrr in Model.SiteInfo?.Addresses ?? new List<SiteAddress>())
+                    {
+                        <div>
+                            @{
+                                var parts = new List<string>();
+
+                                if (!string.IsNullOrWhiteSpace(addrr.Branch))
+                                    parts.Add($"Chi nhánh {addrr.Branch}");
+                                if (!string.IsNullOrWhiteSpace(addrr.StreetNumber) && !string.IsNullOrWhiteSpace(addrr.Street))
+                                    parts.Add($"{addrr.StreetNumber} {addrr.Street}");
+                                if (!string.IsNullOrWhiteSpace(addrr.Ward))
+                                    parts.Add($"Phường {addrr.Ward}");
+                                if (!string.IsNullOrWhiteSpace(addrr.District))
+                                    parts.Add($"Quận {addrr.District}");
+                                if (!string.IsNullOrWhiteSpace(addrr.City))
+                                    parts.Add($"Thành phố {addrr.City}");
+                                var addressString = string.Join(" ", parts);
+                            }
+                            @addressString
+                        </div>
+                    }
+                </div>
+                <div class="info-box">📞@Model.SiteInfo.Phone</div>
+                <div class="info-box">📧 @Model.SiteInfo.Email</div>
 
             </div>
         </div>
