@@ -209,10 +209,10 @@ body {
     background: radial-gradient(circle at top left, rgba(255, 100, 80, 0.06), transparent 70%);
     border: 2px solid rgba(255, 100, 80, 0.4);
     border-radius: 24px;
-    padding: 28px 20px 25px 20px;
+    padding: 32px 24px 20px 24px;
     margin: 40px 0 50px 0;
     position: relative;
-    overflow: visible;
+    overflow: hidden; /* Chấp nhận clip để giữ giao diện gọn gàng */
 }
 
     /* Title đồng màu với khung */
@@ -352,9 +352,18 @@ body {
         box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35);
     }
 
-/* Đảm bảo card không bị che bởi slider */
-.slider-wrap,
-.hotSwiper,
+/* Đảm bảo card không bị che bởi slider - Tối ưu cho badge và hover */
+.slider-wrap {
+    overflow: visible !important;
+    position: relative;
+}
+
+.hotSwiper {
+    overflow: hidden !important;
+    padding: 30px 4px 15px 4px !important; /* Tăng mạnh padding trên và thêm !important */
+    margin: 0 10px;
+}
+
 .hotSwiper .swiper-slide,
 .hot-card-wrap {
     overflow: visible !important;
