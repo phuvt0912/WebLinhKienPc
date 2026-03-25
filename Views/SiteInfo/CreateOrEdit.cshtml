@@ -1,0 +1,97 @@
+﻿@model WebLinhKienPc.Models.SiteInfo
+@{
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<link rel="stylesheet" href="~/css/AdminProduct/create-product.css" />
+
+<div class="form-wrap">
+    <div class="page-header">
+        <h2 class="page-title">Thông tin website</h2>
+        <p class="page-sub">Quản lý thông tin hiển thị trên toàn hệ thống</p>
+    </div>
+
+    <form asp-action="CreateOrEdit" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+
+        <!-- HIỂN THỊ LỖI -->
+        <div asp-validation-summary="All" class="text-danger"></div>
+
+        <div class="form-grid">
+
+            <div class="field full">
+                <label>Tên website</label>
+                <input asp-for="Name" />
+            </div>
+
+            <div class="field full">
+                <label>Slogan</label>
+                <input asp-for="Slogan" />
+            </div>
+
+            <div class="divider"></div>
+
+            <div class="field">
+                <label>SĐT</label>
+                <input asp-for="Phone" />
+            </div>
+
+            <div class="field">
+                <label>Email</label>
+                <input asp-for="Email" />
+            </div>
+
+            <div class="field full">
+                <label>Website</label>
+                <input asp-for="SiteURL" />
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- ADDRESS -->
+            <div class="field full">
+                <label>Chi nhánh</label>
+
+                @for (int i = 0; i < (Model.Addresses?.Count ?? 0); i++)
+                {
+                    <div style="margin-bottom:10px">
+                        <input type="hidden" asp-for="Addresses[i].Id" />
+
+                        <input asp-for="Addresses[i].Branch" placeholder="Chi nhánh" />
+                        <input asp-for="Addresses[i].Street" placeholder="Đường" />
+                        <input asp-for="Addresses[i].District" placeholder="Quận" />
+                        <input asp-for="Addresses[i].City" placeholder="Thành phố" />
+                    </div>
+                }
+            </div>
+
+            <div class="divider"></div>
+
+            <!-- WORK HOURS -->
+            <div class="field full">
+                <label>Giờ làm việc</label>
+
+                @for (int i = 0; i < (Model.WorkHours?.Count ?? 0); i++)
+                {
+                    <div style="display:flex; gap:10px; margin-bottom:10px;">
+                        <input type="hidden" asp-for="WorkHours[i].Id" />
+
+                        <select asp-for="WorkHours[i].StartDay"
+                                asp-items="Html.GetEnumSelectList<DayOfWeek>()"></select>
+
+                        <select asp-for="WorkHours[i].EndDay"
+                                asp-items="Html.GetEnumSelectList<DayOfWeek>()"></select>
+
+                        <input asp-for="WorkHours[i].OpenHour" type="time" step="1" />
+                        <input asp-for="WorkHours[i].CloseHour" type="time" step="1" />
+                    </div>
+                }
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">Lưu thông tin</button>
+            </div>
+        </div>
+    </form>
+</div>

@@ -1,166 +1,110 @@
-﻿<footer class="border-top footer text-muted">
- 
+﻿@model WebLinhKienPc.Models.SiteInfo
 
-<style>
-            /* ===== TOP FOOTER ===== */
-            .footer-top {
-                background: linear-gradient(135deg, #1a1f3c, #2a2f5a);
-                color: #e0e7ff;
-                padding: 40px 0;
-                border-radius: 16px 16px 0 0;
-                border: 1px solid #2e3a8c;
-            }
+<link rel="stylesheet" href="~/css/footer.css" />
 
-                .footer-top h5 {
-                    text-align: center;
-                    font-weight: 700;
-                    margin-bottom: 30px;
-                }
+<footer class="footer">
 
-            /* SHOWROOM CARD */
-            .showroom-card {
-                background: #0f172a;
-                border-radius: 16px;
-                padding: 20px;
-                transition: 0.3s;
-                height: 100%;
-                border: 1px solid #1e293b;
-                color: #c7d2fe;
-            }
-
-                .showroom-card:hover {
-                    transform: translateY(-5px);
-                    box-shadow: 0 10px 25px rgba(79,70,229,0.4);
-                    border-color: #4f46e5;
-                }
-
-            .showroom-title {
-                font-weight: 600;
-                margin-bottom: 10px;
-                font-size: 16px;
-                color: #e0e7ff;
-            }
-
-            .showroom-card p {
-                margin: 4px 0;
-                font-size: 14px;
-            }
-
-            /* ===== BOTTOM FOOTER ===== */
-            .footer-bottom {
-                background: #020617;
-                padding: 35px 0;
-                border-top: 1px solid #1e293b;
-            }
-
-                .footer-bottom h6 {
-                    font-weight: 600;
-                    margin-bottom: 15px;
-                    color: #e0e7ff;
-                }
-
-                .footer-bottom p,
-                .footer-bottom a {
-                    font-size: 14px;
-                    color: #94a3b8;
-                    margin-bottom: 6px;
-                    display: block;
-                    text-decoration: none;
-                    transition: 0.2s;
-                }
-
-                    .footer-bottom a:hover {
-                        color: #4f46e5;
-                        transform: translateX(3px);
-                    }
-
-            /* BRAND */
-            .footer-brand {
-                font-size: 20px;
-                font-weight: bold;
-                margin-bottom: 10px;
-                color: #4f46e5;
-            }
-</style>
-
-<footer class="mt-5">
-
-    <!-- TOP -->
+    <!-- TOP: SHOWROOM -->
     <div class="footer-top">
-            <div class="container">
+        <div class="container">
 
-                <h5>Hệ thống cửa hàng</h5>
+            <h5 class="footer-title">Hệ thống cửa hàng</h5>
 
-                <div class="row g-4">
+            <div class="row">
 
-                    <!-- Vũng Tàu (chính) -->
-                    <div class="col-md-6">
-                        <div class="showroom-card">
-                            <div class="showroom-title">📍 Chi nhánh Vũng Tàu</div>
-                            <p>123 Đường ABC, TP. Vũng Tàu</p>
-                            <p>📞 0123 456 789</p>
-                            <p>📧 support@linhkienpc.com</p>
-                            <p>🕒 8:00 - 21:00 (T2 - CN)</p>
+                @if (Model?.Addresses != null && Model.Addresses.Any())
+                {
+                    foreach (var addr in Model.Addresses)
+                    {
+                        <div class="col-lg-4 col-md-6 mb-4">
+                            <div class="showroom-card">
+
+                                <div class="showroom-header">
+                                    <span class="icon">📍</span>
+                                    <span class="branch">@addr.Branch</span>
+                                </div>
+
+                                <div class="showroom-body">
+                                    <p>@addr.Street, @addr.District</p>
+                                    <p>@addr.City</p>
+
+                                    <div class="contact">
+                                        <span>📞 @Model.Phone</span>
+                                        <span>📧 @Model.Email</span>
+                                    </div>
+
+                                    @{
+                                        var wh = Model.WorkHours?.FirstOrDefault();
+                                    }
+
+                                    @if (wh != null)
+                                    {
+                                        <div class="time">
+                                            🕒 @wh.OpenHour.ToString(@"hh\:mm") -
+                                            @wh.CloseHour.ToString(@"hh\:mm")
+                                        </div>
+                                    }
+                                </div>
+
+                            </div>
                         </div>
-                    </div>
-
-                    <!-- Online / hỗ trợ -->
-                    <div class="col-md-6">
-                        <div class="showroom-card">
-                            <div class="showroom-title">💻 Kênh bán hàng Online</div>
-                            <p>Website: linhkienpc.com</p>
-                            <p>📞 0123 456 789</p>
-                            <p>📧 support@linhkienpc.com</p>
-                            <p>⚡ Giao hàng toàn quốc - hỗ trợ 24/7</p>
-                        </div>
-                    </div>
-
-                </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-center">Chưa có dữ liệu chi nhánh</p>
+                }
 
             </div>
+
+        </div>
     </div>
 
     <!-- BOTTOM -->
     <div class="footer-bottom">
         <div class="container">
 
-            <div class="row">
+            <div class="row gy-4">
 
                 <!-- BRAND -->
-                <div class="col-md-3">
-                    <div class="footer-brand">LinhKienPC</div>
-                    <p>
-                        Cung cấp linh kiện máy tính chính hãng,
-                        giá tốt, hỗ trợ tận tâm.
-                    </p>
+                <div class="col-lg-3 col-md-6">
+                    <div class="footer-brand">@Model?.Name</div>
+                    <p class="footer-desc">@Model?.Slogan</p>
                 </div>
 
                 <!-- CONTACT -->
-                <div class="col-md-3">
+                <div class="col-lg-3 col-md-6">
                     <h6>Liên hệ</h6>
-                    <p>📍 Vũng Tàu</p>
-                    <p>📞 0123 456 789</p>
-                    <p>📧 support@linhkienpc.com</p>
+                    <ul class="footer-list">
+                        <li>📞 @Model?.Phone</li>
+                        <li>📧 @Model?.Email</li>
+                        <li>🌐 @Model?.SiteURL</li>
+                    </ul>
                 </div>
 
                 <!-- SUPPORT -->
-                <div class="col-md-3">
+                <div class="col-lg-3 col-md-6">
                     <h6>Hỗ trợ</h6>
-                    <a href="#">Hướng dẫn mua hàng</a>
-                    <a href="#">Thanh toán</a>
-                    <a href="#">Bảo hành</a>
+                    <ul class="footer-list">
+                        <li><a href="#">Hướng dẫn mua hàng</a></li>
+                        <li><a href="#">Thanh toán</a></li>
+                        <li><a href="#">Bảo hành</a></li>
+                    </ul>
                 </div>
 
                 <!-- POLICY -->
-                <div class="col-md-3">
+                <div class="col-lg-3 col-md-6">
                     <h6>Chính sách</h6>
-                    <a href="#">Bảo mật</a>
-                    <a href="#">Đổi trả</a>
-                    <a href="#">Điều khoản</a>
+                    <ul class="footer-list">
+                        <li><a href="#">Bảo mật</a></li>
+                        <li><a href="#">Đổi trả</a></li>
+                        <li><a href="#">Điều khoản</a></li>
+                    </ul>
                 </div>
 
             </div>
 
         </div>
     </div>
+
 </footer>
