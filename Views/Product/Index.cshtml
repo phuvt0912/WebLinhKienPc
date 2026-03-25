@@ -391,7 +391,14 @@
                 var safeImg = item.ImageUrl ?? "";
                 var safeCat = (item.Category?.Name ?? "").Replace("'", "\\'");
 
-                <div class="product-card">
+                <div class="product-card"
+                     data-id="@item.ProductId"
+                     data-name="@safeName"
+                     data-img="@safeImg"
+                     data-price="@item.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+                     data-category="@safeCat"
+                     data-stock="@item.Stock"
+                     data-desc="@safeDesc">
                     <div class="product-img-wrap">
                         @if (!string.IsNullOrEmpty(item.ImageUrl))
                         {
@@ -413,8 +420,7 @@
                         <div class="product-stock @stockClass">@stockLabel</div>
                     </div>
 
-                    <button class="btn-quickview"
-                            onclick="openQuickView(@item.ProductId, '@safeName', '@safeImg', @item.Price.ToString(System.Globalization.CultureInfo.InvariantCulture), '@safeCat', @item.Stock, '@safeDesc')">
+                    <button class="btn-quickview btn-qv-trigger">
                         👁 Xem nhanh
                     </button>
 
