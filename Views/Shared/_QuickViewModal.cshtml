@@ -1,0 +1,57 @@
+<!-- Quick View Modal -->
+<div class="qv-overlay" id="qvOverlay" onclick="closeQuickView()">
+    <div class="qv-box" onclick="event.stopPropagation()">
+        <button class="qv-close" onclick="closeQuickView()">✕</button>
+
+        <div class="qv-img-wrap" id="qvImgWrap">
+            <img id="qvImg" class="qv-img" src="" alt="" />
+        </div>
+
+        <div class="qv-info">
+            <span class="qv-category" id="qvCategory"></span>
+            <div class="qv-name" id="qvName"></div>
+            <div class="qv-price" id="qvPrice"></div>
+            <div class="qv-stock" id="qvStock"></div>
+            
+            <!-- Chọn số lượng -->
+            <div class="qv-qty-wrap">
+                <span class="qv-qty-label">Số lượng:</span>
+                <div class="qv-qty-controls">
+                    <button type="button" class="qv-qty-btn" onclick="qvDecrease()" id="qvBtnDecrease">−</button>
+                    <input type="number" id="qvQuantity" class="qv-qty-input" value="1" min="1" />
+                    <button type="button" class="qv-qty-btn" onclick="qvIncrease()" id="qvBtnIncrease">+</button>
+                </div>
+            </div>
+            
+            <div class="qv-divider"></div>
+            <div class="qv-desc" id="qvDesc"></div>
+            
+            <!-- Actions - ĐÃ SỬA CÂN ĐỐI -->
+            <div class="qv-actions">
+                <button type="button" class="qv-btn-cart" id="qvAddToCartBtn" onclick="qvAddToCart()">
+                    <span>🛒</span> Thêm giỏ hàng
+                </button>
+
+                <form id="qvBuyForm" method="post" action="/Cart/AddToCart" style="flex:1;display:flex;">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="productId" id="qvBuyProductId" value="" />
+                    <input type="hidden" name="quantity" id="qvBuyProductQty" value="1" />
+                    <button type="submit" class="qv-btn-buy" id="qvBuyNowBtn">
+                        <span>⚡</span> Mua ngay
+                    </button>
+                </form>
+
+                <a id="qvBtnDetail" class="qv-btn-detail" href="#">
+                    <span>📄</span> Chi tiết
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- Toast -->
+<div id="toastWrap" style="
+    position:fixed;top:24px;right:24px;
+    z-index:99999;
+    display:flex;flex-direction:column;gap:10px;
+    pointer-events:none;
+"></div>
