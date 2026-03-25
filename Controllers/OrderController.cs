@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebLinhKienPc.AppDbContext;
@@ -107,7 +107,7 @@ namespace WebLinhKienPc.Controllers
 		}
 
         [HttpPost]
-        public IActionResult PreCheckout(string Name, string Phone, string Address, string ShippingMethod)
+        public IActionResult PreCheckout(string Name, string Phone, string Address, string ShippingMethod, string PaymentMethod)
         {
             var userId = _userManager.GetUserId(User);
             var cart = _context.Carts
@@ -128,11 +128,18 @@ namespace WebLinhKienPc.Controllers
                 Phone,
                 Address,
                 ShippingMethod,
+                PaymentMethod,
                 ShippingFee = shippingFee,
                 SubTotal = subTotal,
                 TotalPrice = totalPrice
             };
             HttpContext.Session.SetString("PendingOrder", JsonSerializer.Serialize(pending));
+
+            if (PaymentMethod == "cash")
+            {
+                // Xử lý tạo đơn ngay lập tức cho tiền mặt
+                return CreateOrderFromSession(userId);
+            }
 
             ViewBag.Name = Name;
             ViewBag.Phone = Phone;
@@ -150,6 +157,11 @@ namespace WebLinhKienPc.Controllers
         public IActionResult ConfirmPayment()
         {
             var userId = _userManager.GetUserId(User);
+            return CreateOrderFromSession(userId);
+        }
+
+        private IActionResult CreateOrderFromSession(string userId)
+        {
             var pendingJson = HttpContext.Session.GetString("PendingOrder");
 
             if (string.IsNullOrEmpty(pendingJson))
@@ -196,7 +208,9 @@ namespace WebLinhKienPc.Controllers
 
             HttpContext.Session.Remove("PendingOrder");
             TempData["OrderSuccess"] = order.OrderCode;
-            return RedirectToAction("Index", "Order");
+            
+            // Redirect tới chi tiết đơn hàng
+            return RedirectToAction("OrderDetails", "Order", new { id = order.OrderId });
         }
 
         // Action hủy - không đặt hàng

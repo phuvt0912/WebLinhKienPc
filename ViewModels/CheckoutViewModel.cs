@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using WebLinhKienPc.Models;
 
 namespace WebLinhKienPc.ViewModels
@@ -18,6 +18,9 @@ namespace WebLinhKienPc.ViewModels
 
         [Required(ErrorMessage = "Vui lòng chọn phương thức vận chuyển")]
         public string ShippingMethod { get; set; } = "standard";
+        
+        [Required(ErrorMessage = "Vui lòng chọn phương thức thanh toán")]
+        public string PaymentMethod { get; set; } = "bank";
 
         public List<CartItem> CartItems { get; set; } = new();
 
