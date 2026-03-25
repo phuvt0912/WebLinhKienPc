@@ -47,7 +47,6 @@ namespace WebLinhKienPc.Controllers
 		[ValidateAntiForgeryToken]
 		public IActionResult CreateOrEdit(SiteInfo model)
 		{
-			// ===== FILTER DATA RÁC =====
 			model.Addresses = model.Addresses?
 				.Where(x => !string.IsNullOrWhiteSpace(x.Street))
 				.ToList();
@@ -89,7 +88,6 @@ namespace WebLinhKienPc.Controllers
 
 			_context.SaveChanges();
 
-			TempData["Success"] = "Lưu thành công!";
 			return RedirectToAction("Index", "Product");
 		}
 	}
