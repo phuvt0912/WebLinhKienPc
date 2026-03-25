@@ -125,17 +125,17 @@ namespace WebLinhKienPc.Controllers
         // POST: Xử lý form liên hệ + gửi email xác nhận
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Contact(string Name, string Email, string Phone, string Message)
+        public async Task<IActionResult> Contact([Bind(Prefix = "Contact")] Contact contact)
         {
             // Kiểm tra dữ liệu đầu vào
-            if (string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(Email) || string.IsNullOrEmpty(Message))
+            if (contact == null || string.IsNullOrEmpty(contact.Name) || string.IsNullOrEmpty(contact.Email) || string.IsNullOrEmpty(contact.Message))
             {
                 TempData["Error"] = "Vui lòng điền đầy đủ thông tin bắt buộc (Họ tên, Email, Nội dung).";
                 return RedirectToAction("Contact");
             }
 
             // Kiểm tra email hợp lệ
-            if (!IsValidEmail(Email))
+            if (!IsValidEmail(contact.Email))
             {
                 TempData["Error"] = "Email không hợp lệ. Vui lòng nhập đúng định dạng email.";
                 return RedirectToAction("Contact");
@@ -144,21 +144,14 @@ namespace WebLinhKienPc.Controllers
             try
             {
                 // 1. Lưu vào database
-                var contact = new Contact
-                {
-                    Name = Name,
-                    Email = Email,
-                    Phone = Phone ?? string.Empty,
-                    Message = Message,
-                    CreatedAt = DateTime.Now,
-                    IsRead = false
-                };
+                contact.CreatedAt = DateTime.Now;
+                contact.IsRead = false;
 
                 _context.Contacts.Add(contact);
                 await _context.SaveChangesAsync();
 
                 // 2. Gửi email xác nhận cho khách hàng
-                await SendConfirmationEmail(Email, Name, Message);
+                await SendConfirmationEmail(contact.Email, contact.Name, contact.Message);
 
                 TempData["Success"] = "Cảm ơn bạn đã liên hệ! Chúng tôi đã gửi email xác nhận đến hộp thư của bạn.";
             }
