@@ -1,4 +1,4 @@
-﻿let selectedUserId = null;
+let selectedUserId = null;
 let selectedUserName = '';
 let lastMsgCount = 0;
 let lastMessageId = 0; 

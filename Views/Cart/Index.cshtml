@@ -1,4 +1,4 @@
-﻿@model IEnumerable<WebLinhKienPc.Models.CartItem>
+@model IEnumerable<WebLinhKienPc.Models.CartItem>
 
 @{
     ViewData["Title"] = "Giỏ hàng";
@@ -337,12 +337,12 @@
 
 <div class="cart-wrap">
 
-    <h2 class="page-title">🛒 Giỏ Hàng</h2>
+    <h2 class="page-title"><i class="bi bi-cart3 me-2 text-info"></i> Giỏ Hàng</h2>
 
     @if (!Model.Any())
     {
         <div class="empty-cart">
-            <span class="empty-icon">🛒</span>
+            <span class="empty-icon"><i class="bi bi-cart-x text-muted"></i></span>
             <p class="empty-text">Giỏ hàng của bạn đang trống</p>
             <a asp-controller="Product" asp-action="Index" class="btn-back-shop">
                 Khám phá sản phẩm →
@@ -381,7 +381,7 @@
                             }
                             else
                             {
-                                <div class="cart-img-empty">📷</div>
+                                <div class="cart-img-empty"><i class="bi bi-image"></i></div>
                             }
                         </td>
 
@@ -421,7 +421,7 @@
                                    asp-controller="Cart"
                                    asp-action="Remove"
                                    asp-route-id="@item.CartItemId">
-                                🗑️ Xoá
+                                <i class="bi bi-trash3-fill me-1"></i> Xoá
                             </a>
                         </td>
                     </tr>

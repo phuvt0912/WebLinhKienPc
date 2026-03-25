@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Trang chủ";
 }
 
@@ -11,15 +11,34 @@
 <div class="container mt-4">
     <!-- ================= BANNER ================= -->
     <div class="banner-section mb-4">
-        <div class="swiper bannerSwiper">
+        <div class="swiper bannerSwiper" style="border-radius: 0.5rem; overflow: hidden; position: relative;">
             <div class="swiper-wrapper">
 
-                @foreach (var banner in Model.Banners)
-                {
-                    <div class="swiper-slide">
-                        <a href="@banner.Link">
-                            <img src="@banner.ImageUrl" class="w-100 rounded-3" style="height:300px; object-fit:cover;" />
-                        </a>
+                @if(Model.Banners != null && Model.Banners.Any()) {
+                    @foreach (var banner in Model.Banners)
+                    {
+                        <div class="swiper-slide" style="position: relative;">
+                            <img src="@banner.ImageUrl" class="w-100 rounded-3" style="height:400px; object-fit:cover;" />
+                            <div class="banner-overlay">
+                                <div class="banner-content">
+                                    <h2 class="banner-title">Thế Giới Linh Kiện PC Cao Cấp</h2>
+                                    <p class="banner-subtitle">Nâng tầm trải nghiệm gaming và làm việc với phần cứng mạnh mẽ nhất. Khám phá các bộ xử lý, card đồ họa và phụ kiện mới nhất ngay hôm nay.</p>
+                                    <a href="@banner.Link" class="btn-cta">Khám Phá Ngay <i class="bi bi-arrow-right ms-2"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                } else {
+                    <div class="swiper-slide" style="position: relative;">
+                        <!-- Placeholder if no banners -->
+                        <div style="background: linear-gradient(135deg, #1f1f3a, #0d0d1a); height: 400px; width: 100%;" class="rounded-3"></div>
+                        <div class="banner-overlay">
+                            <div class="banner-content">
+                                <h2 class="banner-title">Cấu Hình Cực Đỉnh, Chiến Game Cực Mượt</h2>
+                                <p class="banner-subtitle">Nâng cấp PC của bạn với những linh kiện chất lượng cao từ các thương hiệu hàng đầu thế giới.</p>
+                                <a href="#" class="btn-cta">Mua Ngay <i class="bi bi-arrow-right ms-2"></i></a>
+                            </div>
+                        </div>
                     </div>
                 }
 
@@ -29,31 +48,98 @@
             <div class="swiper-pagination"></div>
         </div>
     </div>
-    <div class="hot-section p-3 rounded-3">
+
+    <!-- ================= DANH MỤC NỔI BẬT ================= -->
+    <div class="mb-4">
+        <div class="hot-header d-flex justify-content-between align-items-center mb-3 mt-4">
+            <h5 class="mb-0">Danh Mục Nổi Bật</h5>
+            <a href="@Url.Action("Index", "Product")" class="view-all">Xem tất cả</a>
+        </div>
+        <div class="category-grid">
+            @if(Model.Categories != null && Model.Categories.Any()) {
+                var iconMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    ["cpu"] = "bi-cpu", ["vi xử lý"] = "bi-cpu", ["processor"] = "bi-cpu",
+                    ["gpu"] = "bi-gpu-card", ["card đồ họa"] = "bi-gpu-card", ["vga"] = "bi-gpu-card", ["card màn"] = "bi-gpu-card",
+                    ["ram"] = "bi-memory", ["bộ nhớ"] = "bi-memory",
+                    ["ssd"] = "bi-device-ssd", ["hdd"] = "bi-hdd", ["ổ cứng"] = "bi-hdd",
+                    ["mainboard"] = "bi-motherboard", ["main"] = "bi-motherboard",
+                    ["màn hình"] = "bi-display", ["monitor"] = "bi-display",
+                    ["chuột"] = "bi-mouse", ["mouse"] = "bi-mouse",
+                    ["bàn phím"] = "bi-keyboard", ["keyboard"] = "bi-keyboard",
+                    ["tai nghe"] = "bi-headphones", ["headphone"] = "bi-headphones",
+                    ["nguồn"] = "bi-lightning-charge", ["psu"] = "bi-lightning-charge",
+                    ["tản nhiệt"] = "bi-thermometer-half", ["cooler"] = "bi-thermometer-half",
+                    ["vỏ case"] = "bi-pc", ["case"] = "bi-pc",
+                    ["pc"] = "bi-pc-display", ["laptop"] = "bi-laptop",
+                    ["phụ kiện"] = "bi-plugin",
+                };
+                var colorList = new[]
+                {
+                    "cat-purple", "cat-blue", "cat-cyan", "cat-orange",
+                    "cat-green", "cat-red", "cat-yellow", "cat-pink"
+                };
+                int catIdx = 0;
+                foreach (var cate in Model.Categories.Take(8))
+                {
+                    var lowerName = cate.CategoryName?.ToLower() ?? "";
+                    var icon = "bi-box-seam";
+                    foreach (var kv in iconMap)
+                    {
+                        if (lowerName.Contains(kv.Key)) { icon = kv.Value; break; }
+                    }
+                    var colorClass = colorList[catIdx % colorList.Length];
+                    catIdx++;
+                    <a href="@Url.Action("Index", "Product", new { categoryId = cate.CategoryId })" class="category-item @colorClass">
+                        <div class="cat-icon-wrap">
+                            <i class="bi @icon category-icon"></i>
+                        </div>
+                        <span class="category-name">@cate.CategoryName</span>
+                        <span class="category-count">@cate.Products.Count sản phẩm</span>
+                    </a>
+                }
+            }
+        </div>
+    </div>
+    <div class="hot-section featured-hot-section">
 
         <!-- HEADER -->
-        <div class="hot-header d-flex justify-content-between align-items-center mb-3">
-            <h5 class="mb-0"> Sản phẩm hot</h5>
-            <a href="#" class="view-all">Xem tất cả</a>
+        <div class="hot-header d-flex justify-content-between align-items-center mb-4 border-0">
+            <h5 class="mb-0 text-gradient-fire"><i class="bi bi-fire me-2"></i> Sản Phẩm Bán Chạy</h5>
+            <a href="@Url.Action("Index", "Product")" class="view-all view-all-fire">Xem tất cả</a>
         </div>
 
         <!-- SLIDER -->
-        <div class="slider-wrap">
+        <div class="slider-wrap position-relative">
 
-            <button class="slider-btn prev">‹</button>
-
-            <div class="slider-viewport">
-                <div class="slider-track">
-                    @foreach (var product in Model.HotProducts)
+            <div class="swiper hotSwiper" style="width: 100%; padding: 10px 0;">
+                <div class="swiper-wrapper">
+                    @{ int hotRank = 0; }
+                    @foreach (var item in Model.HotProducts)
                     {
-                        <div class="slider-item">
-                            <partial name="_ProductCard" model="product" />
+                        hotRank++;
+                        var rankClass = hotRank == 1 ? "rank-gold" : hotRank == 2 ? "rank-silver" : hotRank == 3 ? "rank-bronze" : "";
+                        <div class="swiper-slide hot-slide">
+                            <div class="hot-card-wrap @rankClass">
+                                @if (hotRank <= 3)
+                                {
+                                    <div class="rank-badge rank-@hotRank">
+                                        @(hotRank == 1 ? "🥇" : hotRank == 2 ? "🥈" : "🥉") #@hotRank
+                                    </div>
+                                }
+                                @if (item.SoldCount > 0)
+                                {
+                                    <div class="sold-badge">🔥 @item.SoldCount đã bán</div>
+                                }
+                                <partial name="_ProductCard" model="item.Product" />
+                            </div>
                         </div>
                     }
                 </div>
             </div>
 
-            <button class="slider-btn next">›</button>
+            <button class="slider-btn prev hot-prev"><i class="bi bi-chevron-left"></i></button>
+            <button class="slider-btn next hot-next"><i class="bi bi-chevron-right"></i></button>
 
         </div>
 
@@ -63,7 +149,7 @@
 
         <div class="hot-header d-flex justify-content-between align-items-center mb-3">
             <h5 class="mb-0"> Sản phẩm mới</h5>
-            <a href="#" class="view-all">Xem tất cả</a>
+            <a href="@Url.Action("Index", "Product")" class="view-all">Xem tất cả</a>
         </div>
 
         <div class="product-list">
@@ -81,7 +167,7 @@
 
             <div class="hot-header d-flex justify-content-between align-items-center mb-3">
                 <h5 class="mb-0">@cate.CategoryName</h5>
-                <a href="#" class="view-all">Xem tất cả</a>
+                <a href="@Url.Action("Index", "Product", new { categoryId = cate.CategoryId })" class="view-all">Xem tất cả</a>
             </div>
 
             <div class="product-list">

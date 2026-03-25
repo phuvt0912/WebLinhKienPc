@@ -1,4 +1,4 @@
-﻿@using Microsoft.AspNetCore.Identity
+@using Microsoft.AspNetCore.Identity
 @using Microsoft.AspNetCore.Http
 @using Microsoft.EntityFrameworkCore
 @using WebLinhKienPc.AppDbContext
@@ -303,7 +303,7 @@
 
         <!-- Logo -->
         <a class="pc-logo" asp-controller="Home" asp-action="Index">
-            ⚡ LinhKienPC
+            <i class="bi bi-lightning-charge-fill text-warning me-1"></i> LinhKienPC
         </a>
 
         <!-- Menu -->
@@ -316,7 +316,7 @@
             @if (User.IsInRole("Admin") || User.IsInRole("NhanVien"))
             {
                 <a class="pc-nav-admin" asp-controller="AdminProduct" asp-action="Index">
-                    ⚡ Quản trị
+                    <i class="bi bi-shield-lock-fill me-1"></i> Quản trị
                 </a>
             }
         </nav>
@@ -326,7 +326,7 @@
 
             <!-- Cart -->
             <a class="pc-cart" asp-controller="Cart" asp-action="Index" title="Giỏ hàng">
-                <span class="pc-cart-icon">🛒</span>
+                <span class="pc-cart-icon"><i class="bi bi-cart3"></i></span>
                 @if (cartCount > 0)
                 {
                     <span class="pc-cart-badge" id="cartBadge">@cartCount</span>
@@ -361,15 +361,15 @@
                             <span class="pc-dropdown-role">
                                 @if (User.IsInRole("Admin"))
                                 {
-                                    <span style="color: #a259ff;">⚡ Quản trị viên</span>
+                                    <span style="color: #a259ff;"><i class="bi bi-shield-lock-fill me-1"></i> Quản trị viên</span>
                                 }
                                 else if (User.IsInRole("NhanVien"))
                                 {
-                                    <span style="color: #00cfff;">🔧 Nhân viên</span>
+                                    <span style="color: #00cfff;"><i class="bi bi-wrench-adjustable-circle-fill me-1"></i> Nhân viên</span>
                                 }
                                 else
                                 {
-                                    <span style="color: #6a6a9a;">👤 Khách hàng</span>
+                                    <span style="color: #6a6a9a;"><i class="bi bi-person-circle me-1"></i> Khách hàng</span>
                                 }
                             </span>
                         </div>

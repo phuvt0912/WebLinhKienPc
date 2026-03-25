@@ -1,72 +1,23 @@
-﻿@model WebLinhKienPc.Models.Product
-
-
-@* 
-
-<div class="product-card">
-
-    <img src="@Model.ImageUrl" class="product-img" />
-
-    <!-- POPUP -->
-    <div class="product-popup">
-        <div class="popup-header">
-            @Model.Name
-        </div>
-
-        <div class="popup-body">
-            <p><b>Giá bán:</b> 
-                <span class="price">@Model.Price đ</span>
-            </p>
-
-            <div class="popup-section">
-                <b>Mô tả tóm tắt:</b>
-                <ul>
-                    <li>@Model.Description</li>
-                </ul>
-            </div>
-        </div>
-    </div>
-
-    <!-- INFO -->
-    <div class="product-info">
-        <div class="product-name">@Model.Name</div>
-
-        <div class="price">
-            <span class="discount">
-                @(Model.Price * 0.9M) đ
-            </span>
-
-            <span class="original">
-                @Model.Price đ
-            </span>
-        </div>
-
-        <button class="btn btn-sm btn-primary w-100 mt-2">
-            Mua ngay
-        </button>
-    </div>
-
-</div> *@
-
-
-
+@model WebLinhKienPc.Models.Product
 
 @{
     var stockClass = Model.Stock > 10 ? "stock-ok" : Model.Stock > 0 ? "stock-low" : "stock-out";
     var stockLabel = Model.Stock > 10 ? "Còn hàng" : Model.Stock > 0 ? $"Còn {Model.Stock} sản phẩm" : "Hết hàng";
-
-    var safeName = Model.Name.Replace("\\", "\\\\").Replace("'", "\\'");
-    var safeDesc = (Model.Description ?? "").Replace("\\", "\\\\").Replace("'", "\\'").Replace("\n", "\\n").Replace("\r", "");
-    var safeImg = Model.ImageUrl ?? "";
-    var safeCat = (Model.Category?.Name ?? "").Replace("'", "\\'");
 }
 
-<div class="product-card">
+<div class="product-card"
+     data-id="@Model.ProductId"
+     data-name="@Model.Name"
+     data-img="@(Model.ImageUrl ?? "")"
+     data-price="@Model.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)"
+     data-category="@(Model.Category?.Name ?? "")"
+     data-stock="@Model.Stock"
+     data-desc="@(Model.Description ?? "")">
 
     <div class="product-img-wrap">
         @if (!string.IsNullOrEmpty(Model.ImageUrl))
         {
-            <img src="@Model.ImageUrl" class="product-img" />
+            <img src="@Model.ImageUrl" class="product-img" alt="@Model.Name" />
         }
         else
         {
@@ -80,15 +31,14 @@
         <div class="product-stock @stockClass">@stockLabel</div>
     </div>
 
-    <button class="btn-quickview"
-            onclick="openQuickView(@Model.ProductId, '@Model.Name', '@Model.ImageUrl', @Model.Price, '', @Model.Stock, '@Model.Description')">
-        👁 Xem nhanh
+    <button class="btn-quickview btn-qv-trigger">
+        <i class="bi bi-eye me-1"></i> Xem nhanh
     </button>
 
     <a class="btn-detail"
-           asp-controller="Product"
-           asp-action="Details"
-           asp-route-id="@Model.ProductId">
+       asp-controller="Product"
+       asp-action="Details"
+       asp-route-id="@Model.ProductId">
         Xem chi tiết →
     </a>
 

@@ -1,4 +1,4 @@
-﻿// profile.js
+// profile.js
 function previewAndSubmit(input) {
     if (!input.files[0]) return;
     const reader = new FileReader();

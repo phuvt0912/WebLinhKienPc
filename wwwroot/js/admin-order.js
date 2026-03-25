@@ -1,4 +1,4 @@
-﻿let pendingFormId = null;
+let pendingFormId = null;
 let selectedOrders = new Set();
 
 function confirmCancel(id, name, code) {

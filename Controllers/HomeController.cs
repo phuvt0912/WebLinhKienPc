@@ -17,12 +17,48 @@ namespace WebLinhKienPc.Controllers
 				.Include(c => c.Products)
 				.ToList();
 
-			var model = new HomeViewModel
+			// Lấy top 10 sản phẩm bán chạy nhất từ OrderDetail (chỉ tính đơn Completed)
+			var soldStats = _context.OrderDetails
+				.Where(od => od.Order.Status == OrderStatus.Completed)
+				.GroupBy(od => od.ProductId)
+				.Select(g => new { ProductId = g.Key, TotalSold = g.Sum(x => x.Quantity) })
+				.OrderByDescending(x => x.TotalSold)
+				.Take(10)
+				.ToList();
+
+			List<HotProductItem> hotProducts;
+
+			if (soldStats.Any())
 			{
-				HotProducts = _context.Products
+				var productIds = soldStats.Select(x => x.ProductId).ToList();
+				var products = _context.Products
+					.Where(p => productIds.Contains(p.ProductId))
+					.Include(p => p.Category)
+					.ToList();
+
+				hotProducts = soldStats
+					.Join(products, s => s.ProductId, p => p.ProductId, (s, p) => new HotProductItem
+					{
+						Product = p,
+						SoldCount = s.TotalSold
+					})
+					.ToList();
+			}
+			else
+			{
+				// Fallback: lấy sản phẩm mới nhất nếu chưa có đơn hàng
+				hotProducts = _context.Products
+					.Include(p => p.Category)
 					.OrderByDescending(p => p.ProductId)
 					.Take(10)
-					.ToList(),
+					.ToList()
+					.Select(p => new HotProductItem { Product = p, SoldCount = 0 })
+					.ToList();
+			}
+
+			var model = new HomeViewModel
+			{
+				HotProducts = hotProducts,
 
 				NewProducts = _context.Products
 					.OrderByDescending(p => p.CreatedDate)
@@ -31,11 +67,12 @@ namespace WebLinhKienPc.Controllers
 
 				Categories = categories.Select(c => new CategoryWithProducts
 				{
+					CategoryId = c.CategoryId,
 					CategoryName = c.Name,
 					Products = c.Products.ToList()
 				}).ToList(),
 
-				Banners = _context.Banners.ToList() // 👈 lấy banner
+				Banners = _context.Banners.ToList()
 			};
 
 			return View(model);
