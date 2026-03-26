@@ -28,58 +28,17 @@ function updateOrderStatus(orderId, newStatus) {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showToast('success', data.message);
-                setTimeout(() => location.reload(), 1500);
+                setTimeout(() => location.reload(), 500);
             } else {
-                showToast('error', data.message);
+                showAdminToast('error', data.message);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showToast('error', 'Có lỗi xảy ra khi cập nhật trạng thái');
+            showAdminToast('error', 'Có lỗi xảy ra khi cập nhật trạng thái');
         });
 }
 
-// Show toast notification
-function showToast(type, message) {
-    // Remove existing toast (except server toast)
-    const existingToast = document.querySelector('.od-toast');
-    if (existingToast && existingToast.id !== 'toast') {
-        existingToast.remove();
-    }
-
-    const toast = document.createElement('div');
-    toast.className = `od-toast ${type}`;
-    const icon = type === 'success' ? '✅' : '❌';
-    toast.innerHTML = `${icon} ${message}`;
-
-    const wrap = document.querySelector('.od-wrap');
-    const header = document.querySelector('.od-header');
-    wrap.insertBefore(toast, header);
-
-    // Auto hide after 3 seconds
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.4s';
-        setTimeout(() => {
-            if (toast.parentNode) toast.remove();
-        }, 400);
-    }, 3000);
-}
-
-// Auto hide server toast
-function initServerToast() {
-    const toast = document.getElementById('toast');
-    if (toast) {
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transition = 'opacity 0.4s';
-            setTimeout(() => {
-                if (toast.parentNode) toast.remove();
-            }, 400);
-        }, 3000);
-    }
-}
 
 // Event listeners
 function initEventListeners() {
@@ -90,6 +49,5 @@ function initEventListeners() {
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function () {
-    initServerToast();
     initEventListeners();
 });

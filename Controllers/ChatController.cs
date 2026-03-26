@@ -364,14 +364,52 @@ namespace WebLinhKienPc.Controllers
                 : "";
 
             var categoriesText = string.Join(", ", allCategories);
-
             var featuredText = string.Join("\n", featuredProducts.Select(p =>
                 $"- [{p.Category?.Name}] {p.Name} | {p.Price:N0}đ | Còn: {p.Stock}"));
 
-            var relevantText = relevantProducts.Any()
-                ? string.Join("\n", relevantProducts.Select(p =>
-                    $"- ID:{p.ProductId} | [{p.Category?.Name}] {p.Name} | {p.Price:N0}đ | Còn: {p.Stock}"))
-                : "KHÔNG CÓ sản phẩm phù hợp trong kho hiện tại.";
+            // Phân loại sản phẩm theo budget
+            string relevantText;
+            if (intent.Budget.HasValue && relevantProducts.Any())
+            {
+                decimal budget = intent.Budget.Value;
+                var cheaper = relevantProducts.Where(p => p.Price < budget * 0.85m).ToList();
+                var inBudget = relevantProducts.Where(p => p.Price >= budget * 0.85m && p.Price <= budget * 1.15m).ToList();
+                var pricier = relevantProducts.Where(p => p.Price > budget * 1.15m).ToList();
+
+                var sb = new System.Text.StringBuilder();
+                if (cheaper.Any())
+                {
+                    sb.AppendLine("【TIẾT KIỆM - rẻ hơn budget】");
+                    foreach (var p in cheaper)
+                    {
+                        decimal saved = budget - p.Price;
+                        sb.AppendLine($"- ID:{p.ProductId} | {p.Name} | {p.Price:N0}đ | Tiết kiệm: {saved:N0}đ | Còn: {p.Stock}");
+                    }
+                }
+                if (inBudget.Any())
+                {
+                    sb.AppendLine("【SÁT GIÁ - trong tầm budget】");
+                    foreach (var p in inBudget)
+                        sb.AppendLine($"- ID:{p.ProductId} | {p.Name} | {p.Price:N0}đ | Còn: {p.Stock}");
+                }
+                if (pricier.Any())
+                {
+                    sb.AppendLine("【NÂNG CẤP - đắt hơn budget】");
+                    foreach (var p in pricier)
+                    {
+                        decimal extra = p.Price - budget;
+                        sb.AppendLine($"- ID:{p.ProductId} | {p.Name} | {p.Price:N0}đ | Cần thêm: {extra:N0}đ | Còn: {p.Stock}");
+                    }
+                }
+                relevantText = sb.Length > 0 ? sb.ToString() : "KHÔNG CÓ sản phẩm phù hợp trong kho.";
+            }
+            else
+            {
+                relevantText = relevantProducts.Any()
+                    ? string.Join("\n", relevantProducts.Select(p =>
+                        $"- ID:{p.ProductId} | [{p.Category?.Name}] {p.Name} | {p.Price:N0}đ | Còn: {p.Stock}"))
+                    : "KHÔNG CÓ sản phẩm phù hợp trong kho hiện tại.";
+            }
 
             var budgetText = intent.Budget.HasValue
                 ? $"{intent.Budget.Value:N0}đ (~{intent.Budget.Value / 1_000_000:N0} triệu)"
@@ -379,7 +417,7 @@ namespace WebLinhKienPc.Controllers
 
             return $@"
 Bạn là **Thắng** - nhân viên tư vấn sale của shop linh kiện máy tính **LinhKienPC**.
-Phong cách: Thân thiện như bạn bè, nhiệt tình, am hiểu kỹ thuật, biết cách thuyết phục khách mua hàng.
+Phong cách: Thân thiện như bạn bè, nhiệt tình, am hiểu kỹ thuật.
 
 ━━━ THÔNG TIN SHOP ━━━
 Danh mục: {categoriesText}
@@ -387,7 +425,7 @@ Danh mục: {categoriesText}
 ━━━ HÀNG TRONG KHO (tham khảo) ━━━
 {featuredText}
 
-━━━ SẢN PHẨM GẦN NHẤT VỚI YÊU CẦU KHÁCH ━━━
+━━━ SẢN PHẨM PHÂN LOẠI THEO BUDGET ━━━
 {relevantText}
 
 ━━━ LỊCH SỬ HỘI THOẠI ━━━
@@ -398,42 +436,41 @@ Khách: {userMessage}
 Budget: {budgetText}
 Loại linh kiện: {intent.Category ?? "Chưa xác định"}
 
-━━━ HƯỚNG DẪN TRẢ LỜI ━━━
+━━━ CÁCH TƯ VẤN ━━━
 
-1. KHI KHÁCH CÓ BUDGET:
-   - CHỈ giới thiệu sản phẩm từ danh sách SẢN PHẨM GẦN NHẤT VỚI YÊU CẦU
-   - Nếu sản phẩm RẺ HƠN budget: nói rõ ""Với [budget] bạn dư thêm [X], có thể mua thêm phụ kiện hoặc nâng cấp RAM/SSD""
-   - Nếu sản phẩm ĐẮT HƠN budget: nói rõ chênh lệch cụ thể ""Con này [giá], chỉ cần thêm [chênh lệch] nữa là lấy được, xịn hơn hẳn đó bạn""
-   - Nếu không có sản phẩm phù hợp: thành thật nói và gợi ý tăng/giảm budget bao nhiêu để có đồ
+1. KHI CÓ BUDGET + SẢN PHẨM PHÂN LOẠI:
+   - Đề xuất theo thứ tự: SÁT GIÁ trước → TIẾT KIỆM → NÂNG CẤP
+   - Sản phẩm TIẾT KIỆM: nói ""Nếu muốn tiết kiệm, [tên] giá [X]đ, bạn còn dư [Y]đ để mua thêm RAM/SSD""
+   - Sản phẩm SÁT GIÁ: giới thiệu ngắn điểm mạnh chính
+   - Sản phẩm NÂNG CẤP: nói ""Nếu ráng thêm [chênh lệch]đ nữa, [tên] xịn hơn hẳn vì [lý do ngắn]""
+   - Luôn nêu số tiền chênh lệch CỤ THỂ
 
-2. KHI KHÁCH CHƯA RÕ NHU CẦU:
-   - Hỏi mục đích: gaming, làm việc, đồ họa
-   - Hỏi budget
-   - Hỏi 1 câu để thu hẹp thêm
+2. KHI KHÁCH HỎI SẢN PHẨM CỤ THỂ (có tên brand/series):
+   - Chỉ giới thiệu sản phẩm CÓ LIÊN QUAN đến tên đó
+   - Nếu không có trong kho: nói thẳng ""Shop mình hiện chưa có [tên] bạn ơi""
+   - Gợi ý thay thế tương đương nếu có
 
-3. KHI BUILD PC:
-   - Hỏi mục đích và budget nếu chưa rõ
-   - Gợi ý combo từ danh sách, giải thích ngắn gọn tại sao
+3. KHI KHÁCH CHƯA RÕ NHU CẦU:
+   - Hỏi: mục đích (gaming/làm việc/đồ họa) và budget
 
-4. KHI SO SÁNH / DO DỰ:
-   - Phân tích ngắn ưu/nhược
-   - Đưa ra lời khuyên rõ ràng: ""Theo mình bạn nên chọn A vì...""
-   - Tạo urgency nếu hàng ít: ""Con này chỉ còn [X] bộ thôi đó""
+4. KHI BUILD PC:
+   - Hỏi mục đích + budget nếu chưa rõ
+   - Gợi ý combo từ danh sách
 
 5. TUYỆT ĐỐI KHÔNG:
    - Bịa sản phẩm không có trong danh sách
-   - Nói sai giá
-   - Show sản phẩm lệch quá xa so với budget (>20%)
-   - Trả lời quá dài (tối đa 100 từ)
-   - Bullet point nhiều quá - nói tự nhiên như chat
+   - Đưa ra sản phẩm không liên quan đến câu hỏi
+   - Trả lời dang dở, cắt ngang giữa chừng — phải nói TRỌN VẸN ý
+   - Dùng nhiều bullet point — viết tự nhiên như chat
 
 6. PHONG CÁCH:
    - Xưng ""mình"", gọi ""bạn""
    - Emoji vừa phải 😄 🔥 ✅
-   - Cuối tin luôn có 1 câu hỏi để duy trì hội thoại
-   - Tiếng Việt tự nhiên, thân thiện
+   - Câu HOÀN CHỈNH, không bị đứt giữa chừng
+   - Cuối tin có 1 câu hỏi ngắn để duy trì hội thoại
+   - Tiếng Việt tự nhiên, tối đa 150 từ
 
-Trả lời NGAY, không nhắc lại câu hỏi, vào thẳng vấn đề:
+Trả lời NGAY, vào thẳng vấn đề:
 ";
         }
 
@@ -574,48 +611,59 @@ Trả lời NGAY, không nhắc lại câu hỏi, vào thẳng vấn đề:
                     p.Name.ToLower().Contains(intent.Category.ToLower()));
             }
 
-            // Lọc theo từ khóa model số
+            // Lọc theo từ khóa model số — NHƯNG chỉ áp dụng nếu tìm thấy đủ sản phẩm
             var keywords = ExtractProductKeywords(userMessage);
-            if (keywords.Any())
+
+            // Thêm: trích từ khóa tên thương hiệu/series từ message
+            var nameKeywords = ExtractNameKeywords(userMessage);
+
+            if (keywords.Any() || nameKeywords.Any())
             {
-                foreach (var kw in keywords)
+                var keywordQuery = query;
+                foreach (var kw in keywords.Concat(nameKeywords))
                 {
                     var kw2 = kw;
-                    query = query.Where(p => p.Name.ToLower().Contains(kw2));
+                    keywordQuery = keywordQuery.Where(p => p.Name.ToLower().Contains(kw2));
                 }
+
+                var keywordResults = await keywordQuery.OrderBy(p => p.Price).Take(6).ToListAsync();
+                // Nếu tìm đủ sản phẩm liên quan → dùng, không thì bỏ filter keyword
+                if (keywordResults.Count >= 2)
+                    query = keywordQuery;
             }
 
-            // Lọc theo budget - CHỈ LẤY SẢN PHẨM GẦN VỚI BUDGET
+            // Lọc theo budget — lấy 1 rẻ hơn + sát giá + đắt hơn
             if (intent.Budget.HasValue)
             {
                 decimal budget = intent.Budget.Value;
 
-                // Lấy sản phẩm trong 80%-110% budget
-                decimal min = budget * 0.80m;
-                decimal max = budget * 1.10m;
-
+                // Sản phẩm sát giá (80%-110%)
                 var inBudget = await query
-                    .Where(p => p.Price >= min && p.Price <= max)
-                    .OrderBy(p => p.Price)
-                    .Take(3)
-                    .ToListAsync();
-
-                if (inBudget.Any()) return inBudget;
-
-                // Không có → lấy 1 rẻ hơn gần nhất + 2 đắt hơn gần nhất
-                var cheaper = await query
-                    .Where(p => p.Price < budget)
-                    .OrderByDescending(p => p.Price)
-                    .Take(1)
-                    .ToListAsync();
-
-                var pricier = await query
-                    .Where(p => p.Price > budget)
+                    .Where(p => p.Price >= budget * 0.80m && p.Price <= budget * 1.10m)
                     .OrderBy(p => p.Price)
                     .Take(2)
                     .ToListAsync();
 
-                return cheaper.Concat(pricier).ToList();
+                // Sản phẩm rẻ hơn gần nhất (tiết kiệm)
+                var cheaper = await query
+                    .Where(p => p.Price < budget * 0.80m)
+                    .OrderByDescending(p => p.Price)
+                    .Take(1)
+                    .ToListAsync();
+
+                // Sản phẩm đắt hơn gần nhất (upsell)
+                var pricier = await query
+                    .Where(p => p.Price > budget * 1.10m)
+                    .OrderBy(p => p.Price)
+                    .Take(1)
+                    .ToListAsync();
+
+                var combined = cheaper.Concat(inBudget).Concat(pricier)
+                    .DistinctBy(p => p.ProductId)
+                    .OrderBy(p => p.Price)
+                    .ToList();
+
+                if (combined.Any()) return combined;
             }
 
             return await query
@@ -624,15 +672,64 @@ Trả lời NGAY, không nhắc lại câu hỏi, vào thẳng vấn đề:
                 .ToListAsync();
         }
 
+        // Thêm hàm trích từ khóa tên thương hiệu/series
+        private List<string> ExtractNameKeywords(string message)
+        {
+            var msg = message.ToLower();
+            var keywords = new List<string>();
+
+            // Các pattern tên thương hiệu/series phổ biến
+            var patterns = new[]
+            {
+        @"\b(miku|hatsune)\b",
+        @"\b(asus|msi|gigabyte|asrock|evga|zotac|sapphire|powercolor|xfx)\b",
+        @"\b(corsair|kingston|crucial|gskill|teamgroup)\b",
+        @"\b(samsung|seagate|western digital|wd|toshiba)\b",
+        @"\b(noctua|be quiet|arctic|cooler master|deepcool)\b",
+        @"\b(fractal|lian li|phanteks|nzxt)\b",
+        @"\b(seasonic|evga|be quiet|corsair|antec)\b",
+        @"\b(rog|tuf|prime|pro art|strix)\b",
+        @"\b(gaming x|ventus|suprim|trio|eagle)\b",
+    };
+
+            foreach (var pattern in patterns)
+            {
+                var m = Regex.Match(msg, pattern, RegexOptions.IgnoreCase);
+                if (m.Success)
+                    keywords.Add(m.Value.Trim().ToLower());
+            }
+
+            // Lấy các từ có độ dài > 3 không phải stop word
+            var stopWords = new HashSet<string> {
+        "còn", "muốn", "mình", "bạn", "nào", "gì", "tôi",
+        "có", "cho", "với", "được", "này", "đó", "một", "các",
+        "và", "hay", "hoặc", "nhưng", "mà", "thì", "của", "về",
+        "tư", "vấn", "liên", "quan", "đến", "sản", "phẩm"
+    };
+
+            var words = msg.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                .Where(w => w.Length > 3 && !stopWords.Contains(w))
+                .ToList();
+
+            // Chỉ thêm từ khóa nếu không phải từ thông thường
+            foreach (var word in words)
+            {
+                if (Regex.IsMatch(word, @"[a-z0-9]") && !keywords.Contains(word))
+                    keywords.Add(word);
+            }
+
+            return keywords.Distinct().Take(3).ToList();
+        }
+
         // ================= GỌI GEMINI =================
 
         private async Task<string> CallGemini(string prompt)
         {
             var apiKey = _config["Gemini:ApiKey"];
-            var models = new[] { "gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.0-flash" };
+            var models = new[] { "gemini-2.0-flash", "gemini-2.5-flash-lite", "gemini-2.5-flash" };
 
             using var client = new HttpClient();
-            client.Timeout = TimeSpan.FromSeconds(20);
+            client.Timeout = TimeSpan.FromSeconds(30); // tăng timeout
 
             foreach (var model in models)
             {
@@ -642,7 +739,12 @@ Trả lời NGAY, không nhắc lại câu hỏi, vào thẳng vấn đề:
                     var body = new
                     {
                         contents = new[] { new { parts = new[] { new { text = prompt } } } },
-                        generationConfig = new { temperature = 0.7, maxOutputTokens = 1024 }
+                        generationConfig = new
+                        {
+                            temperature = 0.7,
+                            maxOutputTokens = 600,  // tăng từ 1024 — đủ cho 150 từ tiếng Việt
+                            stopSequences = new string[] { }  // không stop sớm
+                        }
                     };
 
                     var res = await client.PostAsync(url,
@@ -654,12 +756,24 @@ Trả lời NGAY, không nhắc lại câu hỏi, vào thẳng vấn đề:
                     {
                         var json = await res.Content.ReadAsStringAsync();
                         var doc = JsonDocument.Parse(json);
-                        return doc.RootElement
+
+                        var text = doc.RootElement
                             .GetProperty("candidates")[0]
                             .GetProperty("content")
                             .GetProperty("parts")[0]
                             .GetProperty("text")
                             .GetString();
+
+                        // Kiểm tra finishReason — nếu MAX_TOKENS thì text bị cắt
+                        var finishReason = doc.RootElement
+                            .GetProperty("candidates")[0]
+                            .GetProperty("finishReason")
+                            .GetString();
+
+                        if (finishReason == "MAX_TOKENS")
+                            Console.WriteLine($"⚠️ Response bị cắt do MAX_TOKENS — tăng maxOutputTokens");
+
+                        return text;
                     }
 
                     var err = await res.Content.ReadAsStringAsync();

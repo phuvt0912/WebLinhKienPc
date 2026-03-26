@@ -142,3 +142,107 @@
         border-color: rgba(162,89,255,0.3);
         color: #c0c0e0;
     }
+.section-hdr {
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #e8e8ff;
+    letter-spacing: 0.5px;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+    .section-hdr::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(162,89,255,0.15);
+    }
+
+.pwd-wrap {
+    position: relative; /* ← quan trọng */
+    width: 100%;
+}
+
+    .pwd-wrap input {
+        width: 100%;
+        box-sizing: border-box; /* ← quan trọng */
+        padding-right: 46px; /* chừa chỗ cho nút eye */
+    }
+
+.pwd-eye {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #6a6a9a;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.2s;
+    z-index: 1;
+}
+
+    .pwd-eye:hover {
+        color: #a259ff;
+    }
+
+.pwd-strength {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+}
+
+.pwd-bar {
+    height: 3px;
+    flex: 1;
+    border-radius: 2px;
+    background: rgba(255,255,255,0.08);
+    transition: background 0.3s;
+}
+
+.pwd-strength-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 11px;
+    color: #6a6a9a;
+    margin-top: 5px;
+    text-align: right;
+}
+
+.pwd-note {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(162,89,255,0.05);
+    border: 1px solid rgba(162,89,255,0.1);
+    border-radius: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    color: #6a6a9a;
+}
+
+.alert-success {
+    padding: 12px 16px;
+    background: rgba(76,223,138,0.08);
+    border: 1px solid rgba(76,223,138,0.25);
+    border-radius: 8px;
+    color: #4cdf8a;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+.alert-error {
+    padding: 12px 16px;
+    background: rgba(255,79,123,0.08);
+    border: 1px solid rgba(255,79,123,0.25);
+    border-radius: 8px;
+    color: #ff4f7b;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
