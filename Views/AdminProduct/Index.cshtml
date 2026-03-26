@@ -15,7 +15,8 @@
         <a class="btn-add" 
            asp-action="CreateProduct" 
            asp-route-keyword="@Model.Keyword" 
-           asp-route-categoryId="@Model.CategoryId">
+           asp-route-categoryId="@Model.CategoryId"
+           asp-route-stockStatus="@Model.StockStatus">
             + Thêm sản phẩm
         </a>
     </div>
@@ -38,9 +39,14 @@
                 <option value="">Tất cả danh mục</option>
             </select>
 
+            <select class="filter-select" name="stockStatus">
+                <option value="">Tất cả tồn kho</option>
+                <option value="low" selected="@(Model.StockStatus == "low" ? "selected" : null)">Sắp hết hàng (≤ 5)</option>
+            </select>
+
             <button type="submit" class="btn-filter">🔍 Lọc</button>
 
-            @if (!string.IsNullOrEmpty(Model.Keyword) || Model.CategoryId != null)
+            @if (!string.IsNullOrEmpty(Model.Keyword) || Model.CategoryId != null || !string.IsNullOrEmpty(Model.StockStatus))
             {
                 <a asp-action="Index" class="btn-filter" style="border-color:rgba(255,79,123,0.3);color:#ff4f7b;text-decoration:none">
                     ✕ Xoá lọc
@@ -117,7 +123,8 @@
                                    asp-action="EditProduct"
                                    asp-route-id="@p.ProductId"
                                    asp-route-keyword="@Model.Keyword"
-                                   asp-route-categoryId="@Model.CategoryId">
+                                   asp-route-categoryId="@Model.CategoryId"
+                                   asp-route-stockStatus="@Model.StockStatus">
                                     ✏️ Sửa
                                 </a>
                                 @if (User.IsInRole("Admin"))
@@ -130,6 +137,7 @@
                                         <input type="hidden" name="id" value="@p.ProductId" />
                                         <input type="hidden" name="keyword" value="@Model.Keyword" />
                                         <input type="hidden" name="categoryId" value="@Model.CategoryId" />
+                                        <input type="hidden" name="stockStatus" value="@Model.StockStatus" />
                                         <button type="button"
                                                 class="btn-delete"
                                                 onclick="confirmDelete(@p.ProductId, '@p.Name')">

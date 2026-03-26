@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Dashboard";
     Layout = "~/Views/Shared/_AdminLayout.cshtml";
 
@@ -437,7 +437,7 @@
                     {
                         <div class="low-more">
                             Và <strong>@((int)ViewBag.LowStockCount - 5)</strong> sản phẩm khác —
-                            <a asp-controller="AdminProduct" asp-action="Index">Xem tất cả</a>
+                            <a asp-controller="AdminProduct" asp-action="Index" asp-route-stockStatus="low">Xem tất cả</a>
                         </div>
                     }
                 }

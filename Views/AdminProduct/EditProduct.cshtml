@@ -27,6 +27,7 @@
         <input type="hidden" id="originalImageUrl" name="OriginalImageUrl" value="@Model.ImageUrl" />
         <input type="hidden" name="returnKeyword" value="@ViewBag.Keyword" />
         <input type="hidden" name="returnCategoryId" value="@ViewBag.CategoryIdRef" />
+        <input type="hidden" name="returnStockStatus" value="@ViewBag.StockStatus" />
 
         <div class="form-grid">
 
@@ -142,6 +143,7 @@
                 <a asp-action="Index" 
                    asp-route-keyword="@ViewBag.Keyword" 
                    asp-route-categoryId="@ViewBag.CategoryIdRef" 
+                   asp-route-stockStatus="@ViewBag.StockStatus"
                    class="btn-back">← Quay lại</a>
             </div>
 
