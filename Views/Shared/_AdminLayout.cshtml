@@ -1,3 +1,8 @@
+@inject WebLinhKienPc.AppDbContext.ApplicationDbContext _context
+@{
+    var siteInfo = _context.SiteInfos.FirstOrDefault();
+    var logoUrl = siteInfo?.LogoUrl ?? "~/images/logo/pth-logo.png";
+}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -258,7 +263,7 @@
         <div class="admin-inner">
 
             <a class="admin-logo" asp-controller="Admin" asp-action="Index">
-                <img src="~/images/pth-logo.png" alt="Logo" />
+                <img src="@logoUrl" alt="Logo" />
                 <span class="admin-logo-text">PTH Tech</span>
             </a>
 

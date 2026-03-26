@@ -5,8 +5,11 @@
 @inject SignInManager<IdentityUser> SignInManager
 @inject UserManager<IdentityUser> UserManager
 @inject ApplicationDbContext DbContext
+@inject WebLinhKienPc.AppDbContext.ApplicationDbContext _context
 
 @{
+    var siteInfo = _context.SiteInfos.FirstOrDefault();
+    var logoUrl = siteInfo?.LogoUrl ?? "~/images/logo/pth-logo.png";
     var currentUser = await UserManager.GetUserAsync(User);
     var displayName = currentUser?.UserName ?? User.Identity?.Name ?? "";
     var avatar = !string.IsNullOrEmpty(displayName) ? displayName[0].ToString().ToUpper() : "?";
@@ -315,7 +318,7 @@
 
         <!-- Logo -->
         <a class="pc-logo" asp-controller="Home" asp-action="Index">
-            <img src="~/images/pth-logo.png" alt="PTH Tech Logo" />
+            <img src="@logoUrl" alt="PTH Tech Logo" />
             <span class="pc-logo-text">PTH Tech</span>
         </a>
 
