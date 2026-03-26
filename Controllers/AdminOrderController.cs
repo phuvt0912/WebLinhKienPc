@@ -105,9 +105,9 @@ namespace WebLinhKienPc.Controllers
             return RedirectToAction("OrderDetails", new { id });
         }
 
-        // Action này cho AJAX từ Index page (dropdown)
-        [Authorize(Roles = "Admin")]
-        [HttpPost]
+		// Action này cho AJAX từ Index page (dropdown)
+		[Authorize(Roles = "Admin,NhanVien")]
+		[HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UpdateStatusAjax([FromBody] UpdateStatusModel model)
         {
