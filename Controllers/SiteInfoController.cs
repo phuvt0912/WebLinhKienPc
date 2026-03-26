@@ -16,6 +16,7 @@ namespace WebLinhKienPc.Controllers
 			_env = env;
 		}
 
+		// GET: Hiển thị form
 		public IActionResult CreateOrEdit()
 		{
 			var model = _context.SiteInfos
@@ -36,11 +37,8 @@ namespace WebLinhKienPc.Controllers
 				model.Addresses ??= new List<SiteAddress>();
 				model.WorkHours ??= new List<WorkHour>();
 
-				if (!model.Addresses.Any())
-					model.Addresses.Add(new SiteAddress());
-
-				if (!model.WorkHours.Any())
-					model.WorkHours.Add(new WorkHour());
+				if (!model.Addresses.Any()) model.Addresses.Add(new SiteAddress());
+				if (!model.WorkHours.Any()) model.WorkHours.Add(new WorkHour());
 			}
 
 			return View(model);
@@ -48,7 +46,7 @@ namespace WebLinhKienPc.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<IActionResult> CreateOrEdit(SiteInfo model, IFormFile imageFile)
+		public async Task<IActionResult> CreateOrEdit(SiteInfo model, IFormFile? imageFile)
 		{
 			// ===== VALIDATE LIST =====
 			model.Addresses = model.Addresses?
@@ -59,11 +57,17 @@ namespace WebLinhKienPc.Controllers
 				.Where(x => x.OpenHour < x.CloseHour)
 				.ToList();
 
+			// ===== CHECK LOGO (1 trong 2 là đủ) =====
+			if ((imageFile == null || imageFile.Length == 0) && string.IsNullOrWhiteSpace(model.LogoUrl))
+			{
+				ModelState.AddModelError("LogoUrl", "Vui lòng chọn ảnh hoặc nhập URL");
+			}
+
 			if (!ModelState.IsValid)
 			{
 				model.Addresses ??= new List<SiteAddress>();
 				model.WorkHours ??= new List<WorkHour>();
-				return View("CreateOrEdit", model);
+				return View(model);
 			}
 
 			var existing = _context.SiteInfos
@@ -71,43 +75,45 @@ namespace WebLinhKienPc.Controllers
 				.Include(x => x.WorkHours)
 				.FirstOrDefault();
 
-			string logoPath = null;
+			string logoPath = existing?.LogoUrl;
 
-			// ===== 1. UPLOAD FILE =====
+			// ===== 1️⃣ XỬ LÝ FILE UPLOAD =====
 			if (imageFile != null && imageFile.Length > 0)
 			{
 				var ext = Path.GetExtension(imageFile.FileName).ToLower();
-
 				var allowed = new[] { ".jpg", ".jpeg", ".png", ".webp" };
 				if (!allowed.Contains(ext))
 				{
-					ModelState.AddModelError("", "File không hợp lệ");
-					return View("CreateOrEdit", model);
+					ModelState.AddModelError("LogoUrl", "File không hợp lệ");
+					return View(model);
 				}
-
 				if (imageFile.Length > 5 * 1024 * 1024)
 				{
-					ModelState.AddModelError("", "Ảnh tối đa 5MB");
-					return View("CreateOrEdit", model);
+					ModelState.AddModelError("LogoUrl", "Ảnh tối đa 5MB");
+					return View(model);
 				}
 
-				var fileName = Guid.NewGuid() + ext;
 				var uploadPath = Path.Combine(_env.WebRootPath, "uploads");
-
 				if (!Directory.Exists(uploadPath))
 					Directory.CreateDirectory(uploadPath);
 
+				var fileName = Guid.NewGuid() + ext;
 				var filePath = Path.Combine(uploadPath, fileName);
 
-				using (var stream = new FileStream(filePath, FileMode.Create))
-				{
-					await imageFile.CopyToAsync(stream);
-				}
+				using var stream = new FileStream(filePath, FileMode.Create);
+				await imageFile.CopyToAsync(stream);
 
 				logoPath = "/uploads/" + fileName;
-			}
 
-			// ===== 2. URL =====
+				// XÓA FILE CŨ nếu là file local
+				if (existing != null && !string.IsNullOrEmpty(existing.LogoUrl) && !existing.LogoUrl.StartsWith("http"))
+				{
+					var oldPath = Path.Combine(_env.WebRootPath, existing.LogoUrl.TrimStart('/').Replace('/', Path.DirectorySeparatorChar));
+					if (System.IO.File.Exists(oldPath))
+						System.IO.File.Delete(oldPath);
+				}
+			}
+			// ===== 2️⃣ XỬ LÝ URL =====
 			else if (!string.IsNullOrWhiteSpace(model.LogoUrl))
 			{
 				logoPath = model.LogoUrl;
@@ -116,9 +122,7 @@ namespace WebLinhKienPc.Controllers
 			// ===== SAVE =====
 			if (existing == null)
 			{
-				if (logoPath != null)
-					model.LogoUrl = logoPath;
-
+				model.LogoUrl = logoPath;
 				_context.SiteInfos.Add(model);
 			}
 			else
@@ -128,25 +132,22 @@ namespace WebLinhKienPc.Controllers
 				existing.Email = model.Email;
 				existing.SiteURL = model.SiteURL;
 				existing.Slogan = model.Slogan;
-
-				// ===== LOGO (QUAN TRỌNG) =====
-				if (logoPath != null)
-				{
-					existing.LogoUrl = logoPath;
-				}
-				// nếu không upload + không nhập URL → giữ nguyên ảnh cũ
+				existing.LogoUrl = logoPath;
 
 				// ===== ADDRESS =====
 				_context.Addresses.RemoveRange(existing.Addresses);
+				foreach (var addr in model.Addresses ?? new List<SiteAddress>())
+					addr.SiteInfoId = existing.Id;
 				existing.Addresses = model.Addresses ?? new List<SiteAddress>();
 
 				// ===== WORK HOURS =====
 				_context.WorkHours.RemoveRange(existing.WorkHours);
+				foreach (var wh in model.WorkHours ?? new List<WorkHour>())
+					wh.SiteInfoId = existing.Id;
 				existing.WorkHours = model.WorkHours ?? new List<WorkHour>();
 			}
 
 			await _context.SaveChangesAsync();
-
 			return RedirectToAction("Index", "Product");
 		}
 	}
