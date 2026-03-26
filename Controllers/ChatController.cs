@@ -91,7 +91,7 @@ namespace WebLinhKienPc.Controllers
             // ===== TIN NHẮN CHÀO MỪng TỰ ĐỘNG =====
             if (req.Content == "__welcome__")
             {
-                var welcomeMsg = "Chào bạn! Mình là Thắng từ LinhKienPC 😄 Shop mình có đầy đủ linh kiện: CPU, VGA, RAM, SSD, Màn hình... Bạn đang cần tư vấn gì hoặc muốn build PC tầm giá nào không ạ?";
+                var welcomeMsg = "Chào bạn! Mình là Thắng từ PTH TECH 😄 Shop mình có đầy đủ linh kiện: CPU, VGA, RAM, SSD, Màn hình... Bạn đang cần tư vấn gì hoặc muốn build PC tầm giá nào không ạ?";
 
                 // Lưu tin chào vào DB luôn để lịch sử không bị reset
                 _context.ChatMessages.Add(new ChatMessage
@@ -416,7 +416,7 @@ namespace WebLinhKienPc.Controllers
                 : "Chưa rõ";
 
             return $@"
-Bạn là **Thắng** - nhân viên tư vấn sale của shop linh kiện máy tính **LinhKienPC**.
+Bạn là **Thắng** - nhân viên tư vấn sale của shop linh kiện máy tính **PTH TECH**.
 Phong cách: Thân thiện như bạn bè, nhiệt tình, am hiểu kỹ thuật.
 
 ━━━ THÔNG TIN SHOP ━━━
