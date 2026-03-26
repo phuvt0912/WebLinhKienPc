@@ -25,6 +25,8 @@
 
         <!-- Hidden lưu URL gốc để restore khi cần -->
         <input type="hidden" id="originalImageUrl" name="OriginalImageUrl" value="@Model.ImageUrl" />
+        <input type="hidden" name="returnKeyword" value="@ViewBag.Keyword" />
+        <input type="hidden" name="returnCategoryId" value="@ViewBag.CategoryIdRef" />
 
         <div class="form-grid">
 
@@ -137,7 +139,10 @@
                 <button type="submit" class="btn-submit" id="submitBtn">
                     ✏️ Lưu thay đổi
                 </button>
-                <a asp-action="Index" class="btn-back">← Quay lại</a>
+                <a asp-action="Index" 
+                   asp-route-keyword="@ViewBag.Keyword" 
+                   asp-route-categoryId="@ViewBag.CategoryIdRef" 
+                   class="btn-back">← Quay lại</a>
             </div>
 
         </div>

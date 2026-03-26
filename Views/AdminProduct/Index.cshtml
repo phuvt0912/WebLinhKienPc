@@ -12,7 +12,12 @@
 <div class="page-wrap">
     <div class="page-header">
         <h2 class="page-title">Quản Lý Sản Phẩm</h2>
-        <a class="btn-add" asp-action="CreateProduct">+ Thêm sản phẩm</a>
+        <a class="btn-add" 
+           asp-action="CreateProduct" 
+           asp-route-keyword="@Model.Keyword" 
+           asp-route-categoryId="@Model.CategoryId">
+            + Thêm sản phẩm
+        </a>
     </div>
 
     <div class="total-count">
@@ -110,7 +115,9 @@
                             <div class="action-wrap">
                                 <a class="btn-edit"
                                    asp-action="EditProduct"
-                                   asp-route-id="@p.ProductId">
+                                   asp-route-id="@p.ProductId"
+                                   asp-route-keyword="@Model.Keyword"
+                                   asp-route-categoryId="@Model.CategoryId">
                                     ✏️ Sửa
                                 </a>
                                 @if (User.IsInRole("Admin"))
@@ -121,6 +128,8 @@
                                           style="display: inline;">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="id" value="@p.ProductId" />
+                                        <input type="hidden" name="keyword" value="@Model.Keyword" />
+                                        <input type="hidden" name="categoryId" value="@Model.CategoryId" />
                                         <button type="button"
                                                 class="btn-delete"
                                                 onclick="confirmDelete(@p.ProductId, '@p.Name')">
