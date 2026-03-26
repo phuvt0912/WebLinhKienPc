@@ -35,17 +35,27 @@
         border-radius: 16px;
         overflow: hidden;
         border: 1px solid #2e3a8c;
+        background: #020617;
+        height: 100%;
+        min-height: 380px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 10px;
     }
 
         .about-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
+            width: auto;
+            height: auto;
+            max-width: 98%;
+            max-height: 360px;
+            object-fit: contain;
             transition: 0.4s;
+            display: block;
         }
 
         .about-img:hover img {
-            transform: scale(1.05);
+            transform: scale(1.02);
         }
 
     .info-box {
@@ -79,8 +89,8 @@
 
     <!-- HEADER -->
     <div class="about-header">
-        <h2>🚀 Web Linh Kiện PC</h2>
-        <p>Nơi cung cấp linh kiện máy tính chất lượng – giá tốt – uy tín</p>
+        <h2>🚀 PTH Tech</h2>
+        <p>Giải pháp linh kiện máy tính chuyên nghiệp – Uy tín – Tận tâm</p>
     </div>
 
     <div class="row g-4">
@@ -88,7 +98,7 @@
         <!-- IMAGE -->
         <div class="col-md-6">
             <div class="about-img shadow">
-                <img src="~/images/products/c383f8fe-c43a-4575-b418-55b1cb5159de.png" />
+                <img src="~/images/pth-logo.png" alt="About PTH Tech" />
             </div>
         </div>
 
