@@ -172,9 +172,9 @@ namespace WebLinhKienPc.Controllers
             {
                 // Tạo email
                 var email = new MimeMessage();
-                email.From.Add(new MailboxAddress("Web Linh Kiện PC", "dominhtoan9467@gmail.com")); // THAY EMAIL CỦA BẠN
+                email.From.Add(new MailboxAddress("Shop PTH Tech", "dominhtoan9467@gmail.com")); // THAY EMAIL CỦA BẠN
                 email.To.Add(new MailboxAddress(name, toEmail));
-                email.Subject = "Xác nhận liên hệ - Web Linh Kiện PC";
+                email.Subject = "Xác nhận liên hệ - Shop PTH Tech";
 
                 // Nội dung email HTML
                 var body = $@"
@@ -185,7 +185,7 @@ namespace WebLinhKienPc.Controllers
                         
                         <p>Xin chào <strong style='color: #a259ff;'>{name}</strong>,</p>
                         
-                        <p>Cảm ơn bạn đã liên hệ với <strong>Web Linh Kiện PC</strong>.</p>
+                        <p>Cảm ơn bạn đã liên hệ với <strong>Shop PTH Tech</strong>.</p>
                         
                         <p>Chúng tôi đã nhận được tin nhắn của bạn:</p>
                         
@@ -199,7 +199,7 @@ namespace WebLinhKienPc.Controllers
                             <p style='margin: 0; color: #8a8aba; font-size: 12px;'>
                                 📞 Hotline: 0123 456 789<br>
                                 📧 Email: support@linhkienpc.com<br>
-                                🌐 Website: www.linhkienpc.com
+                                🌐 Website: www.PTHTech.com
                             </p>
                         </div>
                         
