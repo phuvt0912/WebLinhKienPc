@@ -11,15 +11,15 @@
         <p class="page-sub">Quản lý thông tin hiển thị trên toàn hệ thống</p>
     </div>
 
-    <form asp-action="CreateOrEdit" method="post">
+    <form asp-action="CreateOrEdit" method="post" enctype="multipart/form-data" id="createForm">
         @Html.AntiForgeryToken()
         <input type="hidden" asp-for="Id" />
 
-        <!-- HIỂN THỊ LỖI -->
         <div asp-validation-summary="All" class="text-danger"></div>
 
         <div class="form-grid">
 
+            <!-- NAME -->
             <div class="field full">
                 <label>Tên website</label>
                 <input asp-for="Name" />
@@ -30,8 +30,51 @@
                 <input asp-for="Slogan" />
             </div>
 
+            <!-- IMAGE -->
+            <div class="field full">
+                <div class="field-header">
+                    <label>Logo / Banner</label>
+                </div>
+
+                <div class="img-tabs">
+                    <button type="button" class="img-tab active" onclick="switchTab('url', this)">🔗 URL</button>
+                    <button type="button" class="img-tab" onclick="switchTab('file', this)">📁 Tải lên</button>
+                </div>
+
+                <!-- URL -->
+                <div id="tab-url">
+                    <input asp-for="LogoUrl"
+                           id="imageUrlInput"
+                           placeholder="https://..."
+                           oninput="previewImage(this.value)"
+                           autocomplete="off" />
+                </div>
+
+                <!-- FILE -->
+                <div id="tab-file" style="display:none">
+                    <div class="upload-area" id="uploadArea">
+                        <span class="upload-icon">📁</span>
+                        <span class="upload-text">Kéo thả hoặc click để chọn ảnh</span>
+                        <span class="upload-sub">PNG, JPG, WEBP — tối đa 5MB</span>
+                    </div>
+
+                    <input type="file"
+                           name="imageFile"
+                           id="imageFileInput"
+                           accept="image/*"
+                           style="display:none" />
+                </div>
+
+                <!-- PREVIEW -->
+                <div class="img-preview-wrap" id="imgPreviewWrap" style="display:none">
+                    <img id="imgPreview" class="img-preview" src="" />
+                    <button type="button" class="img-clear" onclick="clearImage()">✕</button>
+                </div>
+            </div>
+
             <div class="divider"></div>
 
+            <!-- CONTACT -->
             <div class="field">
                 <label>SĐT</label>
                 <input asp-for="Phone" />
@@ -91,9 +134,118 @@
                 }
             </div>
 
+            <!-- SUBMIT -->
             <div class="form-actions">
-                <button type="submit" class="btn-submit">Lưu thông tin</button>
+                <button type="submit" class="btn-submit" id="submitBtn">Lưu thông tin</button>
             </div>
+
         </div>
     </form>
 </div>
+
+<script>
+    const uploadArea = document.getElementById("uploadArea");
+    const fileInput = document.getElementById("imageFileInput");
+    const preview = document.getElementById("imgPreview");
+    const previewWrap = document.getElementById("imgPreviewWrap");
+    const urlInput = document.getElementById("imageUrlInput");
+
+    // ===== SWITCH TAB =====
+    function switchTab(tab, btn) {
+        document.querySelectorAll(".img-tab").forEach(t => t.classList.remove("active"));
+        btn.classList.add("active");
+
+        document.getElementById("tab-url").style.display = tab === "url" ? "block" : "none";
+        document.getElementById("tab-file").style.display = tab === "file" ? "block" : "none";
+
+        clearImage(false);
+    }
+
+    // ===== PREVIEW URL =====
+    function previewImage(url) {
+        if (!url) {
+            previewWrap.style.display = "none";
+            return;
+        }
+
+        preview.src = url;
+        preview.onload = () => previewWrap.style.display = "block";
+        preview.onerror = () => previewWrap.style.display = "none";
+    }
+
+    // ===== PREVIEW FILE =====
+    function previewFile(file) {
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert("Ảnh tối đa 5MB");
+            return;
+        }
+
+        if (!file.type.startsWith("image/")) {
+            alert("File không hợp lệ");
+            return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = e => {
+            preview.src = e.target.result;
+            previewWrap.style.display = "block";
+        };
+
+        reader.readAsDataURL(file);
+    }
+
+    // ===== CLEAR =====
+    function clearImage(resetUrl = true) {
+        preview.src = "";
+        previewWrap.style.display = "none";
+        fileInput.value = "";
+
+        if (resetUrl) urlInput.value = "";
+    }
+
+    // ===== CLICK UPLOAD =====
+    if (uploadArea) {
+        uploadArea.addEventListener("click", () => fileInput.click());
+    }
+
+    // ===== FILE CHANGE =====
+    if (fileInput) {
+        fileInput.addEventListener("change", function () {
+            if (this.files.length > 0) {
+                previewFile(this.files[0]);
+            }
+        });
+    }
+
+    // ===== DRAG DROP =====
+    if (uploadArea) {
+        uploadArea.addEventListener("dragover", e => {
+            e.preventDefault();
+            uploadArea.classList.add("dragging");
+        });
+
+        uploadArea.addEventListener("dragleave", () => {
+            uploadArea.classList.remove("dragging");
+        });
+
+        uploadArea.addEventListener("drop", e => {
+            e.preventDefault();
+            uploadArea.classList.remove("dragging");
+
+            const file = e.dataTransfer.files[0];
+            if (file) {
+                fileInput.files = e.dataTransfer.files;
+                previewFile(file);
+            }
+        });
+    }
+
+    // ===== INIT =====
+    document.addEventListener("DOMContentLoaded", function () {
+        if (urlInput.value) {
+            previewImage(urlInput.value);
+        }
+    });
+</script>

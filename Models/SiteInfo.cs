@@ -9,6 +9,7 @@
 		public string Email { get; set; }
 		public string SiteURL { get; set; }
 		public string Slogan { get; set; }
+		public string? LogoUrl { get; set; }
 
 		public List<SiteAddress>? Addresses { get; set; }
 		public List<WorkHour>? WorkHours { get; set; }
