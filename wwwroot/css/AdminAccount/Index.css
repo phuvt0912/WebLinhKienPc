@@ -1,4 +1,4 @@
-﻿
+
 .page-wrap {
     padding: 36px 40px;
 }
@@ -166,6 +166,12 @@
     color: #aaaacc;
 }
 
+.role-Custom {
+    background: rgba(255, 170, 0, 0.1);
+    border: 1px solid rgba(255, 170, 0, 0.25);
+    color: #ffaa00;
+}
+
 /* Change role select */
 .role-select {
     background: #12122a;
@@ -287,7 +293,7 @@
     animation: popIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@@keyframes popIn {
+@keyframes popIn {
     from {
         transform: scale(0.9);
         opacity: 0;

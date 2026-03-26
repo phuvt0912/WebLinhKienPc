@@ -31,6 +31,7 @@ namespace WebLinhKienPc.Controllers
             }
 
             ViewBag.UserRoles = userRoles;
+            ViewBag.AllRoles = _roleManager.Roles.Select(r => r.Name).ToList();
             return View(users);
         }
 
