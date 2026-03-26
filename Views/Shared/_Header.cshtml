@@ -55,6 +55,18 @@
     }
 
     .pc-logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pc-logo img {
+        height: 40px;
+        width: auto;
+        object-fit: contain;
+    }
+
+    .pc-logo-text {
         font-family: 'Rajdhani', sans-serif;
         font-weight: 700;
         font-size: 22px;
@@ -303,7 +315,8 @@
 
         <!-- Logo -->
         <a class="pc-logo" asp-controller="Home" asp-action="Index">
-            <i class="bi bi-lightning-charge-fill text-warning me-1"></i> LinhKienPC
+            <img src="~/images/pth-logo.png" alt="PTH Tech Logo" />
+            <span class="pc-logo-text">PTH Tech</span>
         </a>
 
         <!-- Menu -->

@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Admin | LinhKienPC</title>
+    <title>@ViewData["Title"] - Admin | PTH Tech</title>
     <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet">
     <style>
             * {
@@ -48,18 +48,29 @@
             }
 
             .admin-logo {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                text-decoration: none;
+                flex-shrink: 0;
+            }
+
+            .admin-logo img {
+                height: 32px;
+                width: auto;
+            }
+
+            .admin-logo-text {
                 font-family: 'Rajdhani', sans-serif;
                 font-weight: 700;
                 font-size: 22px;
                 letter-spacing: 2px;
                 text-transform: uppercase;
-                text-decoration: none;
                 background: linear-gradient(135deg, #a259ff, #00cfff);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
                 background-clip: text;
                 white-space: nowrap;
-                flex-shrink: 0;
             }
 
             .admin-badge {
@@ -246,7 +257,10 @@
     <header class="admin-header">
         <div class="admin-inner">
 
-            <a class="admin-logo" asp-controller="Admin" asp-action="Index">⚡ LinhKienPC</a>
+            <a class="admin-logo" asp-controller="Admin" asp-action="Index">
+                <img src="~/images/pth-logo.png" alt="Logo" />
+                <span class="admin-logo-text">PTH Tech</span>
+            </a>
 
             <!-- Badge role -->
             @if (User.IsInRole("Admin"))
