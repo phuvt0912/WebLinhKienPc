@@ -1,4 +1,4 @@
-﻿
+
 .form-wrap {
 	padding: 36px 40px;
 	max-width: 620px;
@@ -197,32 +197,6 @@
 		color: #c0c0e0;
 	}
 
-/* Toast thông báo */
-.toast {
-	position: fixed;
-	bottom: 32px;
-	right: 32px;
-	background: #12122a;
-	border: 1px solid rgba(162, 89, 255, 0.3);
-	border-radius: 10px;
-	padding: 14px 20px;
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	font-family: 'Inter', sans-serif;
-	font-size: 14px;
-	color: #e8e8ff;
-	box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-	transform: translateY(80px);
-	opacity: 0;
-	transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
-	z-index: 9999;
-}
-
-	.toast.show {
-		transform: translateY(0);
-		opacity: 1;
-	}
 
 .toast-icon {
 	font-size: 18px;

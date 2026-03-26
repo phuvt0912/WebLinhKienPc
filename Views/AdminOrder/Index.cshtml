@@ -13,14 +13,6 @@
         <h2 class="page-title">Quản Lý Đơn Hàng</h2>
     </div>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="toast success" id="toast">✅ @TempData["Success"]</div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="toast error" id="toast">❌ @TempData["Error"]</div>
-    }
 
     <div class="total-count">
         Tổng cộng <span>@Model.Count()</span> đơn hàng

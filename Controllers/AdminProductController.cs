@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -247,6 +247,7 @@ namespace WebLinhKienPc.Controllers
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
 
+            TempData["Success"] = "Xóa sản phẩm thành công!";
             return RedirectToAction("Index");
         }
     }
