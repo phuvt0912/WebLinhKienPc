@@ -12,15 +12,6 @@ html {
     box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
 }
 
-html {
-    position: relative;
-    min-height: 100%;
-}
-
-body {
-    margin-bottom: 60px;
-}
-
 .form-floating > .form-control-plaintext::placeholder, .form-floating > .form-control::placeholder {
     color: var(--bs-secondary-color);
     text-align: end;
@@ -30,11 +21,44 @@ body {
     text-align: start;
 }
 
-/* ===== GLOBAL DARK THEME ===== */
+html {
+    height: 100%;
+}
+
 body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
     background: #0d0d1a !important;
     color: #c0c0e0;
     font-family: 'Inter', sans-serif;
+}
+
+/* === GLOBAL SCROLLBAR === */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #1a1a35;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #a259ff, #00cfff);
+    border-radius: 10px;
+    border: 2px solid #1a1a35;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #b274ff, #33d9ff);
+}
+
+/* Firefox scrollbar */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #a259ff #1a1a35;
 }
 
 /* Override Bootstrap */
@@ -442,9 +466,10 @@ body {
     font-family: 'Rajdhani', sans-serif;
     font-size: 20px;
     font-weight: 700;
-    color: #ffcc44;
-    background: none;
-    -webkit-text-fill-color: #ffcc44;
+    background: linear-gradient(135deg, #a259ff, #00cfff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
 .product-stock {
@@ -1036,7 +1061,7 @@ body {
     overflow-y: auto;
     padding-right: 12px;
     scrollbar-width: thin;
-    scrollbar-color: #a259ff #2a2a4a;
+    scrollbar-color: #a259ff #1a1a35;
 }
 
 .qv-desc::-webkit-scrollbar {
@@ -1044,14 +1069,14 @@ body {
 }
 
 .qv-desc::-webkit-scrollbar-track {
-    background: #2a2a4a;
+    background: #1a1a35;
     border-radius: 10px;
 }
 
 .qv-desc::-webkit-scrollbar-thumb {
     background: linear-gradient(135deg, #a259ff, #00cfff);
     border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid #1a1a35;
 }
 
 .qv-desc::-webkit-scrollbar-thumb:hover {

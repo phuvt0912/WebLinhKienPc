@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using WebLinhKienPc.ViewModels;
@@ -31,6 +31,7 @@ namespace WebLinhKienPc.Controllers
             }
 
             ViewBag.UserRoles = userRoles;
+            ViewBag.AllRoles = _roleManager.Roles.Select(r => r.Name).ToList();
             return View(users);
         }
 
@@ -45,7 +46,7 @@ namespace WebLinhKienPc.Controllers
             var currentRoles = await _userManager.GetRolesAsync(user);
             await _userManager.RemoveFromRolesAsync(user, currentRoles);
             await _userManager.AddToRoleAsync(user, newRole);
-
+            TempData["Success"] = $"Đã thay đổi quyền của {user.Email} thành {newRole}.";
             return RedirectToAction("Index");
         }
 
@@ -58,6 +59,7 @@ namespace WebLinhKienPc.Controllers
             if (user == null) return NotFound();
 
             await _userManager.DeleteAsync(user);
+            TempData["Success"] = $"Đã xóa tài khoản {user.Email} thành công.";
             return RedirectToAction("Index");
         }
 
@@ -92,6 +94,7 @@ namespace WebLinhKienPc.Controllers
                 if (!string.IsNullOrEmpty(model.Role))
                     await _userManager.AddToRoleAsync(user, model.Role);
 
+                TempData["Success"] = "Tạo tài khoản mới thành công!";
                 return RedirectToAction("Index");
             }
 

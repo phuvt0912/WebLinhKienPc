@@ -120,39 +120,19 @@ function updateOrderStatus(orderId, selectElement) {
         .then(r => r.json())
         .then(data => {
             if (data.success) {
-                showToast('success', data.message);
-                setTimeout(() => location.reload(), 1500);
+                setTimeout(() => location.reload(), 500);
             } else {
-                showToast('error', data.message);
+                showAdminToast('error', data.message);
                 selectElement.value = oldValue;
             }
         })
         .catch(() => {
-            showToast('error', 'Có lỗi xảy ra khi cập nhật trạng thái');
+            showAdminToast('error', 'Có lỗi xảy ra khi cập nhật trạng thái');
             selectElement.value = oldValue;
         })
         .finally(() => { selectElement.disabled = false; });
 }
 
-function showToast(type, message) {
-    // Xóa toast cũ
-    const oldToast = document.querySelector('.toast:not(#toast)');
-    if (oldToast) oldToast.remove();
-
-    const toast = document.createElement('div');
-    toast.className = `toast ${type}`;
-    const icon = type === 'success' ? '✅' : '❌';
-    toast.innerHTML = `${icon} ${message}`;
-    document.body.appendChild(toast);
-
-    setTimeout(() => {
-        toast.style.opacity = '0';
-        toast.style.transition = 'opacity 0.4s';
-        setTimeout(() => {
-            if (toast.parentNode) toast.remove();
-        }, 400);
-    }, 3000);
-}
 
 function filterByDate() {
     const fromDate = document.getElementById('fromDate').value;
@@ -189,12 +169,12 @@ function exportToExcel() {
 function bulkUpdateStatus() {
     const newStatus = document.getElementById('bulkStatus').value;
     if (!newStatus) {
-        showToast('error', 'Vui lòng chọn trạng thái cần cập nhật');
+        showAdminToast('error', 'Vui lòng chọn trạng thái cần cập nhật');
         return;
     }
 
     if (selectedOrders.size === 0) {
-        showToast('error', 'Vui lòng chọn đơn hàng cần cập nhật');
+        showAdminToast('error', 'Vui lòng chọn đơn hàng cần cập nhật');
         return;
     }
 
@@ -217,16 +197,15 @@ function bulkUpdateStatus() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                showToast('success', data.message);
                 selectedOrders.clear();
-                setTimeout(() => location.reload(), 1500);
+                setTimeout(() => location.reload(), 500);
             } else {
-                showToast('error', data.message);
+                showAdminToast('error', data.message);
             }
         })
         .catch(error => {
             console.error('Error:', error);
-            showToast('error', 'Có lỗi xảy ra khi cập nhật hàng loạt');
+            showAdminToast('error', 'Có lỗi xảy ra khi cập nhật hàng loạt');
         })
         .finally(() => {
             btn.textContent = originalText;
@@ -234,19 +213,6 @@ function bulkUpdateStatus() {
         });
 }
 
-// Auto hide toast from server
-function initToast() {
-    const toast = document.getElementById('toast');
-    if (toast) {
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transition = 'opacity 0.4s';
-            setTimeout(() => {
-                if (toast.parentNode) toast.remove();
-            }, 400);
-        }, 3000);
-    }
-}
 
 // Initialize event listeners
 function initEventListeners() {
@@ -257,7 +223,6 @@ function initEventListeners() {
 
 // Initialize everything when DOM is ready
 document.addEventListener('DOMContentLoaded', function () {
-    initToast();
     initEventListeners();
 
     // Disable checkboxes cho đơn đã hoàn thành hoặc đã hủy

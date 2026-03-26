@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -23,7 +23,7 @@ namespace WebLinhKienPc.Controllers
             _userManager = userManager;
         }
 
-        public IActionResult Index(string keyword, int? categoryId)
+        public IActionResult Index(string keyword, int? categoryId, string? stockStatus)
         {
             var products = _context.Products
                 .Include(p => p.Category)
@@ -35,11 +35,15 @@ namespace WebLinhKienPc.Controllers
             if (categoryId.HasValue)
                 products = products.Where(p => p.CategoryId == categoryId);
 
+            if (stockStatus == "low")
+                products = products.Where(p => p.Stock <= 5);
+
             var vm = new ProductAdminViewModel
             {
                 Products = products.ToList(),
                 Keyword = keyword,
                 CategoryId = categoryId,
+                StockStatus = stockStatus,
                 Categories = new SelectList(_context.Categories, "CategoryId", "Name")
             };
 
@@ -47,15 +51,18 @@ namespace WebLinhKienPc.Controllers
         }
 
         [HttpGet]
-        public IActionResult CreateProduct()
+        public IActionResult CreateProduct(string? keyword, int? categoryId, string? stockStatus)
         {
+            ViewBag.Keyword = keyword;
+            ViewBag.CategoryIdRef = categoryId; 
+            ViewBag.StockStatus = stockStatus;
             ViewBag.Categories = new SelectList(_context.Categories, "CategoryId", "Name");
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CreateProduct(IFormFile? imageFile)
+        public async Task<IActionResult> CreateProduct(IFormFile? imageFile, string? returnKeyword, int? returnCategoryId, string? returnStockStatus)
         {
             // Tạo mới product
             var product = new Product();
@@ -141,7 +148,7 @@ namespace WebLinhKienPc.Controllers
                 await _context.SaveChangesAsync();
 
                 TempData["Success"] = "Thêm sản phẩm thành công!";
-                return RedirectToAction("Index");
+                return RedirectToAction("Index", new { keyword = returnKeyword, categoryId = returnCategoryId, stockStatus = returnStockStatus });
             }
 
             // Nếu có lỗi, load lại danh mục và trả về view với dữ liệu đã nhập
@@ -158,11 +165,14 @@ namespace WebLinhKienPc.Controllers
         }
 
         [HttpGet]
-        public IActionResult EditProduct(int id)
+        public IActionResult EditProduct(int id, string? keyword, int? categoryId, string? stockStatus)
         {
             var product = _context.Products.Find(id);
             if (product == null) return NotFound();
 
+            ViewBag.Keyword = keyword;
+            ViewBag.CategoryIdRef = categoryId;
+            ViewBag.StockStatus = stockStatus;
             ViewBag.Categories = new SelectList(
                 _context.Categories, "CategoryId", "Name", product.CategoryId);
 
@@ -171,7 +181,7 @@ namespace WebLinhKienPc.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditProduct(int id, IFormFile? imageFile)
+        public async Task<IActionResult> EditProduct(int id, IFormFile? imageFile, string? returnKeyword, int? returnCategoryId, string? returnStockStatus)
         {
             var product = await _context.Products.FindAsync(id);
             if (product == null) return NotFound();
@@ -225,12 +235,12 @@ namespace WebLinhKienPc.Controllers
             await _context.SaveChangesAsync();
 
             TempData["Success"] = "Cập nhật sản phẩm thành công!";
-            return RedirectToAction("Index");
+            return RedirectToAction("Index", new { keyword = returnKeyword, categoryId = returnCategoryId, stockStatus = returnStockStatus });
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteProduct(int id)
+        public async Task<IActionResult> DeleteProduct(int id, string? keyword, int? categoryId, string? stockStatus)
         {
             var product = await _context.Products.FindAsync(id);
             if (product == null) return NotFound();
@@ -247,7 +257,8 @@ namespace WebLinhKienPc.Controllers
             _context.Products.Remove(product);
             await _context.SaveChangesAsync();
 
-            return RedirectToAction("Index");
+            TempData["Success"] = "Xóa sản phẩm thành công!";
+            return RedirectToAction("Index", new { keyword, categoryId, stockStatus });
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using WebLinhKienPc.AppDbContext;
 using WebLinhKienPc.Models;
 using WebLinhKienPc.ViewModels;
@@ -92,7 +92,7 @@ namespace WebLinhKienPc.Controllers
 
 			_context.Banners.Add(banner);
 			await _context.SaveChangesAsync();
-
+			TempData["Success"] = "Thêm banner mới thành công!";
 			return RedirectToAction("Index");
 		}
 
@@ -178,7 +178,7 @@ namespace WebLinhKienPc.Controllers
 			existing.Link = banner.Link;
 
 			await _context.SaveChangesAsync();
-
+			TempData["Success"] = "Cập nhật banner thành công!";
 			return RedirectToAction("Index");
 		}
 
@@ -192,7 +192,7 @@ namespace WebLinhKienPc.Controllers
 
 			_context.Banners.Remove(banner);
 			_context.SaveChanges();
-
+			TempData["Success"] = "Xóa banner thành công!";
 			return RedirectToAction("Index");
 		}
 	}

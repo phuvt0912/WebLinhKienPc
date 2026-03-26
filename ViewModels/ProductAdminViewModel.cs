@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using WebLinhKienPc.Models;
 
 namespace WebLinhKienPc.ViewModels
@@ -12,5 +12,6 @@ namespace WebLinhKienPc.ViewModels
 		public int? CategoryId { get; set; }
 
 		public SelectList Categories { get; set; }
+		public string? StockStatus { get; set; }
 	}
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebLinhKienPc.AppDbContext;
 using WebLinhKienPc.Models;
@@ -37,6 +37,7 @@ namespace WebLinhKienPc.Controllers
             {
                 _context.Add(category);
                 await _context.SaveChangesAsync();
+                TempData["Success"] = "Thêm danh mục thành công!";
                 return RedirectToAction(nameof(Index));
             }
             return View(category);
@@ -61,6 +62,7 @@ namespace WebLinhKienPc.Controllers
             {
                 _context.Update(category);
                 await _context.SaveChangesAsync();
+                TempData["Success"] = "Cập nhật danh mục thành công!";
                 return RedirectToAction(nameof(Index));
             }
             return View(category);
@@ -76,6 +78,7 @@ namespace WebLinhKienPc.Controllers
 
             _context.Categories.Remove(category);
             await _context.SaveChangesAsync();
+            TempData["Success"] = "Xóa danh mục thành công!";
             return RedirectToAction(nameof(Index));
         }
     }

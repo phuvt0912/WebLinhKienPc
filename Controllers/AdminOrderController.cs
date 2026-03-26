@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -142,6 +142,7 @@ namespace WebLinhKienPc.Controllers
                 order.Status = newStatus;
                 await _context.SaveChangesAsync();
 
+                TempData["Success"] = $"Đã cập nhật trạng thái đơn #{order.OrderCode}";
                 return Json(new { success = true, message = $"Đã cập nhật trạng thái đơn #{order.OrderCode}" });
             }
             catch (Exception ex)
@@ -188,6 +189,7 @@ namespace WebLinhKienPc.Controllers
                 }
 
                 await _context.SaveChangesAsync();
+                TempData["Success"] = $"Đã cập nhật {updatedCount}/{orders.Count} đơn hàng";
                 return Json(new { success = true, message = $"Đã cập nhật {updatedCount}/{orders.Count} đơn hàng" });
             }
             catch (Exception ex)

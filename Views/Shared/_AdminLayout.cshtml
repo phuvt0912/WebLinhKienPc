@@ -172,6 +172,73 @@
                 margin: 0 auto;
                 padding: 12px 0;
             }
+
+            /* Toast Notification */
+            .admin-global-toast {
+                position: fixed;
+                top: 24px;
+                right: 24px;
+                z-index: 9999;
+                padding: 14px 24px;
+                border-radius: 12px;
+                font-family: 'Inter', sans-serif;
+                font-size: 14px;
+                font-weight: 500;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+                animation: adminToastIn 0.3s ease;
+                backdrop-filter: blur(10px);
+                background: rgba(18, 18, 42, 0.95);
+                max-width: 400px;
+                width: auto;
+            }
+
+            .admin-global-toast.success {
+                border-left: 4px solid #4cdf8a;
+                color: #4cdf8a;
+            }
+
+            .admin-global-toast.error {
+                border-left: 4px solid #ff4f7b;
+                color: #ff4f7b;
+            }
+
+            @@keyframes adminToastIn {
+                from {
+                    opacity: 0;
+                    transform: translateX(30px);
+                }
+                to {
+                    opacity: 1;
+                    transform: translateX(0);
+                }
+            }
+
+            /* === GLOBAL SCROLLBAR === */
+            ::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: #1a1a35;
+                border-radius: 10px;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: linear-gradient(135deg, #a259ff, #00cfff);
+                border-radius: 10px;
+                border: 2px solid #1a1a35;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: linear-gradient(135deg, #b274ff, #33d9ff);
+            }
+
+            /* Firefox scrollbar */
+            * {
+                scrollbar-width: thin;
+                scrollbar-color: #a259ff #1a1a35;
+            }
     </style>
 </head>
 <body>
@@ -287,6 +354,14 @@
     </header>
 
     <div class="admin-content">
+        @if (TempData["Success"] != null)
+        {
+            <div class="admin-global-toast success" id="adminGlobalToast">✅ @TempData["Success"]</div>
+        }
+        @if (TempData["Error"] != null)
+        {
+            <div class="admin-global-toast error" id="adminGlobalToast">❌ @TempData["Error"]</div>
+        }
         @RenderBody()
     </div>
 
@@ -303,6 +378,40 @@
                     link.classList.add('active');
                 }
             });
+
+            // Auto hide toast
+            document.addEventListener('DOMContentLoaded', function () {
+                const toast = document.getElementById('adminGlobalToast');
+                if (toast) {
+                    autoHideToast(toast);
+                }
+            });
+
+            function autoHideToast(toast) {
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    toast.style.transition = 'opacity 0.4s';
+                    setTimeout(() => {
+                        if (toast.parentNode) toast.remove();
+                    }, 400);
+                }, 3000);
+            }
+
+            // Global function for AJAX
+            window.showAdminToast = function (type, message) {
+                // Xóa toast cũ nếu có
+                const oldToast = document.getElementById('adminGlobalToast');
+                if (oldToast) oldToast.remove();
+
+                const toast = document.createElement('div');
+                toast.id = 'adminGlobalToast';
+                toast.className = `admin-global-toast ${type}`;
+                const icon = type === 'success' ? '✅' : '❌';
+                toast.innerHTML = `${icon} ${message}`;
+                document.body.appendChild(toast);
+
+                autoHideToast(toast);
+            };
     </script>
 </body>
 </html>

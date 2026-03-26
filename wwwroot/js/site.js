@@ -110,7 +110,7 @@ function openQuickView(id, name, img, price, category, stock, desc) {
 
     const descEl = document.getElementById('qvDesc');
     if (desc && desc.trim()) {
-        const lines = desc.split('\n').filter(x => x.trim());
+        const lines = desc.split(/\r?\n|\\n/).filter(x => x.trim());
         if (lines.length > 0) {
             descEl.innerHTML = lines.map(line => `
                 <div class="qv-desc-item">

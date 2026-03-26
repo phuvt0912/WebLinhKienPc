@@ -47,7 +47,7 @@
             }
             else
             {
-                string[] allRoles = { "Admin", "NhanVien", "KhachHang" };
+                var allRoles = ViewBag.AllRoles as List<string> ?? new List<string> { "Admin", "NhanVien", "KhachHang" };
                 @foreach (var user in Model)
                 {
                     var role = roles != null && roles.ContainsKey(user.Id)
@@ -68,13 +68,14 @@
                                     "Admin" => "⚡ Admin",
                                     "NhanVien" => "🔧 Nhân viên",
                                     "KhachHang" => "👤 Khách hàng",
-                                    _ => "👤 Khách hàng"
+                                    _ => "👤 " + role
                                 };
                                 var roleClass = role switch
                                 {
                                     "Admin" => "role-Admin",
                                     "NhanVien" => "role-NhanVien",
-                                    _ => "role-KhachHang"
+                                    "KhachHang" => "role-KhachHang",
+                                    _ => "role-Custom"
                                 };
                             }
                             <span class="role-badge @roleClass">@roleLabel</span>
@@ -87,14 +88,7 @@
                                 <select name="newRole" class="role-select">
                                     @foreach (var r in allRoles)
                                     {
-                                        if (r == role)
-                                        {
-                                            <option value="@r" selected>@r</option>
-                                        }
-                                        else
-                                        {
-                                            <option value="@r">@r</option>
-                                        }
+                                        <option value="@r" selected="@(r == role)">@r</option>
                                     }
                                 </select>
                                 <button type="submit" class="btn-save-role">Lưu</button>
