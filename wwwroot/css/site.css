@@ -1063,6 +1063,27 @@ body {
     max-height: 150px;
     overflow-y: auto;
     padding-right: 12px;
+    scrollbar-width: thin;
+    scrollbar-color: #a259ff #1a1a35;
+}
+
+.qv-desc::-webkit-scrollbar {
+    width: 6px;
+}
+
+.qv-desc::-webkit-scrollbar-track {
+    background: #1a1a35;
+    border-radius: 10px;
+}
+
+.qv-desc::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #a259ff, #00cfff);
+    border-radius: 10px;
+    border: 1px solid #1a1a35;
+}
+
+.qv-desc::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #b274ff, #33d9ff);
 }
 
 .qv-desc-item {

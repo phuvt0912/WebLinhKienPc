@@ -1,4 +1,4 @@
-﻿.sc-wrap {
+.sc-wrap {
     padding: 28px 36px;
     height: calc(100vh - 70px);
     display: grid;
@@ -168,7 +168,7 @@
     }
 
     .sc-msgs::-webkit-scrollbar-thumb {
-        background: #a259ff;
+        background: linear-gradient(135deg, #a259ff, #00cfff);
         border-radius: 4px;
     }
 
@@ -468,6 +468,7 @@
     line-height: 1.4;
     display: -webkit-box;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
     -webkit-box-orient: vertical;
     overflow: hidden;
     word-break: break-word;

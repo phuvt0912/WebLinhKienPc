@@ -212,6 +212,33 @@
                     transform: translateX(0);
                 }
             }
+
+            /* === GLOBAL SCROLLBAR === */
+            ::-webkit-scrollbar {
+                width: 8px;
+                height: 8px;
+            }
+
+            ::-webkit-scrollbar-track {
+                background: #1a1a35;
+                border-radius: 10px;
+            }
+
+            ::-webkit-scrollbar-thumb {
+                background: linear-gradient(135deg, #a259ff, #00cfff);
+                border-radius: 10px;
+                border: 2px solid #1a1a35;
+            }
+
+            ::-webkit-scrollbar-thumb:hover {
+                background: linear-gradient(135deg, #b274ff, #33d9ff);
+            }
+
+            /* Firefox scrollbar */
+            * {
+                scrollbar-width: thin;
+                scrollbar-color: #a259ff #1a1a35;
+            }
     </style>
 </head>
 <body>
