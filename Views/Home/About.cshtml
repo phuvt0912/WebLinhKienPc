@@ -89,8 +89,8 @@
 
     <!-- HEADER -->
     <div class="about-header">
-        <h2>🚀 PTH Tech</h2>
-        <p>Giải pháp linh kiện máy tính chuyên nghiệp – Uy tín – Tận tâm</p>
+        <h2>🚀 @Model.SiteInfo.Name</h2> <!--TÊN WEB-->
+        <p>@Model.SiteInfo.Slogan</p> <!--sLOGAN-->
     </div>
 
     <div class="row g-4">
@@ -98,7 +98,7 @@
         <!-- IMAGE -->
         <div class="col-md-6">
             <div class="about-img shadow">
-                <img src="~/images/pth-logo.png" alt="About PTH Tech" />
+                <img src="@Model.SiteInfo.LogoUrl" alt="About PTH Tech" /> <!--lOGO-->
             </div>
         </div>
 
