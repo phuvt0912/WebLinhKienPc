@@ -1,15 +1,35 @@
+// ===== CHAT WIDGET =====
+
 let chatOpen = false;
-let lastMsgCount = 0;
+let lastMessageId = 0; // Dùng ID thay vì count để tránh trùng
 let welcomeSent = false;
+let pollingInterval = null;
+let isPolling = false;
 
 function toggleChat() {
     chatOpen = !chatOpen;
     const box = document.getElementById('chatBox');
     box.style.display = chatOpen ? 'block' : 'none';
     document.getElementById('fabIcon').innerHTML = chatOpen ? '<i class="bi bi-x-lg fs-4"></i>' : '<i class="bi bi-chat-dots-fill fs-4"></i>';
+
     if (chatOpen) {
         document.getElementById('fabBadge').style.display = 'none';
         loadChatHistory();
+        startPolling(); // Bắt đầu polling khi mở chat
+    } else {
+        stopPolling(); // Dừng polling khi đóng chat
+    }
+}
+
+function startPolling() {
+    if (pollingInterval) clearInterval(pollingInterval);
+    pollingInterval = setInterval(pollNewMessages, 5000);
+}
+
+function stopPolling() {
+    if (pollingInterval) {
+        clearInterval(pollingInterval);
+        pollingInterval = null;
     }
 }
 
@@ -21,7 +41,6 @@ async function loadChatHistory() {
         container.innerHTML = '';
 
         if (msgs.length === 0 && !welcomeSent) {
-            // Chưa có lịch sử → AI chào trước
             welcomeSent = true;
             showTyping();
             await sendWelcomeMessage();
@@ -34,7 +53,12 @@ async function loadChatHistory() {
                     appendMsg(m.content, type, m.time, false);
                 }
             });
-            lastMsgCount = msgs.length;
+
+            // Lấy ID tin nhắn cuối cùng
+            if (msgs.length > 0) {
+                lastMessageId = msgs[msgs.length - 1].id;
+            }
+
             scrollBottom();
         }
     } catch (error) {
@@ -57,11 +81,12 @@ async function sendWelcomeMessage() {
             } else {
                 appendMsg(data.reply, 'ai', now(), true);
             }
-            lastMsgCount = 1;
+            //Cập nhật ID nếu có
+            if (data.messageId) lastMessageId = data.messageId;
         }
     } catch {
         removeTyping();
-        appendMsg('Chào bạn! Mình là Minh từ LinhKienPC 😄 Bạn cần tư vấn gì không ạ?', 'ai', now());
+        appendMsg('Chào bạn! Mình là Thắng từ PTH Tech 😄 Bạn cần tư vấn gì không ạ?', 'ai', now());
     }
 }
 
@@ -101,9 +126,12 @@ async function sendChat() {
             } else {
                 appendMsg(data.reply, 'ai', data.time || now());
             }
-        }
 
-        lastMsgCount++;
+            // Cập nhật ID tin nhắn cuối
+            if (data.messageId) {
+                lastMessageId = data.messageId;
+            }
+        }
     } catch (error) {
         console.error('Send message error:', error);
         removeTyping();
@@ -115,7 +143,53 @@ async function sendChat() {
     input.focus();
 }
 
-// ===== RENDER SẢN PHẨM =====
+// HÀM POLL MỚI - Dùng lastMessageId để tránh trùng
+async function pollNewMessages() {
+    if (!chatOpen || isPolling) return;
+
+    isPolling = true;
+
+    try {
+        //Gửi lastMessageId để server chỉ trả về tin nhắn mới
+        const res = await fetch(`/Chat/GetNewMessages?lastId=${lastMessageId}`);
+        const newMsgs = await res.json();
+
+        if (newMsgs && newMsgs.length > 0) {
+            // Cập nhật badge nếu chat đang đóng
+            if (!chatOpen) {
+                const badge = document.getElementById('fabBadge');
+                badge.textContent = newMsgs.length;
+                badge.style.display = 'flex';
+                isPolling = false;
+                return;
+            }
+
+            // Hiển thị tin nhắn mới
+            newMsgs.forEach(m => {
+                //CHỈ hiển thị tin nhắn từ AI và staff, KHÔNG hiển thị tin user
+                if (!m.isFromUser) {
+                    const type = m.isFromAI ? 'ai' : 'staff';
+                    if (m.products && m.products.length > 0) {
+                        appendMsgWithProducts(m.content, m.products, type, m.time, true);
+                    } else {
+                        appendMsg(m.content, type, m.time, true);
+                    }
+                }
+
+                // ✅ Cập nhật lastMessageId
+                if (m.id > lastMessageId) {
+                    lastMessageId = m.id;
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Poll new messages error:', error);
+    } finally {
+        isPolling = false;
+    }
+}
+
+// ===== RENDER SẢN PHẨM (giữ nguyên) =====
 function appendMsgWithProducts(content, products, type, time, scroll = true) {
     const container = document.getElementById('chatMsgs');
     const div = document.createElement('div');
@@ -167,7 +241,6 @@ function renderSingleProduct(product, isGrid) {
     `;
 }
 
-// ===== HELPERS =====
 function appendMsg(content, type, time, scroll = true) {
     const container = document.getElementById('chatMsgs');
     const div = document.createElement('div');
@@ -214,38 +287,3 @@ function escHtml(s) {
         .replace(/>/g, '&gt;')
         .replace(/\n/g, '<br>');
 }
-
-// ===== POLLING =====
-setInterval(async () => {
-    try {
-        const res = await fetch('/Chat/GetMessages');
-        const msgs = await res.json();
-
-        if (!chatOpen) {
-            if (msgs.length > lastMsgCount) {
-                const badge = document.getElementById('fabBadge');
-                badge.textContent = msgs.length - lastMsgCount;
-                badge.style.display = 'flex';
-            }
-            return;
-        }
-
-        if (msgs.length > lastMsgCount) {
-            const newMsgs = msgs.slice(lastMsgCount);
-            const aiStaffMsgs = newMsgs.filter(m => !m.isFromUser);
-
-            aiStaffMsgs.forEach(m => {
-                const type = m.isFromAI ? 'ai' : 'staff';
-                if (m.products && m.products.length > 0) {
-                    appendMsgWithProducts(m.content, m.products, type, m.time, true);
-                } else {
-                    appendMsg(m.content, type, m.time, true);
-                }
-            });
-
-            lastMsgCount = msgs.length;
-        }
-    } catch (error) {
-        console.error('Polling error:', error);
-    }
-}, 5000);
