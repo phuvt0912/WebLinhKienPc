@@ -88,20 +88,20 @@ namespace WebLinhKienPc.Controllers
 
             var userId = _userManager.GetUserId(User);
 
-            // ===== TIN NHẮN CHÀO MỪng TỰ ĐỘNG =====
+            // Tin nhắn chào mừng
             if (req.Content == "__welcome__")
             {
-                var welcomeMsg = "Chào bạn! Mình là Thắng từ PTH TECH 😄 Shop mình có đầy đủ linh kiện: CPU, VGA, RAM, SSD, Màn hình... Bạn đang cần tư vấn gì hoặc muốn build PC tầm giá nào không ạ?";
+                var welcomeMsg = "Chào bạn! Mình là Thắng từ PTH Tech 😄 Shop mình có đầy đủ linh kiện: CPU, VGA, RAM, SSD, Màn hình... Bạn đang cần tư vấn gì hoặc muốn build PC tầm giá nào không ạ?";
 
-                // Lưu tin chào vào DB luôn để lịch sử không bị reset
-                _context.ChatMessages.Add(new ChatMessage
+                var welcomeChat = new ChatMessage
                 {
                     UserId = userId,
                     Content = welcomeMsg,
                     IsFromUser = false,
                     IsFromAI = true,
                     CreatedAt = DateTime.Now
-                });
+                };
+                _context.ChatMessages.Add(welcomeChat);
                 await _context.SaveChangesAsync();
 
                 return Json(new
@@ -109,22 +109,24 @@ namespace WebLinhKienPc.Controllers
                     success = true,
                     reply = welcomeMsg,
                     isAI = true,
-                    time = DateTime.Now.ToString("HH:mm")
+                    time = DateTime.Now.ToString("HH:mm"),
+                    messageId = welcomeChat.Id
                 });
             }
 
-            // ===== TIN NHẮN THƯỜNG =====
-            _context.ChatMessages.Add(new ChatMessage
+            // Lưu tin nhắn user
+            var userMsg = new ChatMessage
             {
                 UserId = userId,
                 Content = req.Content.Trim(),
                 IsFromUser = true,
                 IsFromAI = false,
                 CreatedAt = DateTime.Now
-            });
+            };
+            _context.ChatMessages.Add(userMsg);
             await _context.SaveChangesAsync();
 
-            // Check nhân viên online
+            // Check staff online
             var hasStaffOnline = await _context.StaffStatuses.AnyAsync(s => s.IsOnline);
             if (hasStaffOnline)
             {
@@ -145,7 +147,7 @@ namespace WebLinhKienPc.Controllers
                 ? JsonSerializer.Serialize(aiResponse.Products)
                 : null;
 
-            _context.ChatMessages.Add(new ChatMessage
+            var aiMsg = new ChatMessage
             {
                 UserId = userId,
                 Content = aiResponse.Message,
@@ -153,7 +155,8 @@ namespace WebLinhKienPc.Controllers
                 IsFromUser = false,
                 IsFromAI = true,
                 CreatedAt = DateTime.Now
-            });
+            };
+            _context.ChatMessages.Add(aiMsg);
             await _context.SaveChangesAsync();
 
             return Json(new
@@ -162,7 +165,8 @@ namespace WebLinhKienPc.Controllers
                 reply = aiResponse.Message,
                 products = aiResponse.Products,
                 isAI = true,
-                time = DateTime.Now.ToString("HH:mm")
+                time = DateTime.Now.ToString("HH:mm"),
+                messageId = aiMsg.Id
             });
         }
 
@@ -788,6 +792,31 @@ Trả lời NGAY, vào thẳng vấn đề:
             return null;
         }
 
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> GetNewMessages(int lastId = 0)
+        {
+            var userId = _userManager.GetUserId(User);
+
+            // ✅ Chỉ lấy tin nhắn có ID lớn hơn lastId
+            var newMessages = await _context.ChatMessages
+                .Where(m => m.UserId == userId && m.Id > lastId)
+                .OrderBy(m => m.CreatedAt)
+                .Select(m => new {
+                    m.Id,
+                    m.Content,
+                    m.IsFromUser,
+                    m.IsFromAI,
+                    Products = m.ProductsJson != null
+                        ? JsonSerializer.Deserialize<List<ProductCard>>(m.ProductsJson)
+                        : null,
+                    time = m.CreatedAt.ToString("HH:mm")
+                })
+                .ToListAsync();
+
+            return Json(newMessages);
+        }
+
         // ================= TIỆN ÍCH =================
 
         private decimal? ExtractBudget(string message)
@@ -837,7 +866,7 @@ Trả lời NGAY, vào thẳng vấn đề:
 
         private string GetFallbackResponse(UserIntent intent) => intent.Action switch
         {
-            "greeting" => "Chào bạn! Mình là Thắng từ LinhKienPC 😄 Bạn cần tư vấn linh kiện hay build PC không ạ?",
+            "greeting" => "Chào bạn! Mình là Thắng từ PTH Tech 😄 Bạn cần tư vấn linh kiện hay build PC không ạ?",
             "thank" => "Không có gì bạn ơi! Cần gì cứ hỏi mình nha 😄",
             "goodbye" => "Tạm biệt bạn! Ghé shop lần sau nha 🔥 Nếu cần tư vấn thêm cứ nhắn mình!",
             "build_pc" => "Bạn muốn build PC để làm gì ạ? Gaming, làm việc hay đồ họa? Và budget tầm bao nhiêu để mình tư vấn combo phù hợp nha! 😄",
