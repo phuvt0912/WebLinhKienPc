@@ -8,7 +8,7 @@
     ViewData["Title"] = "Trang cá nhân";
     var profile = ViewBag.Profile as WebLinhKienPc.Models.UserProfile;
     var avatar = profile?.AvatarUrl;
-    var initial = (Model.UserName ?? Model.Email ?? "U")[0].ToString().ToUpper();
+    var initial = (Model.UserName ?? Model.Email ?? "U")[0].ToString().ToUpper(); //lấy kí tự đầu của username hoặc email làm chữ cái đại diện nếu không có avatar
     var userRoles = await _um.GetRolesAsync(Model);
     var roleName = userRoles.FirstOrDefault();
 }
