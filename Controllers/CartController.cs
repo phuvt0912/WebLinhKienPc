@@ -113,55 +113,52 @@ namespace WebLinhKienPc.Controllers
         }
 
         public IActionResult Increase(int id)
-		{
-			var userId = _userManager.GetUserId(User);
-			var cart = _context.Carts
-				.Include(c => c.CartItems)
-				.ThenInclude(p => p.Product)
-				.FirstOrDefault(u => u.UserId == userId);
-			if (cart == null)
-			{
-				return NotFound();
-			}
-			var cartitem = cart.CartItems.FirstOrDefault(p => p.CartItemId == id);
-			if(cartitem == null)
-			{
-				return NotFound();
-			}
-			cartitem.Quantity++;
-			_context.SaveChanges();
-			return RedirectToAction("Index");
-		}
+        {
+            var userId = _userManager.GetUserId(User);
+            var cart = _context.Carts
+                .Include(c => c.CartItems)
+                .ThenInclude(p => p.Product)
+                .FirstOrDefault(u => u.UserId == userId);
 
-		public IActionResult Decrease(int id)
-		{
-			var userId = _userManager.GetUserId(User);
-			var cart = _context.Carts
-				.Include(c => c.CartItems)
-				.ThenInclude(p => p.Product)
-				.FirstOrDefault(u => u.UserId == userId);
-			if (cart == null)
-			{
-				return NotFound();
-			}
-			var cartitem = cart.CartItems.FirstOrDefault(p => p.CartItemId == id);
-			if (cartitem == null)
-			{
-				return NotFound();
-			}
-			if(cartitem.Quantity > 1)
-			{
-				cartitem.Quantity--;
-				_context.SaveChanges();
-			}
-			else if (cartitem.Quantity == 1)
-			{
-				return RedirectToAction("Remove", new { id = id });
-			}
-			return RedirectToAction("Index");
-		}
+            if (cart == null) return NotFound();
 
-		public IActionResult Remove(int id)
+            var cartitem = cart.CartItems.FirstOrDefault(p => p.CartItemId == id);
+            if (cartitem == null) return NotFound();
+
+            cartitem.Quantity++;
+            _context.SaveChanges();
+
+            return RedirectToAction("Index");
+        }
+
+        public IActionResult Decrease(int id)
+        {
+            var userId = _userManager.GetUserId(User);
+            var cart = _context.Carts
+                .Include(c => c.CartItems)
+                .ThenInclude(p => p.Product)
+                .FirstOrDefault(u => u.UserId == userId);
+
+            if (cart == null) return NotFound();
+
+            var cartitem = cart.CartItems.FirstOrDefault(p => p.CartItemId == id);
+            if (cartitem == null) return NotFound();
+
+            if (cartitem.Quantity > 1)
+            {
+                cartitem.Quantity--;
+                _context.SaveChanges();
+            }
+            else if (cartitem.Quantity == 1)
+            {
+                // Nếu chỉ còn 1 mà giảm nữa thì xóa luôn
+                return RedirectToAction("Remove", new { id = id });
+            }
+
+            return RedirectToAction("Index");
+        }
+
+        public IActionResult Remove(int id)
 		{
 			var userId = _userManager.GetUserId(User);
 			var cart = _context.Carts

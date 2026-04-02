@@ -333,6 +333,12 @@
             color: #a259ff;
             font-weight: 500;
         }
+
+        .qty-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
+    }
 </style>
 
     <div class="cart-wrap">
@@ -403,10 +409,18 @@
                                        asp-action="Decrease"
                                        asp-route-id="@item.CartItemId">−</a>
                                     <span class="qty-num">@item.Quantity</span>
-                                    <a class="qty-btn"
-                                       asp-controller="Cart"
-                                       asp-action="Increase"
-                                       asp-route-id="@item.CartItemId">+</a>
+    
+                                    @if (item.Quantity < item.Product.Stock)
+                                    {
+                                        <a class="qty-btn"
+                                           asp-controller="Cart"
+                                           asp-action="Increase"
+                                           asp-route-id="@item.CartItemId">+</a>
+                                    }
+                                    else
+                                    {
+                                        <span class="qty-btn disabled" style="opacity:0.4; cursor:not-allowed;">+</span>
+                                    }
                                 </div>
                             </td>
 
