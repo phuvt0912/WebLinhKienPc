@@ -304,6 +304,39 @@
     fill: #c490ff;
     transform: scale(1.1);
 }
+
+.pay-guide {
+    background: rgba(76, 223, 138, 0.1);
+    border: 1px solid rgba(76, 223, 138, 0.3);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.pay-guide:hover {
+    background: rgba(76, 223, 138, 0.15);
+    border-color: rgba(76, 223, 138, 0.5);
+    transform: translateY(-2px);
+}
+
+.guide-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.guide-title {
+    color: #4cdf8a;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.guide-step {
+    color: #a0a0c0;
+    font-size: 13px;
+    line-height: 1.5;
+}
 </style>
 
 <div class="pay-wrap">
@@ -418,6 +451,26 @@
         </div>
 
     </div>
+    <!-- Modal xác nhận -->
+    <div id="paymentModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 10000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+        <div style="background: #12122a; border: 1px solid rgba(162,89,255,0.3); border-radius: 24px; max-width: 360px; width: 90%; padding: 32px 24px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <div style="font-size: 56px; margin-bottom: 16px;">✅</div>
+            <div style="font-family: 'Rajdhani', sans-serif; font-size: 24px; font-weight: 700; color: #e8e8ff; margin-bottom: 12px;">
+                Xác nhận thanh toán
+            </div>
+            <div style="color: #a0a0c0; font-size: 14px; line-height: 1.6; margin-bottom: 28px;">
+                Bạn đã chuyển khoản thành công chưa?
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <button id="modalConfirmYes" style="flex: 1; background: linear-gradient(135deg, #1a6b3a, #4cdf8a); border: none; padding: 14px; border-radius: 12px; color: white; font-family: 'Rajdhani', sans-serif; font-weight: 700; font-size: 16px; cursor: pointer; transition: opacity 0.2s;">
+                    ✅ Đã chuyển
+                </button>
+                <button id="modalConfirmNo" style="flex: 1; background: rgba(255,79,123,0.1); border: 1px solid rgba(255,79,123,0.3); padding: 14px; border-radius: 12px; color: #ff4f7b; font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 16px; cursor: pointer; transition: all 0.2s;">
+                    ❌ Chưa
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -486,4 +539,110 @@
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 2000);
     }
+
+    // ========== THÊM HƯỚNG DẪN VÀ CONFIRM ==========
+    
+    //Thêm hướng dẫn sau QR code
+    const guideHtml = `
+        <div class="pay-guide" style="
+            background: rgba(76, 223, 138, 0.1);
+            border: 1px solid rgba(76, 223, 138, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            text-align: center;
+        ">
+            <div style="font-size: 28px; margin-bottom: 8px;">✅</div>
+            <div style="color: #4cdf8a; font-weight: 600; margin-bottom: 8px;">
+                Hướng dẫn thanh toán
+            </div>
+            <div style="color: #a0a0c0; font-size: 13px; line-height: 1.5;">
+                1️⃣ Quét mã QR hoặc chuyển khoản theo thông tin bên dưới<br>
+                2️⃣ Sau khi chuyển khoản xong, nhấn nút <strong style="color:#4cdf8a">"Đã chuyển khoản"</strong><br>
+                3️⃣ Hệ thống sẽ xác nhận đơn hàng của bạn
+            </div>
+        </div>
+    `;
+    
+    // Chèn vào sau phần QR code
+    const qrWrap = document.querySelector('.pay-qr-wrap');
+    if (qrWrap && !document.querySelector('.pay-guide')) {
+        qrWrap.insertAdjacentHTML('afterend', guideHtml);
+    }
+    
+    const confirmBtn = document.querySelector('.btn-paid');
+    const modal = document.getElementById('paymentModal');
+    let formToSubmit = null;
+
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function(e) {
+            e.preventDefault(); // Ngăn submit ngay
+            
+            // Lưu form để submit sau
+            formToSubmit = this.closest('form');
+            
+            // Hiển thị modal
+            modal.style.display = 'flex';
+        });
+    }
+
+    // Nút "Đã chuyển"
+    const modalYes = document.getElementById('modalConfirmYes');
+    if (modalYes) {
+        modalYes.addEventListener('click', function() {
+            modal.style.display = 'none';
+            if (formToSubmit) {
+                formToSubmit.submit();
+            }
+        });
+    }
+
+    // Nút "Chưa"
+    const modalNo = document.getElementById('modalConfirmNo');
+    if (modalNo) {
+        modalNo.addEventListener('click', function() {
+            modal.style.display = 'none';
+            formToSubmit = null;
+            
+            // Toast nhắc nhở
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position:fixed; bottom:24px; left:50%; transform:translateX(-50%);
+                background:#12122a; border:1px solid #ffaa00;
+                color:#ffaa00; padding:12px 24px; border-radius:10px;
+                font-family:'Inter',sans-serif; font-size:14px;
+                z-index:10001; animation: fadeIn 0.2s ease;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            `;
+            toast.textContent = '⚠️ Vui lòng chuyển khoản trước khi xác nhận!';
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        });
+    }
+
+    // Đóng modal khi click ra ngoài
+    if (modal) {
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.style.display = 'none';
+                formToSubmit = null;
+            }
+        });
+    }
+    
+    //Thêm animation cho fadeIn (cho toast)
+    const style = document.createElement('style');
+    style.textContent = `
+        @@keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+    `;
+    document.head.appendChild(style);
 </script>
