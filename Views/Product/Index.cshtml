@@ -377,7 +377,7 @@
             {
                 var stockClass = item.Stock > 10 ? "stock-ok" : item.Stock > 0 ? "stock-low" : "stock-out";
                 var stockLabel = item.Stock > 10 ? "Còn hàng" : item.Stock > 0 ? $"Còn {item.Stock} sản phẩm" : "Hết hàng";
-                var safeName = item.Name.Replace("\\", "\\\\").Replace("'", "\\'");
+                var safeName = item.Name.Replace("\\", "\\\\").Replace("'", "\\'"); // Đảm bảo escape các ký tự đặc biệt để tránh lỗi khi dùng trong data-attributes ( dấu đơn, đôi, gạch chéo , xuống dòng)
                 var safeDesc = (item.Description ?? "").Replace("\\", "\\\\").Replace("'", "\\'").Replace("\n", "\\n").Replace("\r", "");
                 var safeImg = item.ImageUrl ?? "";
                 var safeCat = (item.Category?.Name ?? "").Replace("'", "\\'");
@@ -430,22 +430,22 @@
 <script>
     // ===== FILTER =====
     function formatPrice(input) {
-        let raw = input.value.replace(/\D/g, '');
-        input.value = raw ? Number(raw).toLocaleString('vi-VN') : '';
+        let raw = input.value.replace(/\D/g, ''); // Chỉ giữ số
+        input.value = raw ? Number(raw).toLocaleString('vi-VN') : ''; // sử dụng để formatPrice giá VD: 1.000.000
     }
 
-    document.addEventListener('DOMContentLoaded', function () {
+    document.addEventListener('DOMContentLoaded', function () { //Khi load trang, format lại giá trị từ server thành dạng hiển thị
         const minPrice = document.getElementById('minPrice');
         const maxPrice = document.getElementById('maxPrice');
         if (minPrice?.value) minPrice.value = Number(minPrice.value).toLocaleString('vi-VN');
         if (maxPrice?.value) maxPrice.value = Number(maxPrice.value).toLocaleString('vi-VN');
     });
 
-    document.getElementById('filterForm').addEventListener('submit', function () {
+    document.getElementById('filterForm').addEventListener('submit', function () { //Trước khi submit, chuyển 1.000.000 thành 1000000 để gửi lên server
         const minPrice = document.getElementById('minPrice');
         const maxPrice = document.getElementById('maxPrice');
-        if (minPrice) minPrice.value = minPrice.value.replace(/\./g, '').replace(/,/g, '');
-        if (maxPrice) maxPrice.value = maxPrice.value.replace(/\./g, '').replace(/,/g, '');
+        if (minPrice) minPrice.value = minPrice.value.replace(/\./g, '').replace(/,/g, ''); // Xóa tất cả dấu chấm và dấu phẩy
+        if (maxPrice) maxPrice.value = maxPrice.value.replace(/\./g, '').replace(/,/g, ''); 
     });
 
 </script>
