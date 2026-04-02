@@ -55,7 +55,7 @@ namespace WebLinhKienPc.Controllers
         // ================= USER =================
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> GetMessages()
+        public async Task<IActionResult> GetMessages() // Lấy toàn bộ lịch sử chat của user
         {
             var userId = _userManager.GetUserId(User);
             var messages = await _context.ChatMessages
@@ -78,7 +78,7 @@ namespace WebLinhKienPc.Controllers
 
         [HttpPost]
         [IgnoreAntiforgeryToken]
-        public async Task<IActionResult> SendMessage([FromBody] SendMessageRequest req)
+        public async Task<IActionResult> SendMessage([FromBody] SendMessageRequest req) // Nhận tin nhắn từ user, trả về câu trả lời của AI hoặc thông báo chờ nhân viên
         {
             if (!User.Identity.IsAuthenticated)
                 return Json(new { success = false, requireLogin = true });
@@ -147,7 +147,7 @@ namespace WebLinhKienPc.Controllers
                 ? JsonSerializer.Serialize(aiResponse.Products)
                 : null;
 
-            var aiMsg = new ChatMessage
+            var aiMsg = new ChatMessage 
             {
                 UserId = userId,
                 Content = aiResponse.Message,
@@ -174,7 +174,7 @@ namespace WebLinhKienPc.Controllers
         [Authorize(Roles = "Admin,NhanVien")]
         [HttpPost]
         [IgnoreAntiforgeryToken]
-        public async Task<IActionResult> SetOnlineStatus([FromBody] bool isOnline)
+        public async Task<IActionResult> SetOnlineStatus([FromBody] bool isOnline) // Cập nhật trạng thái online/offline của nhân viên
         {
             var staffId = _userManager.GetUserId(User);
             var status = await _context.StaffStatuses.FirstOrDefaultAsync(s => s.StaffId == staffId);
@@ -192,7 +192,7 @@ namespace WebLinhKienPc.Controllers
 
         [Authorize(Roles = "Admin,NhanVien")]
         [HttpGet]
-        public async Task<IActionResult> GetMyStatus()
+        public async Task<IActionResult> GetMyStatus() // Nhân viên check trạng thái của chính mình (dùng để hiển thị trên UI)
         {
             var staffId = _userManager.GetUserId(User);
             var status = await _context.StaffStatuses.FirstOrDefaultAsync(s => s.StaffId == staffId);
@@ -201,7 +201,7 @@ namespace WebLinhKienPc.Controllers
 
         [Authorize(Roles = "Admin,NhanVien")]
         [HttpGet]
-        public async Task<IActionResult> StaffGetUsers()
+        public async Task<IActionResult> StaffGetUsers() // Lấy danh sách user đã từng nhắn tin
         {
             var userIds = await _context.ChatMessages
                 .Where(m => m.IsFromUser)
@@ -233,7 +233,7 @@ namespace WebLinhKienPc.Controllers
 
         [Authorize(Roles = "Admin,NhanVien")]
         [HttpGet]
-        public async Task<IActionResult> StaffGetMessages(string userId)
+        public async Task<IActionResult> StaffGetMessages(string userId) // Lấy toàn bộ lịch sử chat của 1 user cụ thể để nhân viên xem và trả lời
         {
             var messages = await _context.ChatMessages
                 .Where(m => m.UserId == userId)
@@ -262,7 +262,7 @@ namespace WebLinhKienPc.Controllers
         [Authorize(Roles = "Admin,NhanVien")]
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> StaffReply([FromBody] StaffReplyRequest req)
+        public async Task<IActionResult> StaffReply([FromBody] StaffReplyRequest req) // Nhân viên gửi tin nhắn trả lời user
         {
             if (string.IsNullOrWhiteSpace(req?.Content) || string.IsNullOrWhiteSpace(req?.UserId))
                 return BadRequest();
@@ -282,7 +282,7 @@ namespace WebLinhKienPc.Controllers
         }
 
         [Authorize(Roles = "Admin,NhanVien")]
-        public IActionResult StaffChat() => View();
+        public IActionResult StaffChat() => View(); // Trang chat dành cho nhân viên — có thể chọn user để xem lịch sử và trả lời
 
         // ================= AI ENGINE =================
 
@@ -478,9 +478,9 @@ Trả lời NGAY, vào thẳng vấn đề:
 ";
         }
 
-        // ================= PHÂN TÍCH INTENT =================
+        // ================= PHÂN TÍCH INTENT / Ý ĐỊNH NGƯỜI DÙNG =================
 
-        private UserIntent AnalyzeUserIntent(string message)
+        private UserIntent AnalyzeUserIntent(string message) 
         {
             var msg = message.ToLower().Trim();
             var intent = new UserIntent { Action = "chat", NeedProducts = false };
@@ -516,7 +516,7 @@ Trả lời NGAY, vào thẳng vấn đề:
                 intent.NeedProducts = true;
             }
 
-            // Category map - giữ nguyên như cũ
+            // Category map
             var categoryMap = new Dictionary<string, string>
             {
                 ["vga"] = "VGA",
@@ -590,7 +590,7 @@ Trả lời NGAY, vào thẳng vấn đề:
 
             if (intent.Category != null || isProductQuery || intent.Budget.HasValue)
             {
-                if (intent.Action == "chat") // không ghi đè "compare"
+                if (intent.Action == "chat")
                     intent.Action = intent.Category == "PC" ? "build_pc" : "product_inquiry";
                 intent.NeedProducts = true;
             }
