@@ -49,7 +49,7 @@ namespace WebLinhKienPc.Controllers
 
             // Top 10 sản phẩm bán chạy - CHỈ tính đơn Completed
             ViewBag.TopProducts = await _context.OrderDetails
-                .Include(od => od.Product)
+                .Include(od => od.Product) // lấy thông tin sản phẩm từ bảng Product
                 .Where(od => od.Order.Status == OrderStatus.Completed)
                 .GroupBy(od => new { od.ProductId, od.Product.Name, od.Product.ImageUrl })
                 .Select(g => new {
