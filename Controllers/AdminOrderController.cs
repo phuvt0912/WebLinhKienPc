@@ -86,7 +86,7 @@ namespace WebLinhKienPc.Controllers
                 }
                 else
                 {
-                    // Product null → load thủ công
+                    // Product null thì load thủ công
                     var product = await _context.Products.FindAsync(detail.ProductId);
                     if (product != null)
                     {
@@ -126,7 +126,7 @@ namespace WebLinhKienPc.Controllers
 
                 var newStatus = Enum.Parse<OrderStatus>(model.Status);
 
-                // ===== NẾU HỦY → HOÀN TRẢ STOCK =====
+                // ===== NẾU HỦY THÌ HOÀN TRẢ STOCK =====
                 if (newStatus == OrderStatus.Cancelled)
                 {
                     foreach (var detail in order.OrderDetails)
@@ -171,7 +171,7 @@ namespace WebLinhKienPc.Controllers
                     if (order.Status == OrderStatus.Completed || order.Status == OrderStatus.Cancelled)
                         continue;
 
-                    // ===== NẾU HỦY → HOÀN TRẢ STOCK =====
+                    // ===== NẾU HỦY THÌ HOÀN TRẢ STOCK =====
                     if (newStatus == OrderStatus.Cancelled)
                     {
                         foreach (var detail in order.OrderDetails)

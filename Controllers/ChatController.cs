@@ -12,8 +12,8 @@ namespace WebLinhKienPc.Controllers
 {
     public class AIResponse
     {
-        public string Message { get; set; }
-        public List<ProductCard> Products { get; set; }
+        public string Message { get; set; } // Nội dung AI trả lời
+        public List<ProductCard> Products { get; set; } // Sản phẩm đề xuất (nếu có)
         public bool HasProducts => Products != null && Products.Any();
     }
 
@@ -30,11 +30,11 @@ namespace WebLinhKienPc.Controllers
 
     public class UserIntent
     {
-        public string Action { get; set; }
+        public string Action { get; set; } // greeting, product_inquiry, build_pc, compare...
         public decimal? Budget { get; set; }
-        public bool NeedProducts { get; set; }
+        public bool NeedProducts { get; set; } // Cần lấy sản phẩm từ DB không?
         public string Category { get; set; }
-        public List<string> Keywords { get; set; } = new();
+        public List<string> Keywords { get; set; } = new();// Từ khóa tìm kiếm
     }
 
     public class ChatController : Controller
