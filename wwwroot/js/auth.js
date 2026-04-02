@@ -51,7 +51,8 @@ function clearError(formId) {
     if (errEl) errEl.textContent = '';
 }
 
-// AJAX Login
+// AJAX Login 
+//Gửi dữ liệu form qua fetch(AJAX)
 document.getElementById('login-form').addEventListener('submit', async function (e) {
     e.preventDefault();
     clearError('login-form');
@@ -88,6 +89,7 @@ document.getElementById('login-form').addEventListener('submit', async function 
 });
 
 // AJAX Register
+//Gửi dữ liệu form qua fetch(AJAX)
 document.getElementById('register-form').addEventListener('submit', async function (e) {
     e.preventDefault();
     clearError('register-form');

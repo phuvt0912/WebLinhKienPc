@@ -45,7 +45,7 @@ async function selectUser(userId, username) {
     userScrolled = false;
     lastScrollTop = 0;
     lastMsgCount = 0;
-    lastMessageId = 0; // 🔥 FIX reset
+    lastMessageId = 0;
     loadUsers();
 
     const panel = document.getElementById('scChatPanel');
@@ -119,7 +119,7 @@ function renderSingleProduct(product, isGrid) {
 async function loadStaffMsgs() {
     if (!selectedUserId) return;
 
-    if (isLoadingMessages) return; // 🔥 FIX
+    if (isLoadingMessages) return;
     isLoadingMessages = true;
 
     try {
@@ -133,7 +133,7 @@ async function loadStaffMsgs() {
         const clientHeight = container.clientHeight;
         const isNearBottom = scrollHeight - currentScrollTop - clientHeight < 100;
 
-        // 🔥 lọc message mới
+        //lọc message mới
         const newMsgs = msgs.filter(m => m.id > lastMessageId);
         if (newMsgs.length === 0 && msgs.length !== 0) return;
 
@@ -206,7 +206,7 @@ async function scSend() {
 
         await loadStaffMsgs();
 
-        // 🔥 tránh đụng interval
+        //tránh đụng interval
         setTimeout(() => loadStaffMsgs(), 300);
 
     } catch (error) {

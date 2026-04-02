@@ -1,5 +1,3 @@
-// order-details.js
-
 // Modal functions
 function showCancelModal() {
     document.getElementById('modalOverlay').classList.add('show');
