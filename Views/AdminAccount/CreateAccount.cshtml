@@ -85,7 +85,7 @@
         'NhanVien': '🔧 Nhân viên',
         'KhachHang': '👤 Khách hàng'
     };
-
+    // (Cập nhật giao diện hiển thị role đang được chọn (nếu có trong roleLabels) thì hiển thị icon + tên, nếu không thì hiển thị mặc định)
     function updateRolePreview(role) {
         const preview = document.getElementById('rolePreview');
         preview.className = 'role-preview ' + role;
