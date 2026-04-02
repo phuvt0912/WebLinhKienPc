@@ -85,7 +85,7 @@ namespace WebLinhKienPc.Controllers
                     Price = item.Product.Price,
                 });
 
-                // ===== THÊM DÒNG NÀY - TRỪ TỒN KHO =====
+                // ===== TRỪ TỒN KHO =====
                 item.Product.Stock -= item.Quantity;
 
                 // Đảm bảo không âm
@@ -95,7 +95,7 @@ namespace WebLinhKienPc.Controllers
 
             _context.Orders.Add(order);
             _context.CartItems.RemoveRange(cart.CartItems);
-            _context.SaveChanges(); // ← SaveChanges sẽ lưu cả thay đổi stock
+            _context.SaveChanges(); // SaveChanges sẽ lưu cả thay đổi stock
 
             return RedirectToAction("Index", "Product");
         }

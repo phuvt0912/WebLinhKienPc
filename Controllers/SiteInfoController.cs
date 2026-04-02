@@ -113,7 +113,7 @@ namespace WebLinhKienPc.Controllers
 						System.IO.File.Delete(oldPath);
 				}
 			}
-			// ===== 2️⃣ XỬ LÝ URL =====
+			// ===== XỬ LÝ URL =====
 			else if (!string.IsNullOrWhiteSpace(model.LogoUrl))
 			{
 				logoPath = model.LogoUrl;
